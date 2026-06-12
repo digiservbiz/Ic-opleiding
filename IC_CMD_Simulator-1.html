@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMD Terminal Simulator — IC Course</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --void: #0c0c0c;
+  --screen: #0f0f0f;
+  --panel: #141414;
+  --panel2: #1a1a1a;
+  --rim: rgba(255,255,255,0.06);
+  --rim2: rgba(255,255,255,0.11);
+  --text: #cccccc;
+  --dim: #888888;
+  --muted: #555555;
+  --green: #4ec94e;
+  --blue: #569cd6;
+  --yellow: #dcdcaa;
+  --cyan: #4ec9b0;
+  --red: #f44747;
+  --orange: #ce9178;
+  --white: #d4d4d4;
+  --prompt-c: #4ec94e;
+  --prompt-path: #569cd6;
+  --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--sans);
+  background: var(--void);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── TITLEBAR ── */
+.titlebar {
+  background: #323233;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.tb-dots { display: flex; gap: 6px; }
+.tb-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+.tb-dot.r { background: #ff5f57; }
+.tb-dot.y { background: #febc2e; }
+.tb-dot.g { background: #28c840; }
+
+.tb-title {
+  font-family: var(--sans); font-size: 12px;
+  color: #ccc; margin: 0 auto;
+  display: flex; align-items: center; gap: 7px;
+}
+
+.tb-badge {
+  font-size: 10px; padding: 1px 7px;
+  border-radius: 20px;
+  background: rgba(78,201,78,.15);
+  color: var(--green);
+  border: 1px solid rgba(78,201,78,.2);
+  font-family: var(--mono);
+}
+
+/* ── LAYOUT ── */
+.layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--panel);
+  border-right: 1px solid var(--rim);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--rim);
+  flex-shrink: 0;
+}
+
+.stab {
+  flex: 1; padding: 8px 4px; text-align: center;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+  cursor: pointer; border: none; background: none;
+  font-family: var(--sans); border-bottom: 2px solid transparent;
+  transition: all .15s;
+}
+.stab:hover { color: var(--text); }
+.stab.active { color: var(--green); border-bottom-color: var(--green); }
+
+.sidebar-panel { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+.sidebar-panel.active { display: flex; }
+
+/* filesystem tree */
+.fs-tree {
+  padding: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  flex: 1;
+}
+
+.fs-node {
+  display: flex; align-items: center; gap: 5px;
+  padding: 2px 4px; border-radius: 4px;
+  cursor: default; white-space: nowrap;
+}
+.fs-node:hover { background: var(--panel2); }
+.fs-node.dir { color: var(--yellow); }
+.fs-node.file { color: var(--white); }
+.fs-node.current-dir { background: rgba(78,201,78,.08); border: 1px solid rgba(78,201,78,.15); }
+
+.fs-indent { padding-left: 14px; border-left: 1px solid var(--rim); margin-left: 7px; }
+
+/* challenges */
+.challenges-list {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.challenge-card {
+  background: var(--panel2);
+  border: 1px solid var(--rim);
+  border-radius: 7px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.challenge-card:hover { border-color: var(--rim2); }
+.challenge-card.active { border-color: rgba(78,201,78,.4); background: rgba(78,201,78,.04); }
+.challenge-card.done { border-color: rgba(78,201,78,.3); opacity: .7; }
+
+.ch-title {
+  font-size: 12px; font-weight: 600; margin-bottom: 3px;
+  display: flex; align-items: center; gap: 6px;
+}
+.ch-badge { font-size: 9px; padding: 1px 6px; border-radius: 20px; font-family: var(--mono); }
+.ch-easy   { background: rgba(78,201,78,.12);  color: var(--green); }
+.ch-medium { background: rgba(220,220,170,.12); color: var(--yellow); }
+.ch-hard   { background: rgba(244,71,71,.12);   color: var(--red); }
+.ch-done   { background: rgba(78,201,78,.2);    color: var(--green); }
+
+.ch-desc { font-size: 11px; color: var(--dim); line-height: 1.5; }
+
+.ch-progress-bar {
+  height: 2px; background: var(--rim2); border-radius: 2px;
+  overflow: hidden; margin-top: 7px;
+}
+.ch-progress-fill {
+  height: 100%; background: var(--green); border-radius: 2px;
+  transition: width .4s ease;
+}
+
+/* commands ref */
+.cmd-ref {
+  padding: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.cmd-group-title {
+  font-family: var(--sans); font-size: 10px;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); padding: 6px 4px 4px;
+}
+
+.cmd-ref-row {
+  display: flex; gap: 6px; padding: 3px 4px;
+  border-radius: 4px; cursor: pointer; transition: background .1s;
+  align-items: flex-start;
+}
+.cmd-ref-row:hover { background: var(--panel2); }
+.cmd-ref-cmd { color: var(--cyan); min-width: 90px; flex-shrink: 0; }
+.cmd-ref-desc { color: var(--dim); font-size: 10.5px; line-height: 1.4; }
+
+/* ── TERMINAL ── */
+.terminal-wrap {
+  flex: 1; display: flex; flex-direction: column; min-width: 0;
+}
+
+.term-header {
+  background: var(--panel); border-bottom: 1px solid var(--rim);
+  padding: 8px 16px; display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+
+.term-header-left { display: flex; flex-direction: column; gap: 1px; }
+.term-cwd { font-family: var(--mono); font-size: 12px; color: var(--prompt-path); }
+.term-hint { font-size: 11px; color: var(--muted); }
+
+.term-header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+.reset-btn {
+  font-family: var(--sans); font-size: 11px; font-weight: 500;
+  color: var(--dim); background: var(--panel2);
+  border: 1px solid var(--rim2); padding: 4px 10px;
+  border-radius: 5px; cursor: pointer; transition: all .15s;
+}
+.reset-btn:hover { color: var(--red); border-color: rgba(244,71,71,.3); }
+
+.score-display {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--green); background: rgba(78,201,78,.08);
+  border: 1px solid rgba(78,201,78,.2);
+  padding: 3px 10px; border-radius: 5px;
+}
+
+/* terminal output */
+.terminal {
+  flex: 1; overflow-y: auto; padding: 12px 16px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.65;
+  background: var(--screen);
+  cursor: text;
+}
+
+.terminal::-webkit-scrollbar { width: 6px; }
+.terminal::-webkit-scrollbar-track { background: transparent; }
+.terminal::-webkit-scrollbar-thumb { background: var(--rim2); border-radius: 3px; }
+
+.t-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0; }
+.t-prompt-c { color: var(--prompt-c); }
+.t-prompt-p { color: var(--prompt-path); }
+.t-prompt-gt { color: var(--white); margin-right: 6px; }
+.t-cmd-text { color: var(--white); }
+.t-output { color: var(--dim); white-space: pre-wrap; word-break: break-all; }
+.t-output.success { color: var(--green); }
+.t-output.error { color: var(--red); }
+.t-output.info { color: var(--cyan); }
+.t-output.warn { color: var(--yellow); }
+.t-output.dir-item { color: var(--yellow); }
+.t-output.file-item { color: var(--white); }
+.t-output.path { color: var(--blue); }
+.t-challenge-banner {
+  background: rgba(78,201,78,.07); border: 1px solid rgba(78,201,78,.2);
+  border-radius: 6px; padding: 8px 12px; margin: 6px 0;
+  color: var(--green); font-size: 12px; line-height: 1.7;
+}
+.t-challenge-banner.fail {
+  background: rgba(244,71,71,.07); border-color: rgba(244,71,71,.2); color: var(--red);
+}
+.t-challenge-banner.hint {
+  background: rgba(220,220,170,.06); border-color: rgba(220,220,170,.2); color: var(--yellow);
+}
+.t-separator { border-top: 1px solid var(--rim); margin: 8px 0; }
+.t-tree-line { color: var(--dim); }
+.t-tree-dir  { color: var(--yellow); }
+.t-tree-file { color: var(--white); }
+
+/* input line */
+.input-line {
+  background: var(--panel);
+  border-top: 1px solid var(--rim);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 0;
+  flex-shrink: 0; font-family: var(--mono); font-size: 13px;
+}
+
+.input-prompt-c  { color: var(--prompt-c); white-space: nowrap; }
+.input-prompt-p  { color: var(--prompt-path); white-space: nowrap; }
+.input-prompt-gt { color: var(--white); margin-right: 6px; white-space: nowrap; }
+
+.cmd-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: var(--mono); font-size: 13px; color: var(--white);
+  caret-color: var(--green);
+}
+
+/* ── NOTIFICATION ── */
+.notif {
+  position: fixed; top: 48px; right: 16px;
+  background: var(--panel2); border: 1px solid var(--rim2);
+  border-radius: 8px; padding: 10px 16px;
+  font-family: var(--sans); font-size: 13px;
+  max-width: 280px; line-height: 1.5;
+  transform: translateX(300px); transition: transform .25s;
+  z-index: 999; pointer-events: none;
+}
+.notif.show { transform: translateX(0); }
+.notif.ok   { border-color: rgba(78,201,78,.35); color: var(--green); }
+.notif.bad  { border-color: rgba(244,71,71,.35);  color: var(--red); }
+.notif.info { border-color: rgba(86,156,214,.35); color: var(--blue); }
+
+/* mobile */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div class="titlebar">
+  <div class="tb-dots">
+    <div class="tb-dot r"></div>
+    <div class="tb-dot y"></div>
+    <div class="tb-dot g"></div>
+  </div>
+  <div class="tb-title">
+    <span>Command Prompt — IC Terminal Simulator</span>
+    <span class="tb-badge">VIRTUAL</span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="stab active" onclick="switchTab('fs',this)">📁 Files</button>
+      <button class="stab" onclick="switchTab('challenges',this)">🎯 Challenges</button>
+      <button class="stab" onclick="switchTab('ref',this)">📖 Ref</button>
+    </div>
+
+    <!-- FILE TREE -->
+    <div class="sidebar-panel active" id="panel-fs">
+      <div class="fs-tree" id="fsTree"></div>
+    </div>
+
+    <!-- CHALLENGES -->
+    <div class="sidebar-panel" id="panel-challenges">
+      <div class="challenges-list" id="challengesList"></div>
+    </div>
+
+    <!-- COMMAND REFERENCE -->
+    <div class="sidebar-panel" id="panel-ref">
+      <div class="cmd-ref" id="cmdRef"></div>
+    </div>
+  </aside>
+
+  <!-- TERMINAL -->
+  <div class="terminal-wrap">
+    <div class="term-header">
+      <div class="term-header-left">
+        <div class="term-cwd" id="headerCwd">C:\></div>
+        <div class="term-hint" id="headerHint">Type a command and press Enter · Type <span style="color:var(--cyan)">help</span> to see all commands · <span style="color:var(--yellow)">hint</span> for challenge hint</div>
+      </div>
+      <div class="term-header-right">
+        <div class="score-display">⭐ <span id="scoreDisplay">0</span> pts</div>
+        <button class="reset-btn" onclick="confirmReset()">↺ Reset</button>
+      </div>
+    </div>
+
+    <div class="terminal" id="terminal" onclick="focusInput()"></div>
+
+    <div class="input-line" id="inputLine">
+      <span class="input-prompt-c">C:</span><span class="input-prompt-p" id="inputPromptPath">\</span><span class="input-prompt-gt">&gt;</span>
+      <input class="cmd-input" id="cmdInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type a command…">
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  VIRTUAL FILESYSTEM
+// ══════════════════════════════════════════════════════════
+function freshFS(){
+  return {
+    'C:': {
+      type:'dir', children:{
+        'Windows':{ type:'dir', children:{
+          'System32':{ type:'dir', children:{} },
+        }},
+        'Users':{ type:'dir', children:{
+          'Student':{ type:'dir', children:{
+            'Desktop':{ type:'dir', children:{} },
+            'Documents':{ type:'dir', children:{} },
+            'Downloads':{ type:'dir', children:{} },
+          }},
+          'Public':{ type:'dir', children:{} },
+        }},
+        'Program Files':{ type:'dir', children:{} },
+      }
+    }
+  };
+}
+
+let FS = freshFS();
+let CWD = ['C:']; // array of path segments
+let history = [];
+let historyIdx = -1;
+let score = 0;
+let completedChallenges = new Set();
+let activeChallengeIdx = null;
+
+// ══════════════════════════════════════════════════════════
+//  CHALLENGES
+// ══════════════════════════════════════════════════════════
+const CHALLENGES = [
+  {
+    id:'ch1', title:'Navigate the Drive', diff:'easy',
+    desc:'Go to C:\\Users\\Student\\Documents',
+    hint:'Use the cd command. Example: cd Users\\Student\\Documents',
+    check: ()=> cwdStr() === 'C:\\Users\\Student\\Documents',
+    pts: 10,
+  },
+  {
+    id:'ch2', title:'Create Your First Folder', diff:'easy',
+    desc:'Create a folder called "School" inside C:\\Users\\Student',
+    hint:'First navigate: cd C:\\Users\\Student  Then: mkdir School',
+    check: ()=> nodeAt(['C:','Users','Student','School']) !== null,
+    pts: 10,
+  },
+  {
+    id:'ch3', title:'Nested Folders', diff:'easy',
+    desc:'Inside "School" create two folders: "IC" and "Linux"',
+    hint:'cd School  then  mkdir IC  and  mkdir Linux',
+    check: ()=> nodeAt(['C:','Users','Student','School','IC']) !== null &&
+                nodeAt(['C:','Users','Student','School','Linux']) !== null,
+    pts: 15,
+  },
+  {
+    id:'ch4', title:'Go Up a Level', diff:'easy',
+    desc:'Navigate up to the Student folder using cd..',
+    hint:'Type: cd.. — this goes one level up to the parent folder',
+    check: ()=> cwdStr() === 'C:\\Users\\Student',
+    pts: 10,
+  },
+  {
+    id:'ch5', title:'Jump to Root', diff:'easy',
+    desc:'Go directly to C:\\ (root) using a single command',
+    hint:'Type: cd\\  — the backslash represents the root of the current drive',
+    check: ()=> cwdStr() === 'C:\\',
+    pts: 10,
+  },
+  {
+    id:'ch6', title:'Create a File Structure', diff:'medium',
+    desc:'Create this folder structure:\nC:\\CBS\\Win11\\Edu\nC:\\CBS\\Win11\\Pro\nC:\\CBS\\Linux',
+    hint:'mkdir CBS  then  cd CBS  then  mkdir Win11  then  cd Win11  then  mkdir Edu  mkdir Pro  then cd..  cd..  mkdir Linux would also work... or use mkdir CBS\\Win11\\Edu',
+    check: ()=> nodeAt(['C:','CBS','Win11','Edu']) !== null &&
+                nodeAt(['C:','CBS','Win11','Pro']) !== null &&
+                nodeAt(['C:','CBS','Linux']) !== null,
+    pts: 25,
+  },
+  {
+    id:'ch7', title:'List with Wildcard', diff:'medium',
+    desc:'From C:\\Users\\Student, list only items starting with "D"',
+    hint:'Navigate to C:\\Users\\Student first, then type: dir D*',
+    check: ()=> lastCmdWas('dir d*') && cwdStr().startsWith('C:\\Users\\Student'),
+    pts: 15,
+  },
+  {
+    id:'ch8', title:'Rename a Folder', diff:'medium',
+    desc:'Rename the "School" folder inside C:\\Users\\Student to "Courses"',
+    hint:'Navigate to C:\\Users\\Student  then: rename School Courses',
+    check: ()=> nodeAt(['C:','Users','Student','Courses']) !== null &&
+                nodeAt(['C:','Users','Student','School']) === null,
+    pts: 20,
+  },
+  {
+    id:'ch9', title:'Copy a Folder', diff:'medium',
+    desc:'Copy C:\\Users\\Student\\Documents to C:\\Backup',
+    hint:'From C:\\ type: xcopy Users\\Student\\Documents Backup /S /E /I  or navigate to C:\\ first',
+    check: ()=> nodeAt(['C:','Backup']) !== null,
+    pts: 20,
+  },
+  {
+    id:'ch10', title:'Delete a Folder with Contents', diff:'medium',
+    desc:'Delete the C:\\CBS\\Linux folder and everything inside it',
+    hint:'Navigate to C:\\CBS or use full path: rmdir /S CBS\\Linux  — the /S flag deletes contents too',
+    check: ()=> nodeAt(['C:','CBS','Linux']) === null && nodeAt(['C:','CBS']) !== null,
+    pts: 20,
+  },
+  {
+    id:'ch11', title:'Show Folder Tree', diff:'medium',
+    desc:'Display the full folder tree of C:\\CBS including files',
+    hint:'Navigate to C:\\ then type: tree CBS /F  — /F shows files too',
+    check: ()=> lastCmdWas('tree cbs /f') || lastCmdWas('tree /f') || lastCmdWas('tree cbs'),
+    pts: 15,
+  },
+  {
+    id:'ch12', title:'The Batch Challenge', diff:'hard',
+    desc:'Create a batch file called "setup.bat" in C:\\CBS that when run would create three folders: Alpha, Beta, Gamma',
+    hint:'Create the file content with multiple mkdir commands. Use: copy con setup.bat  or just type: echo @echo off > setup.bat  The simulator accepts: echo [content] > filename.bat',
+    check: ()=> {
+      const n = nodeAt(['C:','CBS','setup.bat']);
+      return n !== null && n.type === 'file';
+    },
+    pts: 30,
+  },
+  {
+    id:'ch13', title:'Process Hunt', diff:'hard',
+    desc:'List all running processes, then kill the process named "notepad.exe"',
+    hint:'First: tasklist  to see all processes. Then: taskkill /IM notepad.exe  to kill it',
+    check: ()=> lastCmdWas('taskkill /im notepad.exe'),
+    pts: 25,
+  },
+  {
+    id:'ch14', title:'Full Navigation Circuit', diff:'hard',
+    desc:'Navigate: root → Windows → System32 → back to root → Users → Student → Desktop — all using cd commands only',
+    hint:'cd Windows  then cd System32  then cd\\  then cd Users\\Student\\Desktop',
+    check: ()=> cwdStr() === 'C:\\Users\\Student\\Desktop',
+    pts: 30,
+  },
+];
+
+let lastCmd = '';
+function lastCmdWas(cmd){ return lastCmd.toLowerCase().trim() === cmd.toLowerCase(); }
+function cwdStr(){ return CWD.join('\\'); }
+
+function nodeAt(pathArr){
+  return getNodeDirect(pathArr);
+}
+
+function getNodeDirect(pathArr){
+  if(!pathArr || pathArr.length === 0) return null;
+  let cur = FS;
+  for(let i=0; i<pathArr.length; i++){
+    const seg = pathArr[i];
+    if(!cur[seg]) return null;
+    if(i === pathArr.length-1) return cur[seg];
+    if(cur[seg].type !== 'dir') return null;
+    cur = cur[seg].children;
+  }
+  return null;
+}
+
+function getNode(pathArr){
+  let cur = FS;
+  for(let i=0; i<pathArr.length-1; i++){
+    const seg = pathArr[i];
+    if(!cur[seg] || cur[seg].type !== 'dir') return null;
+    cur = cur[seg].children;
+  }
+  const last = pathArr[pathArr.length-1];
+  return cur[last] || null;
+}
+
+function getParentChildren(pathArr){
+  if(!pathArr || pathArr.length === 0) return null;
+  if(pathArr.length === 1) return FS; // parent of C: is FS root
+  let cur = FS;
+  for(let i=0; i<pathArr.length-1; i++){
+    const seg = pathArr[i];
+    if(!cur[seg] || cur[seg].type !== 'dir') return null;
+    cur = cur[seg].children;
+  }
+  return cur;
+}
+
+function cwdChildren(){
+  const node = getNodeDirect(CWD);
+  if(!node || node.type !== 'dir') return {};
+  return node.children;
+}
+
+function resolvePath(input){
+  if(!input) return [...CWD];
+  // normalise all forward slashes to backslash
+  const norm = input.trim().replace(/\/g, '\\');
+
+  // Absolute path: starts with drive letter like C: or C:\
+  if(/^[A-Za-z]:/.test(norm)){
+    const driveLetter = norm[0].toUpperCase() + ':';
+    if(norm.length <= 2){
+      // just "C:" with no path = root
+      return [driveLetter];
+    }
+    const rest = norm.substring(2); // everything after "C:"
+    const parts = rest.split('\\').filter(p => p !== '');
+    const resolved = [driveLetter];
+    for(const p of parts){
+      if(p === '..'){
+        if(resolved.length > 1) resolved.pop();
+      } else if(p !== '.'){
+        resolved.push(p);
+      }
+    }
+    return resolved;
+  }
+
+  // Root shortcut: just a backslash
+  if(norm === '\\') return [CWD[0] || 'C:'];
+
+  // Relative path — build on top of CWD
+  let path = [...CWD];
+  const parts = norm.split('\\').filter(p => p !== '');
+  for(const p of parts){
+    if(p === '..'){
+      if(path.length > 1) path.pop();
+    } else if(p !== '.'){
+      path.push(p);
+    }
+  }
+  return path;
+}
+
+// ══════════════════════════════════════════════════════════
+//  TERMINAL OUTPUT
+// ══════════════════════════════════════════════════════════
+const term = document.getElementById('terminal');
+
+function print(text, cls=''){
+  const d = document.createElement('div');
+  d.className = 't-output' + (cls?' '+cls:'');
+  d.textContent = text;
+  term.appendChild(d);
+}
+
+function printHTML(html, cls=''){
+  const d = document.createElement('div');
+  d.className = 't-output' + (cls?' '+cls:'');
+  d.innerHTML = html;
+  term.appendChild(d);
+}
+
+function printPromptLine(cmd){
+  const d = document.createElement('div');
+  d.className = 't-line';
+  d.innerHTML = `<span class="t-prompt-c">C:</span><span class="t-prompt-p">${escH(cwdStr().substring(2))}</span><span class="t-prompt-gt">&gt;</span><span class="t-cmd-text">&nbsp;${escH(cmd)}</span>`;
+  term.appendChild(d);
+}
+
+function printSep(){
+  const d = document.createElement('div');
+  d.className = 't-separator';
+  term.appendChild(d);
+}
+
+function escH(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function scrollBottom(){
+  term.scrollTop = term.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════
+//  COMMAND PROCESSOR
+// ══════════════════════════════════════════════════════════
+function runCommand(raw){
+  const trimmed = raw.trim();
+  if(!trimmed) return;
+
+  history.unshift(trimmed);
+  historyIdx = -1;
+  lastCmd = trimmed.toLowerCase();
+
+  printPromptLine(trimmed);
+
+  // Normalise cd shortcuts before parsing
+  // "cd.." -> "cd .." and "cd\" -> "cd \"
+  let normalised = trimmed;
+  if(/^cd\.\./i.test(normalised)) normalised = 'cd ' + normalised.substring(2);
+  else if(/^cd\\/i.test(normalised)) normalised = 'cd \\';
+  else if(/^cd\./i.test(normalised)) normalised = 'cd .';
+
+  const parts = parseCmd(normalised);
+  const cmd = parts[0].toLowerCase();
+  const args = parts.slice(1);
+
+  switch(cmd){
+    case 'help':    cmdHelp(); break;
+    case 'cls':     cmdCls(); break;
+    case 'dir':     cmdDir(args); break;
+    case 'cd':      cmdCd(args); break;
+    case 'mkdir':
+    case 'md':      cmdMkdir(args); break;
+    case 'rmdir':
+    case 'rd':      cmdRmdir(args); break;
+    case 'del':
+    case 'erase':   cmdDel(args); break;
+    case 'copy':    cmdCopy(args); break;
+    case 'xcopy':   cmdXcopy(args); break;
+    case 'move':    cmdMove(args); break;
+    case 'rename':
+    case 'ren':     cmdRename(args); break;
+    case 'tree':    cmdTree(args); break;
+    case 'echo':    cmdEcho(args, trimmed); break;
+    case 'type':    cmdType(args); break;
+    case 'tasklist':cmdTasklist(); break;
+    case 'taskkill':cmdTaskkill(args); break;
+    case 'start':   cmdStart(args); break;
+    case 'exit':    print('Type reset to restart the session.','warn'); break;
+    case 'hint':    showHint(); break;
+    case 'clear':   cmdCls(); break;
+    case 'pwd':     print(cwdStr(),'path'); break;
+    case 'ver':     print('Microsoft Windows [Version 10.0.22621.0] (Simulated)','info'); break;
+    case 'whoami':  print('DESKTOP-IC\\Student','info'); break;
+    case 'ipconfig':print('Windows IP Configuration\n\nEthernet adapter Ethernet:\n   IPv4 Address: 192.168.1.100\n   Subnet Mask: 255.255.255.0\n   Default Gateway: 192.168.1.1','info'); break;
+    case 'ping':    cmdPing(args); break;
+    default:
+      if(trimmed.includes('>')){
+        cmdRedirect(trimmed);
+      } else {
+        print(`'${cmd}' is not recognized as an internal or external command.`,'error');
+        print('Type HELP for a list of available commands.','dim');
+      }
+  }
+
+  updatePrompt();
+  updateFsTree();
+  checkChallenges();
+  scrollBottom();
+}
+
+function parseCmd(raw){
+  // simple parser respecting quotes
+  const parts = [];
+  let cur = '';
+  let inQuote = false;
+  for(const ch of raw){
+    if(ch === '"'){ inQuote = !inQuote; }
+    else if(ch === ' ' && !inQuote){ if(cur){ parts.push(cur); cur=''; } }
+    else cur += ch;
+  }
+  if(cur) parts.push(cur);
+  return parts.length ? parts : [''];
+}
+
+// ── COMMANDS ──────────────────────────────────────────────
+
+function cmdHelp(){
+  print('Available commands in this simulator:','info');
+  print('');
+  const cmds = [
+    ['dir [path]','List files and folders'],
+    ['dir c*','List items starting with c (wildcard)'],
+    ['cd [folder]','Change directory'],
+    ['cd..','Go up one level'],
+    ['cd\\','Go to root (C:\\)'],
+    ['mkdir [name]','Create a folder'],
+    ['rmdir [name]','Delete empty folder'],
+    ['rmdir /S [name]','Delete folder + all contents'],
+    ['del [file]','Delete a file'],
+    ['copy [src] [dest]','Copy a file'],
+    ['xcopy [src] [dest] /S','Copy folder with contents'],
+    ['move [src] [dest]','Move file or folder'],
+    ['rename [old] [new]','Rename file or folder'],
+    ['tree [path]','Show folder tree'],
+    ['tree /F [path]','Show tree including files'],
+    ['echo [text]','Print text to screen'],
+    ['echo text > file.bat','Create a file with content'],
+    ['type [file]','Show contents of a file'],
+    ['cls','Clear the screen'],
+    ['tasklist','List running processes'],
+    ['taskkill /IM name.exe','Kill a process by name'],
+    ['ver','Show Windows version'],
+    ['whoami','Show current user'],
+    ['ipconfig','Show IP configuration'],
+    ['ping [host]','Ping a host'],
+    ['hint','Show hint for current challenge'],
+    ['help','Show this help'],
+  ];
+  cmds.forEach(([c,d])=>{
+    printHTML(`  <span style="color:var(--cyan);display:inline-block;min-width:200px">${escH(c)}</span><span style="color:var(--dim)">${escH(d)}</span>`);
+  });
+}
+
+function cmdCls(){
+  term.innerHTML = '';
+}
+
+function cmdDir(args){
+  // find flags and path
+  const flags = args.filter(a=>a.startsWith('/'));
+  const pathArgs = args.filter(a=>!a.startsWith('/'));
+  let targetPath = pathArgs.length ? resolvePath(pathArgs[0]) : [...CWD];
+  const wildcard = pathArgs[0] && !pathArgs[0].includes('\\') && (pathArgs[0].includes('*')||pathArgs[0].includes('?')) ? pathArgs[0] : null;
+  if(wildcard) targetPath = [...CWD];
+
+  const node = getNodeDirect(targetPath);
+  if(!node || node.type !== 'dir'){
+    print(`The system cannot find the path specified.`,'error'); return;
+  }
+
+  print(` Directory of ${targetPath.join('\\')}\n`,'dim');
+  const ch = node.children;
+  let dirs=0, files=0;
+
+  // always show . and ..
+  const entries = Object.entries(ch);
+  entries.forEach(([name, n])=>{
+    const matchWild = !wildcard || wildcardMatch(name, wildcard);
+    if(!matchWild) return;
+    if(n.type === 'dir'){
+      dirs++;
+      printHTML(`  <span style="color:var(--muted)">12/06/2025  09:00</span>    <span style="color:var(--dim)">&lt;DIR&gt;</span>          <span class="t-output dir-item">${escH(name)}</span>`);
+    } else {
+      files++;
+      const size = n.content ? n.content.length : 0;
+      printHTML(`  <span style="color:var(--muted)">12/06/2025  09:00</span>    <span style="color:var(--dim)">${String(size).padStart(14)}</span> <span class="t-output file-item">${escH(name)}</span>`);
+    }
+  });
+
+  if(entries.length === 0 || (wildcard && dirs+files === 0)){
+    print('      File Not Found','dim');
+  }
+
+  print(`\n       ${dirs} Dir(s)   ${files} File(s)`,'dim');
+}
+
+function wildcardMatch(str, pattern){
+  const s = str.toLowerCase(), p = pattern.toLowerCase();
+  if(p === '*') return true;
+  if(p.endsWith('*')){
+    return s.startsWith(p.slice(0,-1));
+  }
+  if(p.startsWith('*')){
+    return s.endsWith(p.slice(1));
+  }
+  return s === p;
+}
+
+function cmdCd(args){
+  if(!args.length || args[0] === ''){
+    print(cwdStr(), 'path'); return;
+  }
+  // join all args (handles paths with spaces not quoted)
+  const target = args.join(' ').trim();
+
+  // Go to root
+  if(target === '\\' || target === '/' || target === 'C:\\' || target.toLowerCase() === 'c:'){
+    CWD = ['C:']; return;
+  }
+
+  // Resolve the full new path (handles .., ., absolute and relative)
+  const newPath = resolvePath(target);
+
+  // Validate it exists and is a directory
+  const node = getNodeDirect(newPath);
+  if(!node){
+    print('The system cannot find the path specified.', 'error'); return;
+  }
+  if(node.type !== 'dir'){
+    print('The directory name is invalid.', 'error'); return;
+  }
+  CWD = newPath;
+}
+
+function cmdMkdir(args){
+  if(!args.length){ print('The syntax of the command is incorrect.','error'); return; }
+  // support mkdir a\b\c
+  for(const arg of args){
+    const parts = arg.replace(/\//g,'\\').split('\\').filter(p=>p);
+    let base = [...CWD];
+    // check if first part looks absolute
+    if(parts[0].endsWith(':')) { base = [parts[0].toUpperCase()]; parts.shift(); }
+    for(const p of parts){
+      const path = [...base, p];
+      const parent = getParentChildren(path);
+      if(parent === null){ print(`The system cannot find the path specified.`,'error'); return; }
+      if(!parent[p]){
+        parent[p] = { type:'dir', children:{} };
+      }
+      base.push(p);
+    }
+    print(`Folder created: ${[...CWD].join('\\')}\\${arg}`,'success');
+  }
+}
+
+function cmdRmdir(args){
+  if(!args.length){ print('The syntax of the command is incorrect.','error'); return; }
+  const hasS = args.some(a=>a.toLowerCase()==='/s');
+  const pathArgs = args.filter(a=>!a.startsWith('/'));
+  if(!pathArgs.length){ print('The syntax of the command is incorrect.','error'); return; }
+  const targetPath = resolvePath(pathArgs[0]);
+  const node = getNodeDirect(targetPath);
+  if(!node){ print(`The system cannot find the file specified.`,'error'); return; }
+  if(node.type !== 'dir'){ print(`The directory name is invalid.`,'error'); return; }
+  if(!hasS && Object.keys(node.children).length > 0){
+    print(`The directory is not empty.`,'error');
+    print(`Use rmdir /S to delete a folder and all its contents.`,'warn');
+    return;
+  }
+  // check not deleting CWD or parent
+  const cwdStr2 = cwdStr();
+  const targetStr = targetPath.join('\\');
+  if(cwdStr2.startsWith(targetStr)){
+    print(`The process cannot access the folder because it is in use.`,'error'); return;
+  }
+  const parent = getParentChildren(targetPath);
+  const name = targetPath[targetPath.length-1];
+  delete parent[name];
+  print(`Folder deleted: ${targetStr}`,'success');
+}
+
+function cmdDel(args){
+  if(!args.length){ print('The syntax of the command is incorrect.','error'); return; }
+  const targetPath = resolvePath(args[0]);
+  const node = getNodeDirect(targetPath);
+  if(!node){ print(`Could not find ${args[0]}`,'error'); return; }
+  if(node.type === 'dir'){ print(`Access is denied. Use rmdir to delete folders.`,'error'); return; }
+  const parent = getParentChildren(targetPath);
+  const name = targetPath[targetPath.length-1];
+  delete parent[name];
+  print(`Deleted: ${targetPath.join('\\')}`,'success');
+}
+
+function cmdCopy(args){
+  const pathArgs = args.filter(a=>!a.startsWith('/'));
+  if(pathArgs.length < 2){ print('The syntax of the command is incorrect.','error'); return; }
+  const srcPath = resolvePath(pathArgs[0]);
+  const destPath = resolvePath(pathArgs[1]);
+  const src = getNodeDirect(srcPath);
+  if(!src){ print(`The system cannot find the file specified.`,'error'); return; }
+  if(src.type === 'dir'){ print(`Cannot copy a folder with copy. Use xcopy.`,'warn'); return; }
+  // ensure dest parent exists
+  const destParent = getParentChildren(destPath);
+  if(destParent === null){ print(`The system cannot find the path specified.`,'error'); return; }
+  const destName = destPath[destPath.length-1];
+  destParent[destName] = { type:'file', content: src.content||'' };
+  print(`        1 file(s) copied.`,'success');
+}
+
+function cmdXcopy(args){
+  const pathArgs = args.filter(a=>!a.startsWith('/'));
+  if(pathArgs.length < 2){ print('The syntax of the command is incorrect.','error'); return; }
+  const srcPath = resolvePath(pathArgs[0]);
+  const destPath = resolvePath(pathArgs[1]);
+  const src = getNodeDirect(srcPath);
+  if(!src){ print(`The system cannot find the path specified.`,'error'); return; }
+  // create dest
+  function deepCopy(node){
+    if(node.type === 'file') return { type:'file', content: node.content||'' };
+    const ch = {};
+    Object.entries(node.children).forEach(([k,v])=>{ ch[k]=deepCopy(v); });
+    return { type:'dir', children:ch };
+  }
+  let destParent = getParentChildren(destPath);
+  if(destParent === null){
+    // try to create
+    const pp = [...destPath];
+    const last = pp.pop();
+    const grandParent = getParentChildren(pp.concat([last])) || getParentChildren([...destPath.slice(0,-1)]);
+    // create dest folder
+    const gpChildren = getParentChildren(destPath);
+    if(gpChildren !== null){
+      gpChildren[destPath[destPath.length-1]] = deepCopy(src);
+    } else {
+      // build path
+      let cur = FS;
+      for(let i=0;i<destPath.length-1;i++){
+        const s=destPath[i];
+        if(!cur[s]) cur[s]={type:'dir',children:{}};
+        cur=cur[s].children;
+      }
+      cur[destPath[destPath.length-1]] = deepCopy(src);
+    }
+  } else {
+    destParent[destPath[destPath.length-1]] = deepCopy(src);
+  }
+  print(`Files copied successfully.`,'success');
+}
+
+function cmdMove(args){
+  const pathArgs = args.filter(a=>!a.startsWith('/'));
+  if(pathArgs.length < 2){ print('The syntax of the command is incorrect.','error'); return; }
+  const srcPath = resolvePath(pathArgs[0]);
+  const destPath = resolvePath(pathArgs[1]);
+  const src = getNodeDirect(srcPath);
+  if(!src){ print(`The system cannot find the file specified.`,'error'); return; }
+  let destParent = getParentChildren(destPath);
+  if(destParent === null){
+    // try creating parent
+    const pp = destPath.slice(0,-1);
+    let cur2 = FS;
+    for(const s of pp){
+      if(!cur2[s]) cur2[s]={type:'dir',children:{}};
+      cur2=cur2[s].children;
+    }
+    destParent = cur2;
+  }
+  const destName = destPath[destPath.length-1];
+  destParent[destName] = src;
+  // remove source
+  const srcParent = getParentChildren(srcPath);
+  delete srcParent[srcPath[srcPath.length-1]];
+  print(`        1 file(s) moved.`,'success');
+}
+
+function cmdRename(args){
+  if(args.length < 2){ print('The syntax of the command is incorrect.','error'); return; }
+  const srcPath = resolvePath(args[0]);
+  const node = getNodeDirect(srcPath);
+  if(!node){ print(`The system cannot find the file specified.`,'error'); return; }
+  const parent = getParentChildren(srcPath);
+  const newName = args[1];
+  if(parent[newName]){ print(`A file already exists with that name.`,'error'); return; }
+  parent[newName] = node;
+  delete parent[srcPath[srcPath.length-1]];
+  print(`Renamed successfully.`,'success');
+  // update CWD if we renamed a dir we're in
+  const oldStr = srcPath.join('\\');
+  const newPath = [...srcPath.slice(0,-1), newName];
+  if(cwdStr().startsWith(oldStr)){
+    CWD = [...newPath, ...CWD.slice(srcPath.length)];
+  }
+}
+
+function cmdTree(args){
+  const hasF = args.some(a=>a.toLowerCase()==='/f');
+  const pathArgs = args.filter(a=>!a.startsWith('/'));
+  const targetPath = pathArgs.length ? resolvePath(pathArgs[0]) : [...CWD];
+  const node = getNodeDirect(targetPath);
+  if(!node || node.type!=='dir'){ print(`Invalid directory.`,'error'); return; }
+  print(`Folder PATH listing`,'dim');
+  print(targetPath.join('\\'),'path');
+  printTree(node.children, '', hasF);
+}
+
+function printTree(children, prefix, showFiles){
+  const entries = Object.entries(children);
+  entries.forEach(([name, node], i)=>{
+    const isLast = i === entries.length - 1;
+    const branch = isLast ? '└───' : '├───';
+    const childPrefix = prefix + (isLast ? '    ' : '│   ');
+    if(node.type === 'dir'){
+      printHTML(`<span class="t-tree-line">${escH(prefix+branch)}</span><span class="t-tree-dir">${escH(name)}</span>`);
+      printTree(node.children, childPrefix, showFiles);
+    } else if(showFiles){
+      printHTML(`<span class="t-tree-line">${escH(prefix+branch)}</span><span class="t-tree-file">${escH(name)}</span>`);
+    }
+  });
+}
+
+function cmdEcho(args, raw){
+  // check for redirect
+  if(raw.includes('>')){
+    cmdRedirect(raw); return;
+  }
+  if(!args.length){ print('ECHO is on.','dim'); return; }
+  print(args.join(' '));
+}
+
+function cmdRedirect(raw){
+  // parse: echo content > file  or  echo content >> file
+  const appendMode = raw.includes('>>');
+  const sep = appendMode ? '>>' : '>';
+  const idx = raw.indexOf(sep);
+  const before = raw.substring(raw.indexOf(' ')+1, idx).trim();
+  const after = raw.substring(idx + sep.length).trim();
+  if(!after){ print('The syntax of the command is incorrect.','error'); return; }
+  const destPath = resolvePath(after);
+  const parent = getParentChildren(destPath);
+  if(parent === null){ print(`The system cannot find the path specified.`,'error'); return; }
+  const name = destPath[destPath.length-1];
+  const existing = parent[name];
+  const oldContent = existing && existing.type==='file' ? existing.content : '';
+  parent[name] = { type:'file', content: appendMode ? oldContent+'\n'+before : before };
+  print(`File written: ${destPath.join('\\')}`,'success');
+}
+
+function cmdType(args){
+  if(!args.length){ print('The syntax of the command is incorrect.','error'); return; }
+  const targetPath = resolvePath(args[0]);
+  const node = getNodeDirect(targetPath);
+  if(!node){ print(`The system cannot find the file specified.`,'error'); return; }
+  if(node.type==='dir'){ print(`Access is denied.`,'error'); return; }
+  print(node.content || '(empty file)','info');
+}
+
+function cmdTasklist(){
+  print('Image Name                     PID Session Name        Session#    Mem Usage','dim');
+  print('========================= ======== ================ =========== ============','dim');
+  const procs = [
+    ['System Idle Process','0','Services','0','8 K'],
+    ['System','4','Services','0','280 K'],
+    ['svchost.exe','892','Services','0','15,432 K'],
+    ['explorer.exe','2840','Console','1','68,204 K'],
+    ['notepad.exe','3120','Console','1','9,876 K'],
+    ['chrome.exe','4200','Console','1','245,680 K'],
+    ['taskmgr.exe','5100','Console','1','12,340 K'],
+  ];
+  procs.forEach(([name,pid,sess,num,mem])=>{
+    printHTML(`<span style="color:var(--white)">${name.padEnd(26)}</span><span style="color:var(--dim)">${pid.padStart(8)} ${sess.padEnd(17)}${num.padStart(12)} ${mem.padStart(13)}</span>`);
+  });
+}
+
+function cmdTaskkill(args){
+  const imIdx = args.findIndex(a=>a.toLowerCase()==='/im');
+  if(imIdx === -1 || imIdx >= args.length-1){
+    print('ERROR: Invalid syntax. Use: taskkill /IM processname.exe','error'); return;
+  }
+  const procName = args[imIdx+1].toLowerCase();
+  const valid = ['notepad.exe','chrome.exe','explorer.exe','svchost.exe','taskmgr.exe'];
+  if(valid.includes(procName)){
+    print(`SUCCESS: Sent termination signal to the process "${args[imIdx+1]}".`,'success');
+  } else {
+    print(`ERROR: The process "${args[imIdx+1]}" not found.`,'error');
+  }
+}
+
+function cmdStart(args){
+  if(!args.length){ print('Usage: start [program]','warn'); return; }
+  print(`Starting ${args[0]}... (simulated)`,'info');
+}
+
+function cmdPing(args){
+  if(!args.length){ print('Usage: ping [hostname or IP]','warn'); return; }
+  const host = args[args.length-1];
+  print(`\nPinging ${host} with 32 bytes of data:`,'dim');
+  for(let i=0;i<4;i++){
+    const ms = Math.floor(Math.random()*20)+1;
+    print(`Reply from ${host}: bytes=32 time=${ms}ms TTL=64`,'success');
+  }
+  print(`\nPing statistics for ${host}:`,'dim');
+  print(`    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)`,'info');
+}
+
+// ══════════════════════════════════════════════════════════
+//  CHALLENGE SYSTEM
+// ══════════════════════════════════════════════════════════
+function checkChallenges(){
+  if(activeChallengeIdx === null) return;
+  const ch = CHALLENGES[activeChallengeIdx];
+  if(completedChallenges.has(ch.id)) return;
+  if(ch.check()){
+    completedChallenges.add(ch.id);
+    score += ch.pts;
+    document.getElementById('scoreDisplay').textContent = score;
+    printSep();
+    printHTML(`<div class="t-challenge-banner">🎉 Challenge complete! "${ch.title}" — +${ch.pts} points<br><span style="opacity:.7;font-size:.9em">Total score: ${score} pts</span></div>`);
+    showNotif(`✅ +${ch.pts} pts — "${ch.title}"`, 'ok');
+    renderChallenges();
+    // auto-select next
+    const next = CHALLENGES.findIndex((c,i) => i > activeChallengeIdx && !completedChallenges.has(c.id));
+    if(next !== -1) setTimeout(()=>selectChallenge(next), 1200);
+  }
+}
+
+function selectChallenge(idx){
+  activeChallengeIdx = idx;
+  const ch = CHALLENGES[idx];
+  renderChallenges();
+  printSep();
+  printHTML(`<div class="t-challenge-banner">🎯 Challenge: <strong>${escH(ch.title)}</strong> [${ch.diff}] — ${ch.pts} pts<br>${escH(ch.desc)}</div>`);
+  scrollBottom();
+}
+
+function showHint(){
+  if(activeChallengeIdx === null){ print('Select a challenge first from the Challenges tab.','warn'); return; }
+  const ch = CHALLENGES[activeChallengeIdx];
+  printHTML(`<div class="t-challenge-banner hint">💡 Hint: ${escH(ch.hint)}</div>`);
+  scrollBottom();
+}
+
+function renderChallenges(){
+  const list = document.getElementById('challengesList');
+  const done = completedChallenges.size;
+  const total = CHALLENGES.length;
+  list.innerHTML = `<div style="padding:4px 8px 8px;font-size:11px;color:var(--muted);font-family:var(--mono);">
+    ${done}/${total} completed · ${score} pts
+    <div style="height:3px;background:var(--rim2);border-radius:3px;margin-top:5px;overflow:hidden">
+      <div style="height:100%;width:${(done/total*100)}%;background:var(--green);border-radius:3px;transition:width .4s"></div>
+    </div>
+  </div>` + CHALLENGES.map((ch, i)=>{
+    const isDone = completedChallenges.has(ch.id);
+    const isActive = activeChallengeIdx === i;
+    const diffCls = ch.diff==='easy'?'ch-easy':ch.diff==='medium'?'ch-medium':'ch-hard';
+    return `<div class="challenge-card ${isDone?'done':''} ${isActive?'active':''}" onclick="selectChallenge(${i})">
+      <div class="ch-title">
+        ${isDone?'✅':'⭕'} ${escH(ch.title)}
+        <span class="ch-badge ${isDone?'ch-done':diffCls}">${isDone?'done':ch.diff}</span>
+        <span style="margin-left:auto;font-size:10px;color:var(--muted);font-family:var(--mono)">${ch.pts}pts</span>
+      </div>
+      <div class="ch-desc">${escH(ch.desc.split('\n')[0])}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  FILESYSTEM TREE SIDEBAR
+// ══════════════════════════════════════════════════════════
+function updateFsTree(){
+  const tree = document.getElementById('fsTree');
+  tree.innerHTML = renderFsNode('C:', FS['C:'], ['C:'], 0);
+}
+
+function renderFsNode(name, node, pathArr, depth){
+  if(!node) return '';
+  const isCurrent = pathArr.join('\\') === cwdStr();
+  const indent = '  '.repeat(depth);
+  const icon = node.type==='dir' ? '📁' : '📄';
+  let html = `<div class="fs-node ${node.type} ${isCurrent?'current-dir':''}" style="padding-left:${depth*10+4}px" title="${pathArr.join('\\')}">
+    <span>${icon}</span><span>${escH(name)}</span>${isCurrent?'<span style="color:var(--green);margin-left:4px;font-size:9px">◀ here</span>':''}
+  </div>`;
+  if(node.type==='dir'){
+    const children = node.children;
+    Object.entries(children).forEach(([cname, cnode])=>{
+      html += renderFsNode(cname, cnode, [...pathArr, cname], depth+1);
+    });
+  }
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════
+//  COMMAND REFERENCE
+// ══════════════════════════════════════════════════════════
+function buildRef(){
+  const groups = [
+    { title:'Navigation', cmds:[
+      ['dir','List files and folders in current directory'],
+      ['dir c*','List items starting with "c"'],
+      ['cd [folder]','Change directory'],
+      ['cd..','Go up one level'],
+      ['cd\\','Go to root (C:\\)'],
+      ['D:','Switch to D: drive'],
+    ]},
+    { title:'Folders', cmds:[
+      ['mkdir [name]','Create a new folder'],
+      ['rmdir [name]','Delete an empty folder'],
+      ['rmdir /S [name]','Delete folder + all contents'],
+    ]},
+    { title:'Files', cmds:[
+      ['copy [src] [dest]','Copy a file'],
+      ['xcopy [src] [dest] /S','Copy folder with contents'],
+      ['move [src] [dest]','Move a file or folder'],
+      ['rename [old] [new]','Rename file or folder'],
+      ['del [file]','Delete a file'],
+      ['type [file]','Show file contents'],
+      ['echo text > file','Create file with content'],
+    ]},
+    { title:'Info', cmds:[
+      ['tree','Show folder tree'],
+      ['tree /F','Tree including files'],
+      ['cls','Clear screen'],
+      ['tasklist','List running processes'],
+      ['taskkill /IM name.exe','Kill a process'],
+      ['ver','Windows version'],
+      ['whoami','Current user'],
+      ['ipconfig','Network config'],
+      ['ping [host]','Ping a host'],
+    ]},
+  ];
+  const ref = document.getElementById('cmdRef');
+  ref.innerHTML = groups.map(g=>`
+    <div class="cmd-group-title">${g.title}</div>
+    ${g.cmds.map(([c,d])=>`
+      <div class="cmd-ref-row" onclick="insertCmd('${escH(c)}')" title="Click to insert">
+        <span class="cmd-ref-cmd">${escH(c)}</span>
+        <span class="cmd-ref-desc">${escH(d)}</span>
+      </div>`).join('')}
+  `).join('');
+}
+
+function insertCmd(cmd){
+  const inp = document.getElementById('cmdInput');
+  // replace placeholder hints
+  const base = cmd.replace(/\[.*?\]/g,'').trim();
+  inp.value = base + ' ';
+  inp.focus();
+}
+
+// ══════════════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════════════
+function updatePrompt(){
+  document.getElementById('inputPromptPath').textContent = cwdStr().substring(2);
+  document.getElementById('headerCwd').textContent = cwdStr() + '>';
+}
+
+function focusInput(){ document.getElementById('cmdInput').focus(); }
+
+function switchTab(name, btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function showNotif(msg, type='info'){
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = 'notif show ' + type;
+  clearTimeout(n._t);
+  n._t = setTimeout(()=> n.classList.remove('show'), 3000);
+}
+
+function confirmReset(){
+  if(confirm('Reset the terminal? This clears the filesystem and your progress.')){
+    resetAll();
+  }
+}
+
+function resetAll(){
+  FS = freshFS();
+  CWD = ['C:'];
+  history = [];
+  historyIdx = -1;
+  score = 0;
+  completedChallenges = new Set();
+  activeChallengeIdx = null;
+  lastCmd = '';
+  term.innerHTML = '';
+  document.getElementById('scoreDisplay').textContent = 0;
+  updatePrompt();
+  updateFsTree();
+  renderChallenges();
+  printWelcome();
+}
+
+// ══════════════════════════════════════════════════════════
+//  WELCOME
+// ══════════════════════════════════════════════════════════
+function printWelcome(){
+  printHTML(`<span style="color:var(--cyan)">╔══════════════════════════════════════════════════════════╗</span>`);
+  printHTML(`<span style="color:var(--cyan)">║</span>  <span style="color:var(--white);font-weight:bold">IC CMD Terminal Simulator</span>  <span style="color:var(--green)">— IC Course Practice</span>           <span style="color:var(--cyan)">║</span>`);
+  printHTML(`<span style="color:var(--cyan)">╠══════════════════════════════════════════════════════════╣</span>`);
+  printHTML(`<span style="color:var(--cyan)">║</span>  <span style="color:var(--dim)">Type commands exactly as in the real Windows CMD</span>          <span style="color:var(--cyan)">║</span>`);
+  printHTML(`<span style="color:var(--cyan)">║</span>  <span style="color:var(--dim)">📁 File tree in sidebar · 🎯 Challenges to complete</span>       <span style="color:var(--cyan)">║</span>`);
+  printHTML(`<span style="color:var(--cyan)">║</span>  <span style="color:var(--yellow)">Type: help</span>  <span style="color:var(--dim)">to see all commands</span>                           <span style="color:var(--cyan)">║</span>`);
+  printHTML(`<span style="color:var(--cyan)">║</span>  <span style="color:var(--yellow)">Type: hint</span> <span style="color:var(--dim)">for a hint on the current challenge</span>            <span style="color:var(--cyan)">║</span>`);
+  printHTML(`<span style="color:var(--cyan)">╚══════════════════════════════════════════════════════════╝</span>`);
+  print('');
+  print('Microsoft Windows [Version 10.0.22621.0] (Simulated)','dim');
+  print('(c) Microsoft Corporation. All rights reserved.','dim');
+  print('');
+  print('👈 Click "Challenges" in the sidebar to start a challenge!','warn');
+  print('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  INPUT HANDLING
+// ══════════════════════════════════════════════════════════
+const input = document.getElementById('cmdInput');
+
+input.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){
+    const val = input.value;
+    input.value = '';
+    runCommand(val);
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    if(historyIdx < history.length - 1){
+      historyIdx++;
+      input.value = history[historyIdx];
+    }
+  } else if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    if(historyIdx > 0){
+      historyIdx--;
+      input.value = history[historyIdx];
+    } else {
+      historyIdx = -1;
+      input.value = '';
+    }
+  } else if(e.key === 'Tab'){
+    e.preventDefault();
+    autocomplete();
+  }
+});
+
+function autocomplete(){
+  const val = input.value;
+  if(!val) return;
+  const parts = val.split(' ');
+  const lastPart = parts[parts.length-1];
+  if(!lastPart) return;
+  const children = cwdChildren();
+  const matches = Object.keys(children).filter(k => k.toLowerCase().startsWith(lastPart.toLowerCase()));
+  if(matches.length === 1){
+    parts[parts.length-1] = matches[0];
+    input.value = parts.join(' ');
+  } else if(matches.length > 1){
+    print('');
+    print(matches.join('    '),'info');
+    scrollBottom();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+printWelcome();
+updatePrompt();
+updateFsTree();
+renderChallenges();
+buildRef();
+focusInput();
+
+// keep input focused
+document.addEventListener('keydown', e=>{
+  if(e.target !== input && !e.ctrlKey && !e.metaKey && !e.altKey){
+    if(e.key.length === 1 || e.key === 'Backspace') input.focus();
+  }
+});
+</script>
+</body>
+</html>
