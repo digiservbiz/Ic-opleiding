@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IC Course — Installation & Configuration</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#090d18;--bg2:#0f1522;--bg3:#161e30;--bg4:#1d2640;--bg5:#243050;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--border3:rgba(255,255,255,0.2);
+  --text:#e2e8f4;--dim:#8892a8;--muted:#4a5468;
+  --blue:#58a6ff;--green:#3fb950;--red:#f87171;--amber:#fbbf24;--purple:#c084fc;--pink:#f472b6;--sky:#38bdf8;--orange:#fb923c;--teal:#2dd4bf;
+  --mono:'Space Mono',monospace;--sans:'Space Grotesk',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:280px;min-width:280px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.main-area{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+/* ── SIDEBAR ── */
+.sidebar-head{padding:20px 18px 14px;border-bottom:1px solid var(--border);}
+.sidebar-logo{font-size:11px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.sidebar-title{font-size:16px;font-weight:700;letter-spacing:-.02em;}
+.sidebar-title span{color:var(--blue);}
+.sidebar-progress{margin-top:10px;}
+.prog-bar-wrap{height:4px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:5px;}
+.prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:4px;transition:width .5s ease;}
+.prog-text{font-size:10px;color:var(--muted);font-family:var(--mono);}
+
+.sidebar-nav{padding:10px 8px;flex:1;}
+.nav-section{margin-bottom:4px;}
+.nav-ch{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:8px;cursor:pointer;transition:all .15s;
+  border:none;background:none;width:100%;text-align:left;color:var(--dim);
+}
+.nav-ch:hover{background:var(--bg3);color:var(--text);}
+.nav-ch.active{background:rgba(88,166,255,.1);color:var(--blue);}
+.nav-ch.completed{color:var(--green);}
+.nav-ch-icon{font-size:14px;flex-shrink:0;}
+.nav-ch-info{flex:1;min-width:0;}
+.nav-ch-label{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:.06em;}
+.nav-ch-name{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-ch-check{font-size:12px;flex-shrink:0;}
+
+.nav-lessons{padding-left:32px;margin-bottom:4px;display:none;}
+.nav-ch.active~.nav-lessons,.nav-ch.completed~.nav-lessons{display:block;}
+.nav-lesson-btn{
+  display:flex;align-items:center;gap:6px;width:100%;padding:5px 8px;
+  border-radius:6px;border:none;background:none;font-family:var(--sans);
+  font-size:11.5px;color:var(--muted);cursor:pointer;transition:all .15s;text-align:left;
+}
+.nav-lesson-btn:hover{background:var(--bg3);color:var(--text);}
+.nav-lesson-btn.active{color:var(--blue);font-weight:500;}
+.nav-lesson-btn.done{color:var(--green);}
+.lesson-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .15s;}
+.nav-lesson-btn.active .lesson-dot{background:var(--blue);}
+.nav-lesson-btn.done .lesson-dot{background:var(--green);}
+
+.sidebar-foot{padding:14px 18px;border-top:1px solid var(--border);}
+.xp-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber);}
+.xp-val{font-family:var(--mono);font-weight:700;font-size:14px;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:30;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.lesson-counter{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.menu-btn{display:none;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:16px;}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:40px 48px;max-width:820px;}
+.lesson-hero{margin-bottom:36px;}
+.lesson-tag{font-size:10px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.lesson-title{font-size:clamp(22px,4vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:10px;}
+.lesson-intro{font-size:15px;color:var(--dim);line-height:1.75;max-width:640px;}
+
+/* ── LESSON BLOCKS ── */
+.lesson-block{margin-bottom:32px;}
+.block-title{font-size:13px;font-weight:700;letter-spacing:-.01em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.block-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* info card */
+.info-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:10px;line-height:1.75;font-size:14px;color:var(--dim);}
+.info-card strong{color:var(--text);font-weight:600;}
+.info-card .accent{color:var(--blue);}
+
+/* highlight box */
+.hbox{border-radius:8px;padding:14px 16px;margin-bottom:10px;font-size:13.5px;line-height:1.7;display:flex;gap:10px;}
+.hbox-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.hbox-content{flex:1;}
+.hbox-content strong{display:block;font-weight:600;margin-bottom:2px;}
+.hbox.blue{background:rgba(88,166,255,.07);border:1px solid rgba(88,166,255,.2);color:#93c5fd;}
+.hbox.green{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.2);color:#86efac;}
+.hbox.red{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);color:#fca5a5;}
+.hbox.amber{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fde68a;}
+.hbox.purple{background:rgba(192,132,252,.07);border:1px solid rgba(192,132,252,.2);color:#d8b4fe;}
+
+/* code block */
+.code-block{background:#0d1117;border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.code-header{background:var(--bg3);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.code-lang{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.copy-code-btn{font-family:var(--mono);font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .15s;padding:0;}
+.copy-code-btn:hover{color:var(--blue);}
+.code-body{padding:16px;font-family:var(--mono);font-size:13px;line-height:1.8;overflow-x:auto;color:#e6edf3;}
+.code-body .cmd{color:var(--sky);}
+.code-body .param{color:var(--orange);}
+.code-body .comment{color:var(--muted);}
+.code-body .path{color:var(--green);}
+.code-body .val{color:var(--amber);}
+.code-body .kw{color:var(--purple);}
+
+/* comparison table */
+.comp-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.comp-table th{background:var(--bg3);padding:9px 12px;text-align:left;font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border2);}
+.comp-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--dim);vertical-align:top;line-height:1.55;}
+.comp-table tr:last-child td{border-bottom:none;}
+.comp-table tr:hover td{background:rgba(255,255,255,.02);color:var(--text);}
+.comp-table td:first-child{font-weight:600;color:var(--text);font-family:var(--mono);font-size:12px;white-space:nowrap;}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;font-family:var(--mono);}
+.badge-green{background:rgba(63,185,80,.15);color:var(--green);}
+.badge-red{background:rgba(248,113,113,.15);color:var(--red);}
+.badge-amber{background:rgba(251,191,36,.15);color:var(--amber);}
+.badge-blue{background:rgba(88,166,255,.15);color:var(--blue);}
+
+/* diagram */
+.diagram{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:10px;font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.8;overflow-x:auto;}
+.diagram .box{display:inline-block;border:1px solid var(--border2);border-radius:5px;padding:4px 10px;color:var(--text);font-size:11px;margin:2px;}
+.diagram .arrow{color:var(--muted);}
+.diagram .layer{padding:8px 12px;border-radius:6px;margin:4px 0;text-align:center;}
+.layer-hw{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);}
+.layer-hv{background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.2);}
+.layer-vm{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);}
+
+/* step list */
+.steps{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+.step{display:flex;gap:12px;align-items:flex-start;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px;color:var(--blue);}
+.step-content{flex:1;font-size:13.5px;color:var(--dim);line-height:1.6;padding-top:1px;}
+.step-content strong{color:var(--text);}
+.step-content code{font-family:var(--mono);font-size:11.5px;background:var(--bg);color:var(--blue);padding:1px 5px;border-radius:4px;border:1px solid var(--border2);}
+
+/* key-value pills */
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:10px;}
+.kv-pill{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.kv-key{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
+.kv-val{font-size:13px;font-weight:600;color:var(--text);}
+.kv-sub{font-size:11px;color:var(--dim);margin-top:2px;}
+
+/* ── MINI QUIZ ── */
+.mini-quiz{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:24px;}
+.quiz-header{background:var(--bg3);padding:12px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.quiz-header-icon{font-size:16px;}
+.quiz-header-title{font-size:12px;font-weight:600;color:var(--dim);}
+.quiz-body{padding:18px;}
+.quiz-q{font-size:14px;font-weight:500;margin-bottom:14px;line-height:1.5;}
+.quiz-opts{display:flex;flex-direction:column;gap:7px;}
+.quiz-opt{
+  padding:10px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg3);cursor:pointer;font-size:13px;color:var(--dim);
+  transition:all .15s;text-align:left;font-family:var(--sans);display:flex;gap:8px;align-items:flex-start;
+}
+.quiz-opt:hover:not(.disabled){border-color:var(--blue);color:var(--text);background:rgba(88,166,255,.07);}
+.quiz-opt.correct{border-color:var(--green);background:rgba(63,185,80,.08);color:#86efac;}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(248,113,113,.08);color:#fca5a5;}
+.quiz-opt.disabled{cursor:default;}
+.quiz-exp{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:12.5px;line-height:1.65;display:none;}
+.quiz-exp.show{display:block;}
+.quiz-exp.ok{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.2);color:#86efac;}
+.quiz-exp.bad{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);color:#fca5a5;}
+
+/* ── LESSON FOOTER ── */
+.lesson-footer{padding:28px 48px;border-top:1px solid var(--border);display:flex;gap:12px;align-items:center;}
+.mark-done-btn{background:var(--green);color:#fff;border:none;padding:11px 22px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:opacity .15s;}
+.mark-done-btn:hover{opacity:.88;}
+.mark-done-btn:disabled{background:var(--bg4);color:var(--muted);cursor:default;opacity:1;}
+.nav-prev-btn,.nav-next-btn{background:var(--bg3);color:var(--text);border:1px solid var(--border2);padding:11px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all .15s;}
+.nav-prev-btn:hover,.nav-next-btn:hover{background:var(--bg4);}
+.lesson-footer-right{margin-left:auto;display:flex;gap:10px;}
+
+/* ── HOME SCREEN ── */
+.home-screen{padding:48px;max-width:900px;}
+.home-hero{margin-bottom:40px;}
+.home-eyebrow{font-size:10px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.home-title{font-size:clamp(28px,5vw,48px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px;}
+.home-title span{color:var(--blue);}
+.home-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:560px;margin-bottom:24px;}
+.home-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;}
+.home-stat{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;min-width:100px;}
+.home-stat-val{font-size:22px;font-weight:700;font-family:var(--mono);}
+.home-stat-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+.home-stat.blue .home-stat-val{color:var(--blue);}
+.home-stat.green .home-stat-val{color:var(--green);}
+.home-stat.amber .home-stat-val{color:var(--amber);}
+.home-stat.purple .home-stat-val{color:var(--purple);}
+.ch-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.ch-card-home{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.ch-card-home::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0;opacity:0;transition:opacity .2s;}
+.ch-card-home:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.ch-card-home:hover::before{opacity:1;}
+.ch-num-home{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.ch-icon-home{font-size:24px;margin-bottom:8px;}
+.ch-name-home{font-size:14px;font-weight:700;margin-bottom:4px;}
+.ch-meta-home{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.ch-prog-home{height:3px;background:var(--bg4);border-radius:3px;overflow:hidden;}
+.ch-prog-fill-home{height:100%;border-radius:3px;transition:width .5s ease;}
+.start-course-btn{background:var(--blue);color:#fff;border:none;padding:14px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:opacity .15s;margin-bottom:32px;}
+.start-course-btn:hover{opacity:.88;}
+
+/* ── COMPLETE SCREEN ── */
+.complete-screen{display:flex;align-items:center;justify-content:center;flex:1;padding:40px;}
+.complete-inner{text-align:center;max-width:500px;}
+.complete-icon{font-size:64px;margin-bottom:20px;}
+.complete-title{font-size:28px;font-weight:700;margin-bottom:8px;}
+.complete-msg{font-size:14px;color:var(--dim);margin-bottom:24px;line-height:1.7;}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .sidebar{display:none;position:fixed;z-index:100;height:100vh;top:0;left:0;width:280px;}
+  .sidebar.open{display:flex;}
+  .menu-btn{display:block;}
+  .content{padding:24px 20px;}
+  .lesson-footer{padding:20px;}
+  .home-screen{padding:24px;}
+}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-logo">ICT · OS &amp; Networks</div>
+    <div class="sidebar-title">IC <span>Course</span></div>
+    <div class="sidebar-progress">
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" id="sidebarProgBar" style="width:0%"></div></div>
+      <div class="prog-text" id="sidebarProgText">0 / 0 lessons completed</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+  <div class="sidebar-foot">
+    <div class="xp-badge">⚡ <span class="xp-val" id="xpVal">0</span> XP earned</div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main-area">
+  <div class="topbar">
+    <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    <div class="breadcrumb" id="breadcrumb"><span>Course Home</span></div>
+    <div class="topbar-right">
+      <div class="lesson-counter" id="lessonCounter"></div>
+    </div>
+  </div>
+
+  <!-- content area -->
+  <div style="flex:1;overflow-y:auto;" id="mainScroll">
+    <div id="pageContent" style="display:flex;flex-direction:column;min-height:calc(100vh - 52px);"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  COURSE DATA — 9 chapters, multiple lessons each
+// ══════════════════════════════════════════════════════════════════
+const COURSE = [
+{
+  id:'ch1', icon:'🔩', color:'#58a6ff', label:'Chapter 1',
+  title:'Computer Assembly',
+  lessons:[
+    {
+      id:'ch1-l1', title:'Hardware Components Overview',
+      tag:'Chapter 1 · Lesson 1',
+      intro:'A computer is built from several key components, each with a specific role. Before assembling anything, you need to understand what each part does and how they connect to each other.',
+      blocks:[
+        {type:'kv', title:'The Main Components',
+         items:[
+           {key:'CPU',val:'Central Processing Unit',sub:'The brain — executes all instructions'},
+           {key:'MoBo',val:'Motherboard',sub:'The spine — connects everything'},
+           {key:'RAM',val:'Random Access Memory',sub:'Working memory — cleared on shutdown'},
+           {key:'GPU',val:'Graphics Card',sub:'Renders images and video output'},
+           {key:'PSU',val:'Power Supply Unit',sub:'Converts AC mains to DC power'},
+           {key:'Storage',val:'HDD / SSD / NVMe',sub:'Persistent data storage'},
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'💡', title:'Key insight',
+         text:'Every component plugs into or communicates through the <strong>motherboard</strong>. The motherboard\'s chipset determines which CPU, RAM generation, and PCIe version you can use.'},
+        {type:'hbox', style:'amber', icon:'⚠️', title:'Safety first — always!',
+         text:'Before touching any component, use an <strong>anti-static mat or wrist strap</strong>. ElectroStatic Discharge (ESD) can permanently destroy chips without any visible damage.'},
+      ],
+      quiz:{q:'Which component acts as the main circuit board that connects all other parts?',opts:['CPU','RAM','Motherboard','PSU'],ans:2,exp:'The Motherboard (MoBo) is the main circuit board. All components — CPU, RAM, GPU, storage — plug into or communicate through it.'}
+    },
+    {
+      id:'ch1-l2', title:'CPU Deep Dive',
+      tag:'Chapter 1 · Lesson 2',
+      intro:'The CPU is the most critical component for performance. Understanding how it works — clock speed, cores, cache, and naming conventions — helps you choose the right processor.',
+      blocks:[
+        {type:'info', title:'How CPU Speed is Calculated',
+         text:'The CPU runs at a frequency determined by a simple formula:\n<strong>CPU Frequency = Multiplier × Bus Speed</strong>\n\nExample: Multiplier 27 × Bus Speed 100 MHz = <span class="accent">2700 MHz (2.7 GHz)</span>.\n\nThe <strong>multiplier</strong> can be adjusted when overclocking (K-suffix Intel CPUs or AMD Ryzen X-suffix). The Bus Speed is set by the motherboard and chipset.'},
+        {type:'table', title:'CPU Cache Levels',
+         headers:['Level','Speed','Size','Scope'],
+         rows:[
+           ['L1 Cache','Fastest','32–64 KB per core','Per core (each core has its own)'],
+           ['L2 Cache','Fast','256 KB–4 MB per core','Per core (each core has its own)'],
+           ['L3 Cache','Slower','4–64 MB shared','Shared across ALL cores'],
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'🔍', title:'Intel CPU naming: i7-8550U',
+         text:'<strong>i7</strong> = model tier | <strong>8</strong> = 8th generation | <strong>550</strong> = SKU (higher = better) | <strong>U</strong> = ultra-low power suffix<br><br>Common suffixes: U (ultra-low power), K (unlocked/overclockable), H (high performance mobile), F (no integrated GPU)'},
+        {type:'hbox', style:'purple', icon:'🔍', title:'AMD CPU naming: Ryzen 5 5600X',
+         text:'<strong>Ryzen 5</strong> = model tier | <strong>5</strong> = generation | <strong>600</strong> = SKU | <strong>X</strong> = high performance<br><br>Common suffixes: X (performance), G (integrated Radeon GPU), T (low power)'},
+        {type:'kv', title:'P-cores vs E-cores (Intel hybrid)',
+         items:[
+           {key:'P-cores',val:'Performance Cores',sub:'Heavy tasks: gaming, video editing, compiling'},
+           {key:'E-cores',val:'Efficiency Cores',sub:'Background tasks: antivirus, system updates'},
+         ]
+        },
+      ],
+      quiz:{q:'What is the CPU frequency if the multiplier is 30 and the bus speed is 100 MHz?',opts:['100 MHz','300 MHz','3000 MHz (3 GHz)','30 GHz'],ans:2,exp:'CPU Frequency = Multiplier × Bus Speed = 30 × 100 MHz = 3000 MHz = 3 GHz.'}
+    },
+    {
+      id:'ch1-l3', title:'Storage: HDD vs SSD vs NVMe',
+      tag:'Chapter 1 · Lesson 3',
+      intro:'Choosing the right storage type affects boot speed, application load times, and overall system responsiveness. Each type uses a different interface and protocol.',
+      blocks:[
+        {type:'table', title:'Storage Type Comparison',
+         headers:['Type','Interface','Protocol','Speed','Best for'],
+         rows:[
+           ['HDD','SATA','AHCI','~120 MB/s','Mass storage, backups, media'],
+           ['SSD','SATA','AHCI','~550 MB/s','OS drive, everyday applications'],
+           ['M.2 NVMe','PCIe 3.0','NVMe','~3500 MB/s','High-performance OS and work'],
+           ['M.2 NVMe','PCIe 4.0','NVMe','~7000 MB/s','Workstations, video production'],
+         ]
+        },
+        {type:'hbox', style:'green', icon:'✅', title:'TRIM vs Defragmentation',
+         text:'<strong>SSD / NVMe:</strong> Uses <strong>TRIM</strong> — the OS marks unused blocks so the drive can erase them efficiently. Never defragment an SSD.<br><br><strong>HDD:</strong> Uses <strong>Defragmentation</strong> — reorganises fragmented files so the read/write head travels less distance.'},
+        {type:'hbox', style:'blue', icon:'💡', title:'AHCI vs NVMe protocols',
+         text:'<strong>AHCI</strong> (Advanced Host Controller Interface) was designed for spinning hard drives with one command queue. <strong>NVMe</strong> (Non-Volatile Memory Express) was built for flash storage with 65,535 parallel command queues — that\'s why NVMe is so much faster.'},
+        {type:'code', lang:'DISKPART — Wipe a USB drive',
+         lines:[
+           {type:'comment', text:'// Open Command Prompt as Administrator, then:'},
+           {type:'cmd', text:'diskpart'},
+           {type:'cmd', text:'list disk'},
+           {type:'comment', text:'// Identify your USB by size, e.g. Disk 2'},
+           {type:'cmd', text:'select disk 2'},
+           {type:'cmd', text:'clean'},
+           {type:'comment', text:'// USB is now completely wiped'},
+         ]
+        },
+      ],
+      quiz:{q:'Which storage type uses the PCIe interface and the NVMe protocol?',opts:['HDD (SATA)','SSD (SATA)','M.2 NVMe','USB 3.0'],ans:2,exp:'M.2 NVMe drives connect via the PCIe interface and use the NVMe protocol, which supports massive parallelism and reaches speeds up to 7000 MB/s on PCIe 4.0.'}
+    },
+    {
+      id:'ch1-l4', title:'RAM & PSU',
+      tag:'Chapter 1 · Lesson 4',
+      intro:'RAM and the PSU are often overlooked but critical. Too little RAM causes slowdowns, wrong DDR generation means incompatibility, and an underpowered PSU can crash or damage your system.',
+      blocks:[
+        {type:'table', title:'DDR RAM Generations',
+         headers:['Generation','Voltage','Speed Range','Compatible?'],
+         rows:[
+           ['DDR4','1.2V','2133–4800 MT/s','❌ Not with DDR5'],
+           ['DDR5','1.1V','4800–8400 MT/s','❌ Not with DDR4'],
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'📐', title:'RAM Speed Calculation',
+         text:'RAM speed on the label (e.g. DDR4-3200) = <strong>MT/s (Megatransfers per second)</strong>. The actual clock is half: 3200 MT/s ÷ 2 = 1600 MHz.<br><br>Bandwidth: DDR-speed × 8 = MB/s. For DDR4-3200: 3200 × 8 = <strong>25600 MB/s</strong>'},
+        {type:'hbox', style:'green', icon:'💡', title:'Dual Channel RAM',
+         text:'Installing RAM in matched pairs (e.g. 2×8 GB in slots A2+B2) activates <strong>Dual Channel mode</strong>, which doubles memory bandwidth. Always check your motherboard manual for the correct slots — usually slots 2 and 4 (not 1 and 2).'},
+        {type:'kv', title:'PSU 80+ Efficiency Ratings',
+         items:[
+           {key:'80+ Bronze',val:'82–85% efficient',sub:'Good for budget builds'},
+           {key:'80+ Gold',val:'87–90% efficient',sub:'Recommended for most builds'},
+           {key:'80+ Platinum',val:'90–92% efficient',sub:'High-end and always-on systems'},
+           {key:'80+ Titanium',val:'92–96% efficient',sub:'Server and workstation grade'},
+         ]
+        },
+      ],
+      quiz:{q:'You install two 8 GB DDR4 sticks in your motherboard. What mode should they activate?',opts:['Single Channel','Dual Channel','Quad Channel','Triple Channel'],ans:1,exp:'Two matching RAM sticks installed in the correct paired slots activate Dual Channel mode, which doubles the memory bandwidth between RAM and CPU.'}
+    },
+  ]
+},
+
+{
+  id:'ch2', icon:'⚙️', color:'#3fb950', label:'Chapter 2',
+  title:'BIOS / UEFI',
+  lessons:[
+    {
+      id:'ch2-l1', title:'BIOS vs UEFI',
+      tag:'Chapter 2 · Lesson 1',
+      intro:'Every computer needs firmware — software embedded on the motherboard that starts the system before the OS loads. BIOS is the old standard; UEFI is the modern replacement with significant improvements.',
+      blocks:[
+        {type:'table', title:'BIOS vs UEFI — Side by Side',
+         headers:['Feature','Legacy BIOS','UEFI'],
+         rows:[
+           ['Interface','Text-only, keyboard only','GUI with mouse support'],
+           ['Partition table','MBR (max 2 TB)','GPT (unlimited)'],
+           ['Max partitions','4 primary','128 partitions'],
+           ['Boot speed','Slow (sequential)','Fast (parallel)'],
+           ['Secure Boot','❌ Not available','✅ Supported'],
+           ['TPM support','❌ Limited','✅ Full support'],
+           ['Drive size','~2 TB maximum','Zettabytes'],
+           ['Windows 11','❌ Not supported','✅ Required'],
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'💡', title:'What is POST?',
+         text:'<strong>POST</strong> (Power-On Self-Test) runs every time you start your computer. The BIOS checks CPU, RAM, storage and other hardware. If it finds a problem, it signals via <strong>beep codes</strong> — different patterns of beeps indicate different hardware failures.'},
+        {type:'hbox', style:'green', icon:'🔑', title:'How to enter BIOS/UEFI',
+         text:'Common keys at startup: <strong>Del</strong>, <strong>F2</strong>, or <strong>F10</strong> (varies by manufacturer).<br><br>To access Boot Menu: <strong>F8</strong>, <strong>F11</strong>, or <strong>F12</strong>.<br><br>⚠️ If Fast Boot is on: do a <strong>full shutdown</strong> first (not restart), then power on and press the key.'},
+      ],
+      quiz:{q:'Which partition table is used by UEFI?',opts:['MBR','FAT32','GPT','NTFS'],ans:2,exp:'UEFI uses GPT (GUID Partition Table) which supports drives of any size and up to 128 partitions. Legacy BIOS used MBR, which was limited to ~2 TB and 4 primary partitions.'}
+    },
+    {
+      id:'ch2-l2', title:'Secure Boot & TPM',
+      tag:'Chapter 2 · Lesson 2',
+      intro:'Secure Boot and TPM are two security features that Windows 11 requires. Understanding what they do — and the difference between them — is essential for both installation and exam.',
+      blocks:[
+        {type:'hbox', style:'green', icon:'🛡️', title:'Secure Boot',
+         text:'<strong>Secure Boot</strong> is a UEFI feature that checks the digital signature of every piece of software that loads at startup. If the signature is not trusted, the software is blocked.<br><br>Purpose: prevent malware (rootkits, bootkits) from loading before Windows starts.\n\nWhere to find it: UEFI → Security or Boot tab → Secure Boot: <strong>Enabled</strong>'},
+        {type:'hbox', style:'blue', icon:'🔐', title:'TPM (Trusted Platform Module)',
+         text:'<strong>TPM</strong> is a hardware chip that stores cryptographic keys. It\'s used to:<br>• Verify that the system boots in a trusted state<br>• Power <strong>BitLocker</strong> drive encryption<br>• Required for <strong>Windows 11</strong> (version 2.0)\n\nWhere to find it: UEFI → Security or Advanced tab → TPM or PTT (Intel) / fTPM (AMD)'},
+        {type:'hbox', style:'red', icon:'❌', title:'Common misconception',
+         text:'<strong>Secure Boot ≠ drive encryption.</strong> Secure Boot only checks what boots. Drive encryption is done by <strong>BitLocker</strong>, which uses the <strong>TPM</strong> to store its keys.'},
+        {type:'table', title:'Secure Boot vs TPM — Clear Difference',
+         headers:['Feature','Secure Boot','TPM'],
+         rows:[
+           ['Type','UEFI software feature','Physical hardware chip'],
+           ['What it does','Checks signatures at boot','Stores encryption keys'],
+           ['Prevents','Untrusted software at startup','Disk tampering, key theft'],
+           ['Used by','Windows startup process','BitLocker, Windows 11'],
+           ['Windows 11 required?','✅ Yes','✅ Yes (v2.0)'],
+         ]
+        },
+      ],
+      quiz:{q:'What does Secure Boot actually do?',opts:['Encrypts the hard drive','Verifies digital signatures of startup software','Speeds up the boot process','Stores cryptographic keys'],ans:1,exp:'Secure Boot verifies the digital signatures of startup software. It blocks any unsigned or untrusted code from loading at startup — preventing bootkits and rootkits.'}
+    },
+    {
+      id:'ch2-l3', title:'CMOS, Jumpers & BIOS Flashing',
+      tag:'Chapter 2 · Lesson 3',
+      intro:'Beyond Secure Boot and TPM, there are three more BIOS concepts you must understand: the CMOS chip that stores settings, jumpers that reset them, and flashing which updates the firmware.',
+      blocks:[
+        {type:'hbox', style:'blue', icon:'🔋', title:'CMOS Chip & Battery',
+         text:'The <strong>CMOS chip</strong> stores BIOS settings (date, time, boot order, hardware config) even when the PC is powered off. It\'s kept alive by a <strong>CR2032 coin cell battery</strong> on the motherboard.\n\nWhen the battery dies: date/time resets, boot order may reset, but <strong>passwords are NOT cleared</strong>.'},
+        {type:'hbox', style:'amber', icon:'⚠️', title:'Jumpers — to clear BIOS password',
+         text:'<strong>Jumpers</strong> are small pins on the motherboard. Moving a jumper to the RESET position (and back) clears the BIOS password.\n\n🚨 Removing the CMOS battery does NOT clear the password. You must use the CMOS jumper for that.'},
+        {type:'hbox', style:'red', icon:'🔥', title:'BIOS Flashing — Critical Warning',
+         text:'<strong>Flashing</strong> = writing new firmware to the BIOS chip. Steps:<br>1. Download the correct firmware from the manufacturer website<br>2. Copy to USB drive<br>3. Use the BIOS\'s built-in flash tool (usually under Tools or Advanced)<br><br><strong>⚠️ NEVER power off the computer during flashing. It will permanently damage the motherboard.</strong>'},
+        {type:'kv', title:'XMP & EXPO — RAM Overclocking Profiles',
+         items:[
+           {key:'XMP',val:'Intel platform',sub:'eXtreme Memory Profile — runs RAM at rated speed'},
+           {key:'EXPO',val:'AMD platform',sub:'Extended Profiles for OC — AMD equivalent of XMP'},
+         ]
+        },
+      ],
+      quiz:{q:'You remove the CMOS battery on a motherboard. What happens to the BIOS password?',opts:['Password is cleared','Password stays — use jumpers to clear it','Password resets to "admin"','Password cannot be cleared'],ans:1,exp:'Removing the CMOS battery resets date/time and some settings but does NOT clear the BIOS password. To clear the password, you must use the CMOS RESET jumper on the motherboard.'}
+    },
+  ]
+},
+
+{
+  id:'ch3', icon:'💾', color:'#f472b6', label:'Chapter 3',
+  title:'Bootable Media',
+  lessons:[
+    {
+      id:'ch3-l1', title:'ISO Files & Bootable USB',
+      tag:'Chapter 3 · Lesson 1',
+      intro:'To install an operating system, you need bootable media. Today that means a USB stick prepared with an ISO file. You need to understand what ISO files are and how tools like Ventoy and Rufus work.',
+      blocks:[
+        {type:'hbox', style:'blue', icon:'📀', title:'What is an ISO file?',
+         text:'An <strong>ISO file</strong> (.iso) is an exact image copy of a CD or DVD, stored as a single file. It follows the <strong>ISO-9660</strong> standard. Double-clicking an ISO in Windows mounts it as a virtual DVD drive (read-only).'},
+        {type:'table', title:'Ventoy vs Rufus — Which to Use?',
+         headers:['Feature','Ventoy','Rufus'],
+         rows:[
+           ['Multiple ISOs','✅ Yes — copy many ISOs to one USB','❌ No — one ISO per USB'],
+           ['Re-flash needed?','❌ Just copy/paste ISOs','✅ Must re-flash for new ISO'],
+           ['Bypass Win 11 checks?','❌ Not built-in','✅ Yes — TPM, SecBoot, RAM'],
+           ['Secure Boot','✅ With certificate','✅ Supported'],
+           ['Best for','Lab with multiple OS images','Single OS, unsupported hardware'],
+         ]
+        },
+        {type:'steps', title:'Creating a Bootable USB with Ventoy',
+         steps:[
+           {text:'<strong>Wipe the USB</strong> with Diskpart: <code>diskpart</code> → <code>list disk</code> → <code>select disk N</code> → <code>clean</code>'},
+           {text:'Download <strong>Ventoy</strong> from ventoy.net — extract the ZIP'},
+           {text:'Run <strong>Ventoy2Disk.exe</strong> — select your USB and choose GPT partition style'},
+           {text:'Enable <strong>Secure Boot Support</strong> in Ventoy Options'},
+           {text:'Click <strong>Install</strong> — confirm both warnings'},
+           {text:'Copy your <strong>ISO files</strong> directly to the USB drive. That\'s it!'},
+         ]
+        },
+      ],
+      quiz:{q:'What is the main advantage of Ventoy over Rufus?',opts:['Ventoy is faster','Ventoy supports multiple ISO files on one USB without re-flashing','Ventoy works on Mac','Ventoy creates smaller files'],ans:1,exp:'Ventoy lets you copy multiple ISO files to one USB stick. No re-flashing needed — just drag and drop ISOs. Rufus only handles one ISO at a time and must be re-prepared for each OS.'}
+    },
+    {
+      id:'ch3-l2', title:'Windows 11 Requirements',
+      tag:'Chapter 3 · Lesson 2',
+      intro:'Windows 11 has stricter hardware requirements than Windows 10. Before installing, you must verify your hardware meets these requirements — or know how to bypass them for unsupported hardware.',
+      blocks:[
+        {type:'table', title:'Windows 11 Minimum Requirements',
+         headers:['Component','Requirement','Why'],
+         rows:[
+           ['CPU','64-bit, 1 GHz+, 2+ cores','Intel 8th gen+ or AMD Ryzen 2000+'],
+           ['RAM','4 GB minimum','8 GB recommended'],
+           ['Storage','64 GB minimum','SSD or NVMe recommended'],
+           ['GPU','DirectX 12 compatible','Most GPUs from 2012+ qualify'],
+           ['Secure Boot','Must be enabled in UEFI','Security requirement'],
+           ['TPM','TPM 2.0 required','Security chip on motherboard'],
+           ['Display','720p minimum, 9" diagonal','Any modern monitor'],
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'🔧', title:'Bypass for unsupported hardware',
+         text:'During Windows 11 install, press <strong>Shift+F10</strong> to open CMD, then type <code>regedit</code>.\n\nNavigate to: <code>HKEY_LOCAL_MACHINE\\SYSTEM\\Setup</code>\nCreate key: <code>LABIC</code>\nAdd two DWORD (32-bit) values:\n• <code>BypassTPMCheck</code> = 1\n• <code>BypassSecureBootCheck</code> = 1\n\nClose regedit and CMD, then click Back and restart the installer.'},
+        {type:'table', title:'32-bit vs 64-bit',
+         headers:['Feature','32-bit','64-bit'],
+         rows:[
+           ['Max RAM','4 GB (2³²)','16 Exabytes (2⁶⁴)'],
+           ['Run 32-bit apps','✅','✅ (via WOW64)'],
+           ['Run 64-bit apps','❌','✅'],
+           ['Windows 11 support','❌','✅'],
+         ]
+        },
+      ],
+      quiz:{q:'A user wants to install Windows 11 but the PC does not have TPM 2.0. Which registry key bypasses this check?',opts:['BypassSecureBootCheck','BypassTPMCheck','DisableTPM','SkipTPMCheck'],ans:1,exp:'BypassTPMCheck set to 1 (DWORD) in HKEY_LOCAL_MACHINE\\SYSTEM\\Setup\\LABIC bypasses the TPM 2.0 requirement. A separate DWORD BypassSecureBootCheck bypasses Secure Boot.'}
+    },
+  ]
+},
+
+{
+  id:'ch4', icon:'🪟', color:'#d2a8ff', label:'Chapter 4',
+  title:'Windows Installation',
+  lessons:[
+    {
+      id:'ch4-l1', title:'Clean Install vs Upgrade',
+      tag:'Chapter 4 · Lesson 1',
+      intro:'There are two ways to install a new version of Windows. Understanding the difference is crucial — choose the wrong one and you could lose all your data.',
+      blocks:[
+        {type:'table', title:'Clean Install vs Upgrade',
+         headers:['Aspect','Upgrade','Clean Install'],
+         rows:[
+           ['Programs','✅ Kept','❌ All removed'],
+           ['Personal data','✅ Kept','❌ All removed'],
+           ['Windows settings','✅ Kept','❌ Reset to default'],
+           ['Performance','May carry old issues','Fresh — best performance'],
+           ['Time required','Shorter','Longer'],
+           ['When to use','Quick update, keep data','New PC, fresh start, fixing issues'],
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'⚠️', title:'Before you install — checklist',
+         text:'✅ Secure Boot is <strong>enabled</strong> in UEFI<br>✅ TPM 2.0 is <strong>enabled</strong> in UEFI<br>✅ Ventoy USB is ready with Windows 11 Education ISO<br>✅ <strong>Network cable is unplugged</strong> (to skip Microsoft account)<br>✅ You know the lab keyboard layout: <strong>Belgian Punt</strong>'},
+        {type:'steps', title:'Windows 11 Installation Process',
+         steps:[
+           {text:'Boot from the Ventoy USB — select Windows 11 Education x64 ISO'},
+           {text:'Choose language: <strong>Belgium</strong>, keyboard: <strong>Belgian Punt</strong>'},
+           {text:'Click <strong>"Install now"</strong> → accept licence → choose <strong>Custom (Clean)</strong>'},
+           {text:'Select partition — delete all existing or choose unallocated space'},
+           {text:'Click <strong>"I don\'t have a product key"</strong> when asked'},
+           {text:'Select <strong>Windows 11 Education</strong> edition'},
+           {text:'Wait for install and automatic reboots (do not interrupt)'},
+           {text:'OOBE setup: click <strong>Sign-in options → Domain join instead</strong> for local account'},
+           {text:'Set username, password, and answer 3 security questions'},
+           {text:'Skip or accept privacy settings, skip Microsoft 365 offers'},
+         ]
+        },
+      ],
+      quiz:{q:'During Windows 11 setup, how do you create a local account instead of a Microsoft account?',opts:['Skip the internet setup','Click "Sign-in options" → "Domain join instead"','Use a fake email address','Disconnect USB and restart'],ans:1,exp:'During OOBE (Out-Of-Box Experience), click "Sign-in options" and then "Domain join instead". This allows you to create a local user account without a Microsoft account or internet connection.'}
+    },
+    {
+      id:'ch4-l2', title:'Post-Installation Setup',
+      tag:'Chapter 4 · Lesson 2',
+      intro:'After Windows installs, several important steps remain: installing drivers, changing the hostname, and verifying everything works correctly in Device Manager.',
+      blocks:[
+        {type:'steps', title:'Post-Installation Checklist',
+         steps:[
+           {text:'<strong>Change hostname:</strong> Settings → System → About → Rename this PC → format: <code>DTL1004_Firstname</code>'},
+           {text:'<strong>Install drivers:</strong> Windows Update → Advanced Options → Optional Updates → install all driver updates'},
+           {text:'<strong>Check Device Manager</strong> (<code>devmgmt.msc</code>) — no yellow ⚠️ marks should remain'},
+           {text:'<strong>Enable Windows Update</strong> and install all pending updates including optional'},
+           {text:'<strong>Verify</strong> Secure Boot and TPM status: Settings → Privacy & Security → Windows Security'},
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'💡', title:'Device Manager yellow marks',
+         text:'A yellow exclamation mark (⚠️) next to a device in Device Manager means the driver is missing or broken.\n\nFix: Windows Update → Advanced Options → Optional Updates. Most drivers (network, audio, chipset) install automatically.'},
+        {type:'code', lang:'Quick access commands',
+         lines:[
+           {type:'comment', text:'// Open these from Win+R (Run dialog):'},
+           {type:'cmd', text:'devmgmt.msc'},{type:'comment', text:'  → Device Manager'},
+           {type:'cmd', text:'lusrmgr.msc'},{type:'comment', text:'  → Local User Manager'},
+           {type:'cmd', text:'ncpa.cpl'},{type:'comment', text:'    → Network Connections'},
+           {type:'cmd', text:'taskmgr'},{type:'comment', text:'     → Task Manager'},
+           {type:'cmd', text:'msinfo32'},{type:'comment', text:'    → System Information'},
+         ]
+        },
+      ],
+      quiz:{q:'Where do you install optional driver updates in Windows 11?',opts:['Device Manager → Update Driver','Windows Update → Advanced Options → Optional Updates','Microsoft Store → Drivers','Control Panel → Hardware → Drivers'],ans:1,exp:'Windows Update → Advanced Options → Optional Updates is where manufacturer driver updates (chipset, audio, network, GPU) are available after a fresh Windows installation.'}
+    },
+  ]
+},
+
+{
+  id:'ch5', icon:'🛠️', color:'#ffa657', label:'Chapter 5',
+  title:'Windows Tools',
+  lessons:[
+    {
+      id:'ch5-l1', title:'Windows Folder Structure',
+      tag:'Chapter 5 · Lesson 1',
+      intro:'Windows has a specific folder hierarchy. Knowing where important files and data are stored is essential for troubleshooting, software management, and system administration.',
+      blocks:[
+        {type:'table', title:'Important Windows Folders',
+         headers:['Path','Purpose','Notes'],
+         rows:[
+           ['C:\\','Root directory','Base of everything on the C: drive'],
+           ['C:\\Program Files','64-bit apps','Default for 64-bit installations'],
+           ['C:\\Program Files (x86)','32-bit apps','Only on 64-bit Windows'],
+           ['C:\\ProgramData','Shared app data','All users, hidden by default'],
+           ['C:\\Users\\[name]','User profile','Personal files, desktop, documents'],
+           ['C:\\Users\\Public','Shared folder','Accessible by all users + network'],
+           ['C:\\Users\\[name]\\AppData','User app data','Hidden: Roaming, Local, LocalLow'],
+           ['C:\\Windows','OS files','Core Windows installation'],
+           ['C:\\Windows\\System32','System files','Critical DLLs and executables'],
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'👁️', title:'Showing hidden files',
+         text:'Many important folders (AppData, ProgramData) are hidden by default.\n\nTo show them: File Explorer → View → Show → <strong>Hidden items</strong>\n\nOr: File Explorer → ⋯ → Options → View → Show hidden files, folders and drives'},
+        {type:'hbox', style:'blue', icon:'💡', title:'AppData subfolders explained',
+         text:'<strong>Roaming:</strong> Synced across PCs via domain profile (email clients, browser bookmarks)<br><strong>Local:</strong> Machine-specific data (game saves, large caches)<br><strong>LocalLow:</strong> Low-trust processes (browser sandboxed processes)'},
+      ],
+      quiz:{q:'Where are 32-bit applications installed on a 64-bit Windows system?',opts:['C:\\Program Files','C:\\Program Files (x86)','C:\\Windows\\System32','C:\\Apps32'],ans:1,exp:'On a 64-bit Windows system, 32-bit applications go into C:\\Program Files (x86), while 64-bit applications go into C:\\Program Files.'}
+    },
+    {
+      id:'ch5-l2', title:'Essential Windows Tools',
+      tag:'Chapter 5 · Lesson 2',
+      intro:'Windows includes powerful built-in management tools. Knowing the right command to open each tool quickly is a key skill for system administration.',
+      blocks:[
+        {type:'table', title:'Run Commands You Must Know',
+         headers:['Command','Tool','Main use'],
+         rows:[
+           ['lusrmgr.msc','Local User Manager','Create/manage local users and groups'],
+           ['taskmgr','Task Manager','Monitor processes, CPU/RAM, kill apps'],
+           ['devmgmt.msc','Device Manager','Manage hardware and drivers'],
+           ['ncpa.cpl','Network Connections','View and configure network adapters'],
+           ['mmc','Management Console','Centralise multiple admin snap-ins'],
+           ['diskmgmt.msc','Disk Management','Partition and format drives'],
+           ['msinfo32','System Information','Full hardware/software inventory'],
+           ['regedit','Registry Editor','Edit Windows registry database'],
+         ]
+        },
+        {type:'hbox', style:'green', icon:'👥', title:'Local User Manager (lusrmgr.msc)',
+         text:'Two folders: <strong>Users</strong> (list of local accounts) and <strong>Groups</strong> (permissions collections).\n\nTo create a user: right-click Users → New User → fill in username + password.\n\nTo add to group: right-click the group → Properties → Add → type username.'},
+        {type:'hbox', style:'blue', icon:'⚙️', title:'MMC — Microsoft Management Console',
+         text:'MMC lets you combine multiple tools into one window as <strong>snap-ins</strong>.\n\nOpen with <code>mmc</code> → File → Add/Remove Snap-ins → add: Device Manager, Local Users and Groups, Services, Disk Management.\n\nSave as <code>IC_Firstname.msc</code> on your Desktop for quick access.'},
+        {type:'hbox', style:'purple', icon:'📊', title:'Task Manager — Process vs Service',
+         text:'<strong>Processes:</strong> Applications actively launched by the user (foreground apps)<br><strong>Services:</strong> Background processes running automatically (Windows services, antivirus, etc.)\n\nKill a frozen app: right-click the process → End Task. Always try the process tab first.'},
+      ],
+      quiz:{q:'Which run command opens the tool for managing local users and groups?',opts:['usermgr.msc','localusers.msc','lusrmgr.msc','users.cpl'],ans:2,exp:'lusrmgr.msc opens Local Users and Groups Manager, where you can create and manage local user accounts and assign them to groups.'}
+    },
+  ]
+},
+
+{
+  id:'ch6', icon:'⌨️', color:'#ff7b72', label:'Chapter 6',
+  title:'Terminal (CMD)',
+  lessons:[
+    {
+      id:'ch6-l1', title:'CMD Basics & Navigation',
+      tag:'Chapter 6 · Lesson 1',
+      intro:'The Command Prompt (CMD) is the Windows text-based command interface. It\'s not case-sensitive, supports autocomplete with Tab, and is essential for scripting, troubleshooting, and system administration.',
+      blocks:[
+        {type:'hbox', style:'blue', icon:'💡', title:'CMD Tips',
+         text:'• CMD is <strong>NOT case-sensitive</strong> — "DIR" = "dir" = "Dir"<br>• Use <strong>Tab</strong> to autocomplete file and folder names<br>• Use <strong>↑ arrow</strong> to recall previous commands<br>• Paths with spaces need quotes: <code>"My Documents"</code><br>• Get help for any command: <code>command /?</code>'},
+        {type:'code', lang:'CMD — Navigation Commands',
+         lines:[
+           {type:'cmd', text:'dir'},{type:'comment', text:'                  → List files in current folder'},
+           {type:'cmd', text:'dir c*'},{type:'comment', text:'               → List items starting with "c"'},
+           {type:'cmd', text:'cd Documents'},{type:'comment', text:'          → Go into Documents folder'},
+           {type:'cmd', text:'cd..'},{type:'comment', text:'                 → Go up one level'},
+           {type:'cmd', text:'cd\\'},{type:'comment', text:'                  → Go to root (C:\\)'},
+           {type:'cmd', text:'D:'},{type:'comment', text:'                   → Switch to D: drive (e.g. USB)'},
+           {type:'cmd', text:'tree'},{type:'comment', text:'                 → Show folder tree'},
+           {type:'cmd', text:'tree /F'},{type:'comment', text:'              → Show tree including files'},
+           {type:'cmd', text:'cls'},{type:'comment', text:'                  → Clear the screen'},
+         ]
+        },
+        {type:'hbox', style:'green', icon:'📁', title:'Absolute vs Relative paths',
+         text:'<strong>Absolute:</strong> Full path from root — <code>C:\\Users\\Jose\\Documents\\file.txt</code><br><strong>Relative:</strong> From current location — if you\'re in <code>C:\\Users\\Jose</code>, relative is <code>Documents\\file.txt</code> or <code>.\\file.txt</code>'},
+      ],
+      quiz:{q:'Which command takes you directly to the root directory (C:\\) from anywhere in CMD?',opts:['cd root','cd\\','cd /root','cd C:'],ans:1,exp:'cd\\ takes you directly to the root of the current drive (C:\\). The backslash \\ represents the root directory. You can also use cd\\ followed by a folder name like cd\\Windows.'}
+    },
+    {
+      id:'ch6-l2', title:'File & Folder Operations',
+      tag:'Chapter 6 · Lesson 2',
+      intro:'CMD provides powerful commands for managing files and folders. These are the commands you\'ll use most in practical work and lab exercises.',
+      blocks:[
+        {type:'code', lang:'CMD — File & Folder Commands',
+         lines:[
+           {type:'comment', text:'// CREATE'},
+           {type:'cmd', text:'mkdir NewFolder'},{type:'comment', text:'            → Create a folder'},
+           {type:'comment', text:'// DELETE'},
+           {type:'cmd', text:'rmdir EmptyFolder'},{type:'comment', text:'          → Delete empty folder'},
+           {type:'cmd', text:'rmdir /S BigFolder'},{type:'comment', text:'         → Delete folder + all contents'},
+           {type:'cmd', text:'del file.txt'},{type:'comment', text:'               → Delete a file'},
+           {type:'comment', text:'// COPY & MOVE'},
+           {type:'cmd', text:'copy file.txt D:\\'},{type:'comment', text:'          → Copy file to D: drive'},
+           {type:'cmd', text:'xcopy Docs D:\\Backup /S'},{type:'comment', text:'    → Copy folder + subfolders'},
+           {type:'cmd', text:'move file.txt D:\\'},{type:'comment', text:'          → Move file (removes from source)'},
+           {type:'comment', text:'// RENAME'},
+           {type:'cmd', text:'rename old.txt new.txt'},{type:'comment', text:'     → Rename a file'},
+           {type:'comment', text:'// PROCESS MANAGEMENT'},
+           {type:'cmd', text:'tasklist'},{type:'comment', text:'                   → List all running processes'},
+           {type:'cmd', text:'taskkill /IM notepad.exe'},{type:'comment', text:'   → Kill Notepad'},
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'⚠️', title:'copy vs xcopy',
+         text:'<code>copy</code> — copies a <strong>single file</strong>. Does not copy folders.\n<code>xcopy</code> — copies <strong>entire folders</strong> with all contents. Automatically creates the destination folder. Add <code>/S</code> to include subfolders, <code>/E</code> to include empty subfolders.'},
+      ],
+      quiz:{q:'What does "rmdir /S FolderName" do?',opts:['Renames a folder','Deletes an empty folder','Deletes a folder and ALL its contents','Moves the folder to recycle bin'],ans:2,exp:'rmdir /S deletes a folder and all of its contents recursively — including all subfolders and files. Without /S, rmdir only works on empty folders.'}
+    },
+    {
+      id:'ch6-l3', title:'Batch Files (.BAT)',
+      tag:'Chapter 6 · Lesson 3',
+      intro:'A batch file is a script that automates a sequence of CMD commands. They\'re used to automate repetitive tasks, set up folder structures, and deploy configurations.',
+      blocks:[
+        {type:'hbox', style:'blue', icon:'📄', title:'What is a batch file?',
+         text:'A batch file has the <strong>.bat</strong> extension and contains CMD commands executed one by one automatically. Create them in Notepad or Notepad++. Run by double-clicking or from CMD.'},
+        {type:'code', lang:'Example batch file — setup.bat',
+         lines:[
+           {type:'kw', text:'@echo off'},
+           {type:'comment', text:'REM This script creates a folder structure'},
+           {type:'cmd', text:'mkdir C:\\CBS\\Win11\\Edu'},
+           {type:'cmd', text:'mkdir C:\\CBS\\Win11\\Pro'},
+           {type:'cmd', text:'mkdir C:\\CBS\\Linux'},
+           {type:'kw', text:'echo'},{type:'val', text:' Folder structure created!'},
+           {type:'kw', text:'PAUSE'},
+         ]
+        },
+        {type:'table', title:'Batch File Commands',
+         headers:['Command','Purpose','Example'],
+         rows:[
+           ['@echo off','Hide command output (cleaner display)','Put at the very top'],
+           ['echo [text]','Print text to screen','echo Hello World'],
+           ['REM [text]','Add a comment (not executed)',':REM This is a note'],
+           ['PAUSE','Wait for keypress before continuing','End of script'],
+           ['CALL [file]','Run another batch file','CALL setup2.bat'],
+           ['IF','Conditional logic','IF EXIST file.txt del file.txt'],
+         ]
+        },
+      ],
+      quiz:{q:'What does "@echo off" at the top of a batch file do?',opts:['Deletes all echo commands','Hides the CMD prompt and command text from the output','Disables all commands in the script','Runs the script silently in the background'],ans:1,exp:'@echo off hides the working directory and each command from being displayed as it runs, making the output cleaner. The @ symbol also hides the "echo off" command itself from appearing.'}
+    },
+  ]
+},
+
+{
+  id:'ch7', icon:'🖥️', color:'#79c0ff', label:'Chapter 7',
+  title:'Virtualisation',
+  lessons:[
+    {
+      id:'ch7-l1', title:'Why Virtualisation?',
+      tag:'Chapter 7 · Lesson 1',
+      intro:'Virtualisation solves a fundamental problem in IT: physical servers are expensive, power-hungry, and underutilised. By running multiple virtual machines on one physical host, you dramatically improve efficiency.',
+      blocks:[
+        {type:'hbox', style:'amber', icon:'🔍', title:'The problem with traditional architecture',
+         text:'Imagine 3 servers, each running one application:\n• Webserver 1: uses 20% of resources\n• Webserver 2: uses 30% of resources\n• Webserver 3: uses 40% of resources\n\nResult: 3 expensive machines, each wasting 60–80% of their capacity.'},
+        {type:'hbox', style:'green', icon:'✅', title:'The virtualisation solution',
+         text:'One powerful physical server runs a <strong>hypervisor</strong> that creates 3 (or more) virtual machines. Each VM gets exactly the resources it needs. Total resource use: ~90% instead of three machines at 20–40%.'},
+        {type:'table', title:'Benefits of Virtualisation',
+         headers:['Benefit','Details'],
+         rows:[
+           ['Cost savings','Fewer physical servers = lower hardware + energy costs'],
+           ['Efficient resources','One machine runs multiple isolated environments'],
+           ['Easy management','VMs can be cloned, moved, snapshotted, and migrated'],
+           ['Testing & development','Safely test in an isolated VM without risk to production'],
+           ['Multiple OS types','Run Windows, Linux, and others on the same hardware'],
+           ['Disaster recovery','Snapshots and backups are much faster with VMs'],
+         ]
+        },
+      ],
+      quiz:{q:'What is the main resource efficiency benefit of virtualisation?',opts:['It makes CPUs faster','Multiple VMs share one physical machine, reducing waste','It removes the need for RAM','VMs run faster than physical machines'],ans:1,exp:'Virtualisation allows multiple virtual machines to share one physical machine. Instead of several physical servers each using 20-40% of their resources, one server can run all of them efficiently — dramatically reducing waste.'}
+    },
+    {
+      id:'ch7-l2', title:'Hypervisor Types',
+      tag:'Chapter 7 · Lesson 2',
+      intro:'The hypervisor is the software that makes virtualisation possible. There are two types, with very different architectures — and the exam always tests this.',
+      blocks:[
+        {type:'diagram', title:'Type 1 vs Type 2 Architecture',
+         content:`
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+  <div>
+    <div style="text-align:center;font-weight:700;color:var(--blue);margin-bottom:8px;font-size:12px;">TYPE 1 — BARE METAL</div>
+    <div class="layer layer-vm">VM 1 (Guest OS)</div>
+    <div class="layer layer-vm">VM 2 (Guest OS)</div>
+    <div class="layer layer-hv" style="font-weight:700;">HYPERVISOR</div>
+    <div class="layer layer-hw">HARDWARE</div>
+  </div>
+  <div>
+    <div style="text-align:center;font-weight:700;color:var(--orange);margin-bottom:8px;font-size:12px;">TYPE 2 — HOSTED</div>
+    <div class="layer layer-vm">VM 1 (Guest OS)</div>
+    <div class="layer layer-vm">VM 2 (Guest OS)</div>
+    <div class="layer layer-hv" style="font-weight:700;">HYPERVISOR (app)</div>
+    <div class="layer" style="background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);">HOST OS</div>
+    <div class="layer layer-hw">HARDWARE</div>
+  </div>
+</div>`
+        },
+        {type:'table', title:'Type 1 vs Type 2 Comparison',
+         headers:['Feature','Type 1 (Bare Metal)','Type 2 (Hosted)'],
+         rows:[
+           ['Runs on','Directly on hardware','On top of host OS'],
+           ['Host OS needed?','❌ No','✅ Yes'],
+           ['Performance','Better (direct hardware access)','Slightly lower overhead'],
+           ['Use case','Enterprise, data centres, servers','Personal PC, learning, testing'],
+           ['Examples','Hyper-V, VMware ESXi, Proxmox','VirtualBox, VMware Workstation'],
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'⚠️', title:'Prerequisite: Enable virtualisation in BIOS',
+         text:'Before Hyper-V can work, CPU virtualisation must be enabled in BIOS/UEFI.\n• <strong>Intel:</strong> Intel Virtualization Technology (VT-x)\n• <strong>AMD:</strong> AMD Virtualization (AMD-V)\n\nIf "Hyper-V Platform" is greyed out in Windows Features → this is why.'},
+      ],
+      quiz:{q:'What makes a Type 1 hypervisor different from a Type 2?',opts:['Type 1 supports more VMs','Type 1 runs directly on hardware with no host OS required','Type 1 is free, Type 2 costs money','Type 1 only works on Intel CPUs'],ans:1,exp:'A Type 1 (Bare Metal) hypervisor runs directly on the physical hardware without a host OS. This gives it direct hardware access and better performance. A Type 2 hypervisor runs as an application on top of an existing host OS.'}
+    },
+    {
+      id:'ch7-l3', title:'Hyper-V: Creating VMs',
+      tag:'Chapter 7 · Lesson 3',
+      intro:'Microsoft Hyper-V is a Type 1 hypervisor built into Windows. This lesson walks through everything needed to set up and configure a Windows 11 virtual machine.',
+      blocks:[
+        {type:'steps', title:'Installing & Configuring Hyper-V',
+         steps:[
+           {text:'Enable in Windows Features: search "Turn Windows features on or off" → tick <strong>Hyper-V</strong> → restart'},
+           {text:'Open <strong>Hyper-V Manager</strong> → Action menu → New → Virtual Machine'},
+           {text:'Name: <code>IC_Firstname</code> | Keep default location → Next'},
+           {text:'Generation: choose <strong>Generation 2</strong> (UEFI — required for Windows 11)'},
+           {text:'RAM: set <strong>4096 MB</strong> minimum | leave Dynamic Memory <strong>OFF</strong> for now'},
+           {text:'Network: leave on <strong>Not Connected</strong> for now (configure later)'},
+           {text:'VHDX: create new virtual hard disk — <strong>70 GB</strong> minimum for Windows 11'},
+           {text:'Installation options: browse to your <strong>Windows 11 ISO</strong> file'},
+           {text:'Review summary → Finish'},
+           {text:'Before starting: go to VM Settings → Security → enable <strong>TPM</strong>'},
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'💡', title:'Generation 1 vs Generation 2',
+         text:'<strong>Generation 1 = Legacy BIOS (MBR)</strong> — for older operating systems<br><strong>Generation 2 = UEFI (GPT)</strong> — required for Windows 11 and modern Linux\n\nAlways choose Generation 2 for Windows 11. You cannot change generation after creation.'},
+        {type:'hbox', style:'green', icon:'📁', title:'VHDX location',
+         text:'The VHDX file (virtual hard disk) is stored on your host at:\n<code>C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\</code>\n\nThis is a regular file — you can copy, move, or delete it to manage VMs.'},
+      ],
+      quiz:{q:'Why must you choose Generation 2 when creating a Hyper-V VM for Windows 11?',opts:['Generation 2 uses less RAM','Generation 2 uses UEFI/GPT, which Windows 11 requires','Generation 2 is faster for gaming','Generation 2 has better graphics support'],ans:1,exp:'Generation 2 VMs use UEFI (with GPT) which is a system requirement for Windows 11. Generation 1 uses Legacy BIOS (MBR) which is incompatible with Windows 11. You also need to enable TPM in the VM security settings.'}
+    },
+    {
+      id:'ch7-l4', title:'Hyper-V: Virtual Switches',
+      tag:'Chapter 7 · Lesson 4',
+      intro:'Virtual switches control how VMs communicate — with each other, with the host, and with the internet. This is one of the most tested topics in the exam.',
+      blocks:[
+        {type:'table', title:'Virtual Switch Types — Memorise This',
+         headers:['Switch','VM ↔ VM','VM ↔ Host','VM ↔ Internet','Key rule'],
+         rows:[
+           ['Private','✅ Same switch','❌','❌','Most isolated — VMs only'],
+           ['Internal','✅ Same switch','✅','❌','VM + Host, no internet'],
+           ['External','✅','✅','✅','Full access via host NIC (bridged)'],
+           ['Default','✅','✅','✅','Auto-created — avoid in exercises'],
+         ]
+        },
+        {type:'hbox', style:'red', icon:'🚨', title:'External Switch WARNING — TCP/IPv4',
+         text:'When you create an External Switch, the host\'s NIC is <strong>bridged</strong>. TCP/IPv4 automatically moves from the physical NIC to the virtual switch.\n\n<strong>NEVER</strong> manually re-enable TCP/IPv4 on the physical NIC! This gives the PC two IP addresses and breaks the network.\n\nThe External Switch manages the NIC — leave the physical NIC alone.'},
+        {type:'hbox', style:'amber', icon:'💡', title:'Checkpoints',
+         text:'A <strong>checkpoint</strong> is a snapshot of a VM\'s complete state at a point in time — memory, disk, settings.\n\nCreate before risky changes. Restore to roll back. In Hyper-V Manager → right-click VM → Checkpoint.\n\n⚠️ Checkpoints are NOT a substitute for proper backups.'},
+        {type:'steps', title:'Creating Virtual Switches',
+         steps:[
+           {text:'Open Hyper-V Manager → Action menu → <strong>Virtual Switch Manager</strong>'},
+           {text:'Select type: External, Internal, or Private → Create Virtual Switch'},
+           {text:'<strong>External:</strong> Give a name, select your physical NIC, click OK'},
+           {text:'<strong>Internal:</strong> Give a name, select "Internal network", click OK'},
+           {text:'<strong>Private:</strong> Give a name, select "Private network", click OK'},
+           {text:'Assign to VM: VM Settings → Network Adapter → select your switch'},
+         ]
+        },
+      ],
+      quiz:{q:'You need two VMs to communicate with each other and with the host, but NOT with the internet. Which switch do you use?',opts:['External Switch','Private Switch','Internal Switch','Default Switch'],ans:2,exp:'The Internal Switch allows VM ↔ VM and VM ↔ Host communication but provides no internet access. Private Switch isolates VMs from the host too. External Switch adds internet access.'}
+    },
+  ]
+},
+
+{
+  id:'ch8', icon:'🐧', color:'#56d364', label:'Chapter 8',
+  title:'WSL',
+  lessons:[
+    {
+      id:'ch8-l1', title:'Windows Subsystem for Linux',
+      tag:'Chapter 8 · Lesson 1',
+      intro:'WSL lets you run Linux tools and distributions directly inside Windows — no separate virtual machine or dual boot needed. It\'s powered by the Virtual Machine Platform and integrates seamlessly with Windows.',
+      blocks:[
+        {type:'hbox', style:'green', icon:'🐧', title:'What is WSL?',
+         text:'<strong>Windows Subsystem for Linux</strong> allows you to run a full Linux terminal, CLI tools, and distributions (Ubuntu, Debian, Kali…) inside Windows.\n\nWSL 2 uses the Virtual Machine Platform Windows feature and provides a real Linux kernel — much better compatibility than WSL 1.'},
+        {type:'code', lang:'PowerShell — WSL Commands (run as Administrator)',
+         lines:[
+           {type:'comment', text:'// Install WSL with default Ubuntu:'},
+           {type:'cmd', text:'wsl --install'},
+           {type:'comment', text:'// Install a specific distribution:'},
+           {type:'cmd', text:'wsl --install -d Debian'},
+           {type:'comment', text:'// List installed distributions:'},
+           {type:'cmd', text:'wsl --list'},
+           {type:'cmd', text:'wsl --list --verbose'},
+           {type:'comment', text:'// See all available distributions:'},
+           {type:'cmd', text:'wsl --list --online'},
+           {type:'comment', text:'// Check WSL status and version:'},
+           {type:'cmd', text:'wsl --status'},
+           {type:'comment', text:'// Shut down all WSL instances:'},
+           {type:'cmd', text:'wsl --shutdown'},
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'💡', title:'After installation',
+         text:'After running <code>wsl --install</code>, you must <strong>restart your computer</strong>.\n\nWhen it restarts, Ubuntu opens and asks you to set up a Linux username and password. This is separate from your Windows credentials.'},
+      ],
+      quiz:{q:'Which command installs the Debian distribution specifically in WSL?',opts:['wsl --install Debian','wsl --install -d Debian','wsl add Debian','wsl -d Debian'],ans:1,exp:'wsl --install -d [DistroName] installs a specific distribution. The -d flag specifies the distribution. Without -d, it installs the default (Ubuntu).'}
+    },
+  ]
+},
+
+{
+  id:'ch9', icon:'🐧', color:'#e3b341', label:'Chapter 9',
+  title:'Linux Introduction',
+  lessons:[
+    {
+      id:'ch9-l1', title:'Linux Families & Ubuntu',
+      tag:'Chapter 9 · Lesson 1',
+      intro:'Linux comes in hundreds of distributions (distros), but they all belong to families with shared package management systems. Understanding which family a distro belongs to tells you immediately which commands to use.',
+      blocks:[
+        {type:'table', title:'Linux Families',
+         headers:['Family','Distros','Package format','Package manager'],
+         rows:[
+           ['RHEL family','Red Hat, Fedora, CentOS, AlmaLinux','.rpm','rpm, yum, dnf'],
+           ['Debian family','Ubuntu, Debian, Mint, Kali','.deb','apt, dpkg'],
+           ['Arch family','Arch Linux, Manjaro','.pkg.tar','pacman'],
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'🐧', title:'Ubuntu LTS — what we use',
+         text:'We use <strong>Ubuntu 24.04 LTS</strong>. LTS = <strong>Long Term Support</strong> — 5 years of guaranteed security and maintenance updates.\n\nVersion naming: <strong>24.04</strong> = released April 2024. New versions every 6 months (April and October).'},
+        {type:'hbox', style:'blue', icon:'🔍', title:'GRUB Bootloader',
+         text:'When Ubuntu starts, you see the <strong>GRUB</strong> (Grand Unified Bootloader) menu. GRUB lets you choose which OS or kernel to boot. In a VM, it appears briefly before Ubuntu loads.\n\nOpen Terminal in Ubuntu: <strong>Ctrl + Alt + T</strong>'},
+        {type:'hbox', style:'green', icon:'$', title:'Terminal prompts',
+         text:'<code>$</code> = regular user (normal privileges)<br><code>#</code> = root user (full administrator)\n\nThis is a critical security indicator. Always know which one you\'re running as before executing commands.'},
+      ],
+      quiz:{q:'Which package format does Ubuntu use?',opts:['.rpm','.deb','.pkg','.apk'],ans:1,exp:'Ubuntu belongs to the Debian family, which uses .deb packages. The RHEL family (Fedora, CentOS) uses .rpm packages. This determines which package manager commands you use.'}
+    },
+    {
+      id:'ch9-l2', title:'Package Management with apt',
+      tag:'Chapter 9 · Lesson 2',
+      intro:'apt (Advanced Package Tool) is the primary package manager for Ubuntu. Knowing the difference between apt update and apt upgrade — and when to use each — is a classic exam question.',
+      blocks:[
+        {type:'hbox', style:'red', icon:'🚨', title:'apt update ≠ apt upgrade',
+         text:'This is the most common exam trap in this chapter:\n\n<code>sudo apt update</code> → only <strong>refreshes the list</strong> of available packages. Nothing is installed or updated.\n\n<code>sudo apt upgrade</code> → actually <strong>installs the updates</strong>. Always run apt update first.'},
+        {type:'code', lang:'apt — Package Management Commands',
+         lines:[
+           {type:'comment', text:'// Update package list (run this first!):'},
+           {type:'cmd', text:'sudo apt update'},
+           {type:'comment', text:'// Install updates:'},
+           {type:'cmd', text:'sudo apt upgrade'},
+           {type:'comment', text:'// Both in one command:'},
+           {type:'cmd', text:'sudo apt update && sudo apt upgrade'},
+           {type:'comment', text:'// Install a package:'},
+           {type:'cmd', text:'sudo apt install cowsay'},
+           {type:'comment', text:'// Remove (keeps config files):'},
+           {type:'cmd', text:'sudo apt remove cowsay'},
+           {type:'comment', text:'// Remove + delete config files:'},
+           {type:'cmd', text:'sudo apt purge cowsay'},
+           {type:'comment', text:'// Search repository:'},
+           {type:'cmd', text:'apt search cowsay'},
+           {type:'comment', text:'// Show package info:'},
+           {type:'cmd', text:'apt show cowsay'},
+         ]
+        },
+        {type:'hbox', style:'blue', icon:'📦', title:'dpkg — for local .deb files',
+         text:'Some apps are not in the Ubuntu repository (e.g. Google Chrome). Download them as a <code>.deb</code> file, then install with dpkg:\n\n<code>sudo dpkg -i google-chrome-stable.deb</code>\n\nTo show info about an installed package: <code>dpkg -s google-chrome-stable</code>\n\nTo remove: <code>sudo apt purge google-chrome-stable</code>'},
+        {type:'hbox', style:'green', icon:'⬇️', title:'curl — downloading files',
+         text:'<code>curl</code> downloads files from URLs in the terminal.\n\n<code>curl -O https://example.com/file.deb</code>\n\nThe <code>-O</code> flag keeps the original filename. First install curl if needed: <code>sudo apt install curl</code>'},
+      ],
+      quiz:{q:'You run "sudo apt update". What actually happens?',opts:['All packages are updated to the latest version','New packages are installed from the internet','The list of available packages is refreshed — nothing is installed','The system is scanned for viruses'],ans:2,exp:'sudo apt update only refreshes (updates) the local list of available packages from the repository servers. It does NOT install or upgrade anything. To install updates, you must run sudo apt upgrade afterwards.'}
+    },
+    {
+      id:'ch9-l3', title:'Linux File System & Permissions',
+      tag:'Chapter 9 · Lesson 3',
+      intro:'Linux uses a tree directory structure starting from / (root). Every device, file, and configuration is part of this tree. Understanding key directories is essential for system administration.',
+      blocks:[
+        {type:'table', title:'Important Linux Directories',
+         headers:['Path','Contains','Windows equivalent'],
+         rows:[
+           ['/','Root of everything','C:\\'],
+           ['/home/[user]','User personal files','C:\\Users\\[name]'],
+           ['/root','Root user\'s home','C:\\Users\\Administrator'],
+           ['/etc','System config files','C:\\Windows (sort of)'],
+           ['/var/log','Log files','C:\\Windows\\Logs'],
+           ['/bin',  'Essential commands (ls, cp)','C:\\Windows\\System32'],
+           ['/sbin', 'Admin commands (fsck, reboot)','System32 (admin tools)'],
+           ['/tmp',  'Temporary files (cleared on reboot)','C:\\Windows\\Temp'],
+           ['/dev',  'Device files (/dev/sda = 1st HDD)','Device Manager'],
+         ]
+        },
+        {type:'hbox', style:'red', icon:'🚨', title:'/ vs /root — NOT the same!',
+         text:'<code>/</code> = the root of the entire filesystem (like C:\\ in Windows). ALL directories branch from here.\n<code>/root</code> = the home folder of the root (administrator) user.\n\nThey sound similar but are completely different locations.'},
+        {type:'hbox', style:'blue', icon:'👤', title:'sudo, su, and root',
+         text:'<strong>sudo [command]</strong> → run one command as root. Asks YOUR password. Safest method.\n<strong>su -</strong> → switch to root user for full session. Asks ROOT password.\n<strong>root</strong> → superuser. Disabled by default in Ubuntu for safety.\n\nActivate root: <code>sudo passwd root</code> | Deactivate: <code>sudo passwd -dl root</code>'},
+        {type:'code', lang:'Linux — Essential Terminal Commands',
+         lines:[
+           {type:'comment', text:'# Navigation:'},
+           {type:'cmd', text:'ls'},{type:'comment', text:'             → list directory contents'},
+           {type:'cmd', text:'ls -a'},{type:'comment', text:'          → list ALL (including hidden dot files)'},
+           {type:'cmd', text:'ls -l'},{type:'comment', text:'          → long format (permissions, size, date)'},
+           {type:'cmd', text:'cd /etc'},{type:'comment', text:'        → go to /etc directory'},
+           {type:'cmd', text:'cd ~'},{type:'comment', text:'           → go to home directory'},
+           {type:'comment', text:'# Files & Folders:'},
+           {type:'cmd', text:'mkdir newdir'},{type:'comment', text:'   → create directory'},
+           {type:'cmd', text:'rm -r folder'},{type:'comment', text:'   → delete folder + all contents'},
+           {type:'cmd', text:'rm file.txt'},{type:'comment', text:'    → delete a file'},
+           {type:'cmd', text:'cp src dest'},{type:'comment', text:'    → copy file'},
+           {type:'cmd', text:'mv src dest'},{type:'comment', text:'    → move or rename'},
+           {type:'cmd', text:'touch file.txt'},{type:'comment', text:' → create empty file'},
+           {type:'cmd', text:'find / -name "*.txt"'},{type:'comment', text:' → find files'},
+         ]
+        },
+      ],
+      quiz:{q:'What is the difference between / and /root in Linux?',opts:['They are the same directory','/ is the filesystem root; /root is the home folder of the root user','/ is for regular users; /root is for system files','/ is a file; /root is a directory'],ans:1,exp:'/ (just a forward slash) is the root of the entire Linux filesystem — everything branches from here. /root is the home directory of the root (administrator) user. They sound similar but are completely different paths.'}
+    },
+    {
+      id:'ch9-l4', title:'SSH & Remote Access',
+      tag:'Chapter 9 · Lesson 4',
+      intro:'SSH (Secure Shell) is the standard way to manage remote Linux systems. As a system administrator, you\'ll use SSH constantly — from your Windows machine to connect to Linux servers.',
+      blocks:[
+        {type:'hbox', style:'blue', icon:'🔒', title:'What is SSH?',
+         text:'SSH (Secure Shell) is a protocol for <strong>encrypted remote connections</strong> to computers. All traffic between client and server is encrypted.\n\nDefault port: <strong>22</strong>\nConfig file: <code>/etc/ssh/sshd_config</code>\nThe "d" in sshd = <strong>daemon</strong> (background service)'},
+        {type:'code', lang:'SSH — Setup & Connection Commands',
+         lines:[
+           {type:'comment', text:'# On Ubuntu VM (server) — install & enable SSH:'},
+           {type:'cmd', text:'sudo apt install openssh-server'},
+           {type:'cmd', text:'systemctl status ssh'},
+           {type:'cmd', text:'sudo systemctl enable ssh'},
+           {type:'cmd', text:'sudo systemctl start ssh'},
+           {type:'comment', text:'# From Windows PowerShell (client) — connect:'},
+           {type:'cmd', text:'ssh username@192.168.1.50'},
+           {type:'comment', text:'# Connect on a custom port:'},
+           {type:'cmd', text:'ssh -p 22000 username@192.168.1.50'},
+           {type:'comment', text:'# Disconnect:'},
+           {type:'cmd', text:'exit'},
+         ]
+        },
+        {type:'steps', title:'Changing SSH Port to 22000 (with Nano)',
+         steps:[
+           {text:'Open config file: <code>sudo nano /etc/ssh/sshd_config</code>'},
+           {text:'Find the line <code>#Port 22</code> — remove the <code>#</code> (uncomment it)'},
+           {text:'Change <code>22</code> to <code>22000</code>'},
+           {text:'Save: <strong>Ctrl+O</strong> then Enter | Exit: <strong>Ctrl+X</strong>'},
+           {text:'Reload systemd: <code>sudo systemctl daemon-reload</code>'},
+           {text:'Restart SSH: <code>sudo systemctl restart ssh</code>'},
+           {text:'Reconnect from Windows: <code>ssh -p 22000 username@ip</code>'},
+         ]
+        },
+        {type:'hbox', style:'amber', icon:'💡', title:'Nano editor shortcuts',
+         text:'<strong>Ctrl+O</strong> → Save (Write Out)<br><strong>Ctrl+X</strong> → Exit<br><strong>Ctrl+W</strong> → Search<br><strong>Ctrl+K</strong> → Cut line<br><strong>Ctrl+U</strong> → Paste\n\n<code>#</code> at start of a line = comment (ignored by the system). Remove # to activate a setting.'},
+        {type:'hbox', style:'red', icon:'⚠️', title:'Always reload after config changes',
+         text:'After editing ANY service configuration file, you must:\n1. <code>sudo systemctl daemon-reload</code> — tells systemd to re-read configs\n2. <code>sudo systemctl restart ssh</code> — restarts SSH with new settings\n\nWithout this, changes have no effect.'},
+      ],
+      quiz:{q:'After editing /etc/ssh/sshd_config to change the SSH port, what must you do?',opts:['Reboot the computer','Run sudo systemctl daemon-reload && sudo systemctl restart ssh','Log out and log in again','Run sudo apt update'],ans:1,exp:'After changing a service config file, you must run systemctl daemon-reload (to reload systemd) and then systemctl restart ssh (to restart the SSH service with the new config). Without this, the changes have no effect.'}
+    },
+  ]
+},
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE & STORAGE
+// ══════════════════════════════════════════════════════
+const SK = 'ic_course_v1';
+function loadState(){
+  try { return JSON.parse(localStorage.getItem(SK)) || {done:{}, xp:0}; }
+  catch { return {done:{}, xp:0}; }
+}
+function saveState(s){ localStorage.setItem(SK, JSON.stringify(s)); }
+let state = loadState();
+
+function allLessons(){
+  return COURSE.flatMap(ch => ch.lessons);
+}
+function totalLessons(){ return allLessons().length; }
+function doneCount(){ return Object.keys(state.done).length; }
+function isLessonDone(id){ return !!state.done[id]; }
+function markDone(id){
+  if(!state.done[id]){
+    state.done[id] = true;
+    state.xp = (state.xp||0) + 50;
+    saveState(state);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  BUILD SIDEBAR
+// ══════════════════════════════════════════════════════
+let currentLessonId = null;
+let currentChapterId = null;
+
+function buildSidebar(){
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = COURSE.map(ch => {
+    const allDone = ch.lessons.every(l => isLessonDone(l.id));
+    const anyDone = ch.lessons.some(l => isLessonDone(l.id));
+    const isActive = ch.id === currentChapterId;
+    return `
+      <div class="nav-section">
+        <button class="nav-ch ${isActive?'active':''} ${allDone?'completed':''}" onclick="selectChapter('${ch.id}')">
+          <span class="nav-ch-icon">${ch.icon}</span>
+          <div class="nav-ch-info">
+            <div class="nav-ch-label">${ch.label}</div>
+            <div class="nav-ch-name">${ch.title}</div>
+          </div>
+          <span class="nav-ch-check">${allDone?'✅':anyDone?'🔵':''}</span>
+        </button>
+        <div class="nav-lessons" id="nav-lessons-${ch.id}" style="${isActive?'display:block':'display:none'}">
+          ${ch.lessons.map(l => `
+            <button class="nav-lesson-btn ${l.id===currentLessonId?'active':''} ${isLessonDone(l.id)?'done':''}"
+                    onclick="goLesson('${ch.id}','${l.id}')">
+              <div class="lesson-dot"></div>
+              ${l.title}
+            </button>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = doneCount(), total = totalLessons();
+  const pct = total > 0 ? (done/total*100) : 0;
+  document.getElementById('sidebarProgBar').style.width = pct + '%';
+  document.getElementById('sidebarProgText').textContent = `${done} / ${total} lessons completed`;
+  document.getElementById('xpVal').textContent = state.xp || 0;
+}
+
+function selectChapter(chId){
+  // toggle lessons drawer
+  const drawer = document.getElementById('nav-lessons-' + chId);
+  const isOpen = drawer.style.display !== 'none';
+  // collapse all
+  COURSE.forEach(ch => {
+    const d = document.getElementById('nav-lessons-' + ch.id);
+    if(d) d.style.display = 'none';
+    document.querySelectorAll('.nav-ch').forEach(b => b.classList.remove('active'));
+  });
+  if(!isOpen || chId !== currentChapterId){
+    drawer.style.display = 'block';
+    // go to first lesson of chapter
+    const ch = COURSE.find(c => c.id === chId);
+    if(ch && ch.lessons.length) goLesson(chId, ch.lessons[0].id);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+function goHome(){
+  currentLessonId = null; currentChapterId = null;
+  document.getElementById('breadcrumb').innerHTML = '<span>Course Home</span>';
+  document.getElementById('lessonCounter').textContent = '';
+  renderHome();
+  buildSidebar();
+}
+
+function goLesson(chId, lessonId){
+  currentChapterId = chId;
+  currentLessonId = lessonId;
+  const ch = COURSE.find(c => c.id === chId);
+  const lesson = ch.lessons.find(l => l.id === lessonId);
+  const lessonIdx = ch.lessons.indexOf(lesson);
+  document.getElementById('breadcrumb').innerHTML = `<span onclick="goHome()" style="cursor:pointer;color:var(--dim)">${ch.title}</span> <span style="color:var(--muted)">›</span> <span>${lesson.title}</span>`;
+  const allLess = allLessons();
+  const globalIdx = allLess.indexOf(lesson);
+  document.getElementById('lessonCounter').textContent = `${globalIdx+1} / ${totalLessons()}`;
+  renderLesson(ch, lesson);
+  buildSidebar();
+  document.getElementById('mainScroll').scrollTo(0,0);
+}
+
+function renderHome(){
+  const done = doneCount(), total = totalLessons();
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  let html = `<div class="home-screen">
+    <div class="home-hero">
+      <div class="home-eyebrow">ICT · Operating Systems &amp; Networks · 2025–2026</div>
+      <h1 class="home-title">Installation &amp; <span>Configuration</span></h1>
+      <p class="home-sub">A complete interactive course covering all 9 chapters — from hardware assembly to Linux SSH. Work through each lesson, answer quizzes, and track your progress.</p>
+      <div class="home-stats">
+        <div class="home-stat blue"><div class="home-stat-val">${COURSE.length}</div><div class="home-stat-lbl">Chapters</div></div>
+        <div class="home-stat green"><div class="home-stat-val">${total}</div><div class="home-stat-lbl">Lessons</div></div>
+        <div class="home-stat amber"><div class="home-stat-val">${done}</div><div class="home-stat-lbl">Completed</div></div>
+        <div class="home-stat purple"><div class="home-stat-val">${state.xp||0}</div><div class="home-stat-lbl">XP Earned</div></div>
+      </div>
+      <button class="start-course-btn" onclick="startOrContinue()">
+        ${done === 0 ? '🚀 Start Course' : done === total ? '🎉 Course Complete!' : '▶ Continue Learning'}
+      </button>
+    </div>
+    <div class="section" style="margin-bottom:10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Chapters</div>
+    <div class="ch-cards">
+      ${COURSE.map(ch => {
+        const chDone = ch.lessons.filter(l => isLessonDone(l.id)).length;
+        const chPct = ch.lessons.length > 0 ? (chDone/ch.lessons.length*100) : 0;
+        return `<div class="ch-card-home" onclick="selectChapter('${ch.id}')" style="--ch-col:${ch.color}">
+          <style>.ch-card-home:hover { border-color: ${ch.color}33 !important; }
+          #card-${ch.id}::before { background: ${ch.color}; }</style>
+          <div id="card-${ch.id}" class="ch-card-home" style="display:contents"></div>
+          <div class="ch-num-home">${ch.label}</div>
+          <div class="ch-icon-home">${ch.icon}</div>
+          <div class="ch-name-home">${ch.title}</div>
+          <div class="ch-meta-home">${ch.lessons.length} lessons · ${chDone} completed</div>
+          <div class="ch-prog-home"><div class="ch-prog-fill-home" style="width:${chPct}%;background:${ch.color}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  document.getElementById('pageContent').innerHTML = html;
+}
+
+function startOrContinue(){
+  // find first undone lesson
+  for(const ch of COURSE){
+    for(const l of ch.lessons){
+      if(!isLessonDone(l.id)){ goLesson(ch.id, l.id); return; }
+    }
+  }
+  // all done
+  goLesson(COURSE[0].id, COURSE[0].lessons[0].id);
+}
+
+function renderLesson(ch, lesson){
+  let blocksHTML = lesson.blocks.map(b => renderBlock(b, ch.color)).join('');
+  // quiz
+  let quizHTML = '';
+  if(lesson.quiz){
+    const q = lesson.quiz;
+    quizHTML = `<div class="mini-quiz" id="lessonQuiz">
+      <div class="quiz-header"><span class="quiz-header-icon">🧠</span><span class="quiz-header-title">Quick Check — answer before moving on</span></div>
+      <div class="quiz-body">
+        <div class="quiz-q">${q.q}</div>
+        <div class="quiz-opts">
+          ${q.opts.map((opt,i) => `<button class="quiz-opt" onclick="answerQuiz(${i},${q.ans},'${escQ(q.exp)}')" data-i="${i}">${opt}</button>`).join('')}
+        </div>
+        <div class="quiz-exp" id="quizExp"></div>
+      </div>
+    </div>`;
+  }
+  // nav buttons
+  const allLess = allLessons();
+  const gi = allLess.indexOf(lesson);
+  const prev = gi > 0 ? allLess[gi-1] : null;
+  const next = gi < allLess.length-1 ? allLess[gi+1] : null;
+  const isDone = isLessonDone(lesson.id);
+  const footer = `<div class="lesson-footer">
+    ${prev ? `<button class="nav-prev-btn" onclick="findAndGoLesson('${prev.id}')">← Previous</button>` : ''}
+    <div class="lesson-footer-right">
+      <button class="mark-done-btn" id="markDoneBtn" onclick="completLesson('${lesson.id}')" ${isDone?'disabled':''}>
+        ${isDone ? '✅ Completed' : 'Mark as Complete'}
+      </button>
+      ${next ? `<button class="nav-next-btn" onclick="findAndGoLesson('${next.id}')">Next →</button>` : ''}
+    </div>
+  </div>`;
+  document.getElementById('pageContent').innerHTML = `
+    <div class="content">
+      <div class="lesson-hero">
+        <div class="lesson-tag">${lesson.tag}</div>
+        <h1 class="lesson-title">${lesson.title}</h1>
+        <p class="lesson-intro">${lesson.intro}</p>
+      </div>
+      ${blocksHTML}
+      ${quizHTML}
+    </div>
+    ${footer}`;
+}
+
+function escQ(s){ return s.replace(/'/g,"\\'").replace(/"/g,"&quot;"); }
+
+function findAndGoLesson(lessonId){
+  for(const ch of COURSE){
+    const l = ch.lessons.find(x => x.id === lessonId);
+    if(l){ goLesson(ch.id, lessonId); return; }
+  }
+}
+
+function completLesson(id){
+  markDone(id);
+  const btn = document.getElementById('markDoneBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '✅ Completed'; }
+  updateProgress();
+  buildSidebar();
+  // auto-advance after 1.2s
+  setTimeout(()=>{
+    const allLess = allLessons();
+    const lesson = allLess.find(l => l.id === id);
+    const gi = allLess.indexOf(lesson);
+    if(gi < allLess.length-1) findAndGoLesson(allLess[gi+1].id);
+    else showComplete();
+  }, 1200);
+}
+
+function showComplete(){
+  document.getElementById('pageContent').innerHTML = `
+    <div class="complete-screen">
+      <div class="complete-inner">
+        <div class="complete-icon">🎓</div>
+        <div class="complete-title">Course Complete!</div>
+        <div class="complete-msg">You have finished all ${totalLessons()} lessons across ${COURSE.length} chapters.<br>You earned <strong style="color:var(--amber)">${state.xp} XP</strong>!<br><br>Now use the Study App and Exam Simulator to prepare for the exam.</div>
+        <button class="start-course-btn" onclick="goHome()">← Back to Course Home</button>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  BLOCK RENDERERS
+// ══════════════════════════════════════════════════════
+function renderBlock(b, color){
+  let content = '';
+  if(b.type === 'info'){
+    content = `<div class="info-card">${b.text.replace(/\n/g,'<br>')}</div>`;
+  } else if(b.type === 'hbox'){
+    content = `<div class="hbox ${b.style}"><div class="hbox-icon">${b.icon}</div><div class="hbox-content"><strong>${b.title}</strong>${b.text.replace(/\n/g,'<br>')}</div></div>`;
+  } else if(b.type === 'table'){
+    const thead = b.headers.map(h=>`<th>${h}</th>`).join('');
+    const tbody = b.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${c}</td>`).join('')}</tr>`).join('');
+    content = `<div style="overflow-x:auto"><table class="comp-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
+  } else if(b.type === 'code'){
+    const lines = b.lines.map(l=>{
+      const cls = l.type==='comment'?'comment':l.type==='cmd'?'cmd':l.type==='path'?'path':l.type==='val'?'val':l.type==='kw'?'kw':'';
+      return `<span class="${cls}">${l.text}</span>`;
+    }).join('\n');
+    content = `<div class="code-block"><div class="code-header"><span class="code-lang">${b.lang}</span><button class="copy-code-btn" onclick="copyCode(this)">copy</button></div><div class="code-body">${lines}</div></div>`;
+  } else if(b.type === 'diagram'){
+    content = `<div class="diagram">${b.content}</div>`;
+  } else if(b.type === 'steps'){
+    const steps = b.steps.map((s,i)=>`<div class="step"><div class="step-num">${i+1}</div><div class="step-content">${s.text}</div></div>`).join('');
+    content = `<div class="steps">${steps}</div>`;
+  } else if(b.type === 'kv'){
+    const pills = b.items.map(item=>`<div class="kv-pill"><div class="kv-key">${item.key}</div><div class="kv-val">${item.val}</div><div class="kv-sub">${item.sub}</div></div>`).join('');
+    content = `<div class="kv-grid">${pills}</div>`;
+  }
+  return `<div class="lesson-block">
+    <div class="block-title" style="color:${color}">${b.title||''}</div>
+    ${content}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════════════
+function answerQuiz(chosen, correct, exp){
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach((o,i) => {
+    o.classList.add('disabled');
+    if(i === correct) o.classList.add('correct');
+    else if(i === chosen && chosen !== correct) o.classList.add('wrong');
+  });
+  const expEl = document.getElementById('quizExp');
+  expEl.classList.add('show', chosen === correct ? 'ok' : 'bad');
+  expEl.innerHTML = `<strong>${chosen===correct?'✓ Correct!':'✗ Incorrect'}</strong> ${exp}`;
+}
+
+function copyCode(btn){
+  const code = btn.closest('.code-block').querySelector('.code-body').innerText;
+  navigator.clipboard.writeText(code).catch(()=>{});
+  btn.textContent = 'copied!';
+  setTimeout(()=>btn.textContent='copy', 1800);
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+buildSidebar();
+renderHome();
+</script>
+</body>
+</html>

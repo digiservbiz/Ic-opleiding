@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IC Examen — Installatie &amp; Configuratie</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg:      #0a0c12;
+    --bg2:     #111420;
+    --bg3:     #181d2e;
+    --bg4:     #1e2438;
+    --border:  rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text:    #e2e6f0;
+    --muted:   #6b748a;
+    --dim:     #9198ab;
+    --accent:  #5b8df8;
+    --correct: #22c55e;
+    --wrong:   #ef4444;
+    --warn:    #f59e0b;
+    --mono:    'IBM Plex Mono', monospace;
+    --sans:    'Inter', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* HOME */
+  #home {
+    align-items: center; justify-content: center;
+    padding: 40px 20px;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(91,141,248,0.08) 0%, transparent 70%);
+  }
+  .home-inner { max-width: 760px; width: 100%; }
+
+  .home-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    color: var(--accent); border: 1px solid rgba(91,141,248,.3);
+    padding: 5px 12px; border-radius: 20px; margin-bottom: 28px;
+    background: rgba(91,141,248,.06);
+  }
+  .home-title {
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.02em; margin-bottom: 12px;
+  }
+  .home-title span { color: var(--accent); }
+  .home-sub { font-size: 16px; color: var(--dim); margin-bottom: 36px; max-width: 520px; }
+
+  .chapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin-bottom: 28px;
+  }
+  .ch-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: all .15s;
+    position: relative; user-select: none;
+  }
+  .ch-card:hover { border-color: var(--border2); background: var(--bg3); }
+  .ch-card.selected { border-color: var(--accent); background: rgba(91,141,248,.08); }
+  .ch-card.selected::after {
+    content: '✓'; position: absolute; top: 10px; right: 12px;
+    color: var(--accent); font-size: 13px; font-weight: 700;
+  }
+  .ch-num { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 4px; letter-spacing: .06em; }
+  .ch-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .ch-count { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .select-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .mode-row   { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+
+  .mode-btn {
+    flex: 1; min-width: 140px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; cursor: pointer;
+    text-align: left; transition: all .15s; color: var(--text);
+  }
+  .mode-btn:hover { border-color: var(--border2); background: var(--bg3); }
+  .mode-btn.selected { border-color: var(--accent); background: rgba(91,141,248,.08); }
+  .mode-icon  { font-size: 20px; margin-bottom: 6px; }
+  .mode-label { font-size: 13px; font-weight: 600; }
+  .mode-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .config-row { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; align-items: center; }
+  .config-item { display: flex; flex-direction: column; gap: 4px; }
+  .config-label { font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+
+  select, input[type=range] {
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text); font-family: var(--sans); font-size: 13px;
+    padding: 7px 10px; border-radius: 7px; outline: none;
+    transition: border-color .15s;
+  }
+  select:focus { border-color: var(--accent); }
+  .range-row { display: flex; align-items: center; gap: 8px; }
+  .range-val { font-family: var(--mono); font-size: 13px; color: var(--accent); min-width: 28px; }
+
+  .start-btn {
+    width: 100%; background: var(--accent); color: #fff;
+    font-weight: 600; font-size: 15px; border: none; border-radius: 10px;
+    padding: 16px; cursor: pointer; transition: opacity .15s, transform .1s;
+    font-family: var(--sans);
+  }
+  .start-btn:hover { opacity: .9; transform: translateY(-1px); }
+  .start-btn:active { transform: translateY(0); }
+  .start-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .link-btn {
+    background: none; border: 1px solid var(--border2); color: var(--dim);
+    font-size: 12px; padding: 6px 14px; border-radius: 6px;
+    cursor: pointer; font-family: var(--sans); transition: all .15s;
+  }
+  .link-btn:hover { color: var(--text); border-color: var(--border); }
+
+  /* QUIZ */
+  #quiz { background: var(--bg); }
+  .quiz-topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 12px 24px; display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 20; flex-wrap: wrap;
+  }
+  .q-progress-wrap { flex: 1; min-width: 120px; }
+  .q-progress-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+  .q-progress-bar { height: 4px; background: var(--bg4); border-radius: 4px; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s ease; }
+
+  .q-timer {
+    font-family: var(--mono); font-size: 14px; padding: 5px 12px;
+    border-radius: 7px; background: var(--bg3); border: 1px solid var(--border);
+    min-width: 70px; text-align: center; transition: color .3s;
+  }
+  .q-timer.warn   { color: var(--warn);  border-color: rgba(245,158,11,.3); }
+  .q-timer.danger { color: var(--wrong); border-color: rgba(239,68,68,.3); animation: pulse .6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  .q-score-live { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .q-score-live span { color: var(--correct); font-weight: 600; }
+
+  .quit-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px; padding: 5px 12px;
+    border-radius: 6px; cursor: pointer; font-family: var(--sans); transition: all .15s;
+  }
+  .quit-btn:hover { color: var(--wrong); border-color: rgba(239,68,68,.3); }
+
+  .quiz-body { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 20px 60px; }
+  .q-card { max-width: 680px; width: 100%; }
+  .q-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .q-chapter-tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+  .q-type-tag { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: .05em; }
+  .q-num { font-size: 11px; color: var(--muted); margin-left: auto; font-family: var(--mono); }
+
+  .q-text { font-size: 18px; font-weight: 500; line-height: 1.55; margin-bottom: 28px; letter-spacing: -0.01em; }
+  .q-text code { font-family: var(--mono); font-size: 14px; background: var(--bg3); padding: 2px 7px; border-radius: 5px; color: var(--accent); }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px; cursor: pointer;
+    transition: all .15s; display: flex; align-items: flex-start;
+    gap: 12px; font-size: 14px; line-height: 1.5; user-select: none;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: rgba(91,141,248,.07); }
+  .opt-letter {
+    font-family: var(--mono); font-size: 11px; width: 22px; height: 22px;
+    border-radius: 5px; background: var(--bg4); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; margin-top: 1px; font-weight: 600;
+    letter-spacing: 0; color: var(--muted); border: 1px solid var(--border); transition: all .15s;
+  }
+  .opt.selected:not(.revealed) { border-color: var(--accent); background: rgba(91,141,248,.1); }
+  .opt.selected:not(.revealed) .opt-letter { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .opt.correct { border-color: var(--correct); background: rgba(34,197,94,.08); }
+  .opt.correct .opt-letter { background: var(--correct); color: #fff; border-color: var(--correct); }
+  .opt.wrong   { border-color: var(--wrong);   background: rgba(239,68,68,.08); }
+  .opt.wrong   .opt-letter { background: var(--wrong);   color: #fff; border-color: var(--wrong); }
+  .opt.disabled { cursor: default; }
+
+  .tf-row { display: flex; gap: 12px; }
+  .tf-btn {
+    flex: 1; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px; cursor: pointer;
+    font-size: 15px; font-weight: 600; transition: all .15s;
+    color: var(--text); font-family: var(--sans); text-align: center;
+  }
+  .tf-btn:hover:not(.disabled) { border-color: var(--accent); background: rgba(91,141,248,.07); }
+  .tf-btn.selected { border-color: var(--accent); background: rgba(91,141,248,.1); }
+  .tf-btn.correct  { border-color: var(--correct); background: rgba(34,197,94,.1); color: var(--correct); }
+  .tf-btn.wrong    { border-color: var(--wrong);   background: rgba(239,68,68,.1);  color: var(--wrong); }
+  .tf-btn.disabled { cursor: default; }
+
+  .fill-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .fill-input {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 14px 18px; font-size: 15px;
+    color: var(--text); font-family: var(--sans); outline: none; transition: border-color .15s;
+  }
+  .fill-input:focus { border-color: var(--accent); }
+  .fill-input.correct { border-color: var(--correct); background: rgba(34,197,94,.06); }
+  .fill-input.wrong   { border-color: var(--wrong);   background: rgba(239,68,68,.06); }
+  .fill-input:disabled { opacity: .8; cursor: default; }
+  .fill-hint { font-size: 12px; color: var(--muted); }
+
+  .feedback { margin-top: 18px; padding: 14px 18px; border-radius: 10px; font-size: 13.5px; line-height: 1.6; display: none; }
+  .feedback.show { display: block; }
+  .feedback.ok  { background: rgba(34,197,94,.08);  border: 1px solid rgba(34,197,94,.25);  color: #86efac; }
+  .feedback.bad { background: rgba(239,68,68,.08);  border: 1px solid rgba(239,68,68,.25);  color: #fca5a5; }
+  .feedback strong { font-weight: 600; display: block; margin-bottom: 3px; }
+
+  .q-actions { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .submit-btn {
+    background: var(--accent); color: #fff; font-weight: 600;
+    font-size: 14px; border: none; border-radius: 9px; padding: 12px 28px;
+    cursor: pointer; font-family: var(--sans); transition: opacity .15s;
+  }
+  .submit-btn:hover { opacity: .88; }
+  .submit-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .next-btn {
+    background: var(--bg3); color: var(--text); font-weight: 500;
+    font-size: 14px; border: 1px solid var(--border2); border-radius: 9px;
+    padding: 12px 28px; cursor: pointer; font-family: var(--sans); transition: all .15s;
+  }
+  .next-btn:hover { background: var(--bg4); }
+
+  /* RESULTS */
+  #results {
+    align-items: center; justify-content: center; padding: 40px 20px;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(91,141,248,.07) 0%, transparent 70%);
+  }
+  .results-inner { max-width: 680px; width: 100%; }
+  .result-hero { text-align: center; margin-bottom: 40px; }
+
+  .score-ring {
+    width: 140px; height: 140px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 20px; position: relative; background: var(--bg2);
+  }
+  .score-ring svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .score-ring svg circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+  .ring-bg { stroke: var(--bg4); }
+  .ring-fg { stroke: var(--accent); transition: stroke-dashoffset 1s ease; }
+  .score-pct   { font-size: 32px; font-weight: 700; z-index: 1; font-family: var(--mono); }
+  .score-label { font-size: 11px; color: var(--muted); z-index: 1; font-family: var(--mono); }
+
+  .result-grade { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .result-msg   { font-size: 14px; color: var(--dim); margin-bottom: 8px; }
+
+  .result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-val { font-size: 24px; font-weight: 700; font-family: var(--mono); }
+  .stat-key { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .stat-card.c .stat-val { color: var(--correct); }
+  .stat-card.w .stat-val { color: var(--wrong); }
+  .stat-card.t .stat-val { color: var(--accent); }
+
+  .breakdown { margin-bottom: 32px; }
+  .breakdown-title { font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+  .ch-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .ch-row-label { font-size: 12px; color: var(--dim); min-width: 160px; }
+  .ch-bar-wrap  { flex: 1; height: 6px; background: var(--bg4); border-radius: 4px; overflow: hidden; }
+  .ch-bar-fill  { height: 100%; border-radius: 4px; transition: width 1s ease; }
+  .ch-row-pct   { font-size: 11px; font-family: var(--mono); color: var(--muted); min-width: 36px; text-align: right; }
+
+  .review-section { margin-bottom: 32px; }
+  .review-title {
+    font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+  }
+  .review-toggle { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .review-list { display: flex; flex-direction: column; gap: 10px; }
+  .review-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13px; }
+  .review-item.bad { border-left: 3px solid var(--wrong); }
+  .review-q { font-weight: 500; margin-bottom: 6px; line-height: 1.4; }
+  .review-q code { font-family: var(--mono); font-size: 12px; background: var(--bg3); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+  .review-your    { color: var(--wrong);   font-size: 12px; }
+  .review-correct { color: var(--correct); font-size: 12px; }
+  .review-ch      { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: var(--mono); }
+
+  .results-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .res-btn { flex: 1; min-width: 140px; padding: 13px; border-radius: 9px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: var(--sans); transition: all .15s; border: none; text-align: center; }
+  .res-btn.primary   { background: var(--accent); color: #fff; }
+  .res-btn.primary:hover { opacity: .88; }
+  .res-btn.secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+  .res-btn.secondary:hover { background: var(--bg4); }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 560px) {
+    .q-text { font-size: 16px; }
+    .ch-row-label { min-width: 110px; font-size: 11px; }
+    .quiz-topbar { padding: 10px 14px; gap: 10px; }
+    .stats { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════ HOME ══════ -->
+<div id="home" class="screen active">
+  <div class="home-inner">
+    <div class="home-badge">⚡ IC EXAMENSYSTEEM &nbsp;·&nbsp; 2025–2026</div>
+    <h1 class="home-title">Installatie &amp;<br><span>Configuratie</span> Examen</h1>
+    <p class="home-sub">Test je kennis over alle 9 hoofdstukken — hardware, BIOS, Windows, virtualisatie, Linux en meer.</p>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Selecteer hoofdstukken</div>
+    <div class="chapter-grid" id="chapterGrid"></div>
+
+    <div class="select-row">
+      <button class="link-btn" onclick="selectAll()">Alles selecteren</button>
+      <button class="link-btn" onclick="selectNone()">Alles deselecteren</button>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Vraagtype</div>
+    <div class="mode-row">
+      <button class="mode-btn selected" onclick="selectMode('mixed',this)">
+        <div class="mode-icon">🎲</div>
+        <div class="mode-label">Gemengd</div>
+        <div class="mode-desc">MCQ + Juist/Fout + Invullen</div>
+      </button>
+      <button class="mode-btn" onclick="selectMode('mcq',this)">
+        <div class="mode-icon">☑️</div>
+        <div class="mode-label">Meerkeuze</div>
+        <div class="mode-desc">4 antwoordopties per vraag</div>
+      </button>
+      <button class="mode-btn" onclick="selectMode('tf',this)">
+        <div class="mode-icon">⚖️</div>
+        <div class="mode-label">Juist / Fout</div>
+        <div class="mode-desc">Snelle vragen</div>
+      </button>
+      <button class="mode-btn" onclick="selectMode('fill',this)">
+        <div class="mode-icon">⌨️</div>
+        <div class="mode-label">Invulvragen</div>
+        <div class="mode-desc">Typ het juiste antwoord</div>
+      </button>
+    </div>
+
+    <div class="config-row">
+      <div class="config-item">
+        <div class="config-label">Aantal vragen</div>
+        <div class="range-row">
+          <input type="range" id="qCount" min="5" max="60" value="20" step="5"
+                 oninput="document.getElementById('qCountVal').textContent=this.value">
+          <span class="range-val" id="qCountVal">20</span>
+        </div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Timer per vraag</div>
+        <select id="timerSel">
+          <option value="0">Geen timer</option>
+          <option value="15">15 seconden</option>
+          <option value="20" selected>20 seconden</option>
+          <option value="30">30 seconden</option>
+          <option value="45">45 seconden</option>
+          <option value="60">60 seconden</option>
+        </select>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Moeilijkheidsgraad</div>
+        <select id="diffSel">
+          <option value="all" selected>Alle niveaus</option>
+          <option value="easy">Alleen makkelijk</option>
+          <option value="medium">Alleen gemiddeld</option>
+          <option value="hard">Alleen moeilijk</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startExam()">Examen starten →</button>
+  </div>
+</div>
+
+<!-- ══════ QUIZ ══════ -->
+<div id="quiz" class="screen">
+  <div class="quiz-topbar">
+    <div class="q-progress-wrap">
+      <div class="q-progress-label" id="qProgressLabel">Vraag 1 van 20</div>
+      <div class="q-progress-bar"><div class="q-progress-fill" id="qProgressFill" style="width:0%"></div></div>
+    </div>
+    <div class="q-timer hidden" id="qTimer">0:20</div>
+    <div class="q-score-live">Score: <span id="liveScore">0</span></div>
+    <button class="quit-btn" onclick="confirmQuit()">✕ Stoppen</button>
+  </div>
+
+  <div class="quiz-body">
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-chapter-tag" id="qChapterTag"></span>
+        <span class="q-type-tag"    id="qTypeTag"></span>
+        <span class="q-num"         id="qNum"></span>
+      </div>
+      <div class="q-text" id="qText"></div>
+      <div id="qBody"></div>
+      <div class="feedback" id="qFeedback"></div>
+      <div class="q-actions">
+        <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">Antwoord controleren</button>
+        <button class="next-btn hidden" id="nextBtn" onclick="nextQuestion()">Volgende →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ RESULTATEN ══════ -->
+<div id="results" class="screen">
+  <div class="results-inner">
+    <div class="result-hero">
+      <div class="score-ring" id="scoreRing">
+        <svg viewBox="0 0 140 140">
+          <circle class="ring-bg" cx="70" cy="70" r="62"/>
+          <circle class="ring-fg" id="ringFg" cx="70" cy="70" r="62"
+                  stroke-dasharray="389.6" stroke-dashoffset="389.6"/>
+        </svg>
+        <div class="score-pct"  id="scorePct">0%</div>
+        <div class="score-label">SCORE</div>
+      </div>
+      <div class="result-grade" id="resultGrade"></div>
+      <div class="result-msg"   id="resultMsg"></div>
+    </div>
+
+    <div class="result-stats">
+      <div class="stat-card c"><div class="stat-val" id="rCorrect">0</div><div class="stat-key">Juist</div></div>
+      <div class="stat-card w"><div class="stat-val" id="rWrong">0</div><div class="stat-key">Fout</div></div>
+      <div class="stat-card t"><div class="stat-val" id="rTime">0s</div><div class="stat-key">Tijd</div></div>
+    </div>
+
+    <div class="breakdown">
+      <div class="breakdown-title">Resultaat per hoofdstuk</div>
+      <div id="chBreakdown"></div>
+    </div>
+
+    <div class="review-section">
+      <div class="review-title" onclick="toggleReview()">
+        Gemiste vragen
+        <span class="review-toggle" id="reviewToggle">▼</span>
+      </div>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+
+    <div class="results-actions">
+      <button class="res-btn primary"   onclick="retryExam()">🔁 Opnieuw proberen</button>
+      <button class="res-btn secondary" onclick="goHome()">🏠 Terug naar begin</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  VRAGENBANK  — 120+ vragen, alle 9 hoofdstukken
+// ══════════════════════════════════════════════════
+const BANK = [
+
+// ── HOOFDSTUK 1: ASSEMBLAGE ──────────────────────
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'easy',
+ q:'Waarvoor staat de afkorting CPU?',
+ opts:['Central Processing Unit','Core Processing Utility','Computer Power Unit','Central Program Uploader'],
+ ans:0, exp:'CPU staat voor Central Processing Unit. Het is de hoofdprocessor die instructies uitvoert.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'easy',
+ q:'Welk sockettype gebruikt Intel waarbij de pinnen op het moederbord zitten (niet op de CPU)?',
+ opts:['PGA','AM5','LGA','FM2'],
+ ans:2, exp:'LGA (Land Grid Array) is het Intel-sockettype. De pinnen bevinden zich op het moederbord.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'easy',
+ q:'Waarvoor staat de afkorting RAM?',
+ opts:['Read Access Memory','Random Access Memory','Rapid Array Module','Run-time Allocated Memory'],
+ ans:1, exp:'RAM staat voor Random Access Memory. Het is het werkgeheugen dat leeg wordt bij uitzetten.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'medium',
+ q:'Welk opslagmedium is het SNELST?',
+ opts:['HDD (SATA)','SSD (SATA)','M.2 NVMe (PCIe)','USB 3.0-stick'],
+ ans:2, exp:'M.2 NVMe via PCIe is de snelste opslag. Het gebruikt de PCIe-bus met veel lagere latentie dan SATA.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'medium',
+ q:'Wat geeft het 80+ keurmerk op een PSU aan?',
+ opts:['Maximaal vermogen in Watt','Efficiëntie van de voeding','Maximale bedrijfstemperatuur','Geluidsniveau in decibel'],
+ ans:1, exp:'80+ (Bronze, Gold, Platinum) beoordeelt hoe efficiënt de PSU wisselstroom omzet naar gelijkstroom.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'medium',
+ q:'Waarvoor zijn P-cores (Performance Cores) in moderne Intel-processors bedoeld?',
+ opts:['Lichte achtergrondprocessen','Zware taken zoals gaming en videobewerking','Alleen geheugenbeheer','Netwerktaken'],
+ ans:1, exp:'P-cores zijn krachtige kernen voor zware werklasten. E-cores (Efficiency) zijn voor lichte taken.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'hard',
+ q:'Hoe bereken je de CPU-frequentie?',
+ opts:['Multiplier + Bus Speed','Multiplier × Bus Speed','Bus Speed ÷ Multiplier','Multiplier × Cachegrootte'],
+ ans:1, exp:'CPU-frequentie = Multiplier × Bus Speed. Bijv. multiplier 27 × 100 MHz = 2700 MHz.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'medium',
+ q:'Wat stelt het getal "8" voor in de Intel CPU-naam "i7-8550U"?',
+ opts:['SKU-prestatieklasse','Generatie','Aantal kernen','Cachegrootte in MB'],
+ ans:1, exp:'Het eerste cijfer na het koppelteken is de generatie. 8550U → generatie 8 (Coffee Lake).'},
+
+{ch:'H1',ch_label:'Assemblage',type:'mcq',diff:'hard',
+ q:'Welk cacheniveau wordt gedeeld door ALLE CPU-kernen?',
+ opts:['L1 Data','L1 Instructie','L2','L3'],
+ ans:3, exp:'L3-cache is gedeeld over alle kernen. L1 en L2 zijn per-kern caches.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'tf',diff:'easy',
+ q:'ESD (elektrostatische ontlading) kan computercomponenten permanent beschadigen.',
+ ans:true, exp:'Correct. Statische elektriciteit kan gevoelige chips vernietigen. Gebruik altijd een antistatische mat of polsband.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'tf',diff:'easy',
+ q:'Een SSD heeft net als een HDD defragmentatie nodig om goed te blijven werken.',
+ ans:false, exp:'Onjuist. SSD\'s gebruiken TRIM in plaats van defragmentatie. Defragmentatie kan een SSD juist beschadigen.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'tf',diff:'medium',
+ q:'DDR4- en DDR5-modules zijn fysiek uitwisselbaar en passen in hetzelfde slot.',
+ ans:false, exp:'Onjuist. DDR-generaties zijn NIET onderling compatibel — ze hebben verschillende inkepingen en spanningen.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'tf',diff:'medium',
+ q:'Dual-channel RAM verdubbelt de geheugenbandbreedte vergeleken met single-channel.',
+ ans:true, exp:'Correct. Dual-channel gebruikt twee RAM-sticks samen om het datapad naar de CPU te verdubbelen.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'fill',diff:'medium',
+ q:'Het communicatieprotocol dat gebruikt wordt door M.2 SSD\'s voor maximale snelheid heet ___.',
+ ans:'nvme', hint:'Non-Volatile Memory Express', exp:'NVMe (Non-Volatile Memory Express) is het protocol voor M.2 PCIe-schijven.'},
+
+{ch:'H1',ch_label:'Assemblage',type:'fill',diff:'easy',
+ q:'Het onderdeel dat netspanning omzet naar gelijkstroom voor alle pc-componenten is de ___.',
+ ans:'psu', hint:'3 letters', exp:'PSU = Power Supply Unit (voedingseenheid).'},
+
+{ch:'H1',ch_label:'Assemblage',type:'fill',diff:'hard',
+ q:'De functie die een SSD vertelt welke blokken niet meer worden gebruikt zodat ze gewist kunnen worden heet ___.',
+ ans:'trim', hint:'4 letters', exp:'TRIM vertelt de SSD welke blokken vrij zijn, zodat de schrijfprestaties op peil blijven.'},
+
+// ── HOOFDSTUK 2: BIOS/UEFI ──────────────────────
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'easy',
+ q:'Waarvoor staat de afkorting BIOS?',
+ opts:['Basic Input Output System','Binary Integrated OS System','Boot Initialisation Output Service','Base Input Output Sequence'],
+ ans:0, exp:'BIOS staat voor Basic Input Output System. Het is firmware die in een chip op het moederbord zit.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'easy',
+ q:'Waarvoor staat POST in het opstartproces?',
+ opts:['Power Output Self-Test','Pre-OS Startup Tool','Power-On Self-Test','Program Order Sequence Test'],
+ ans:2, exp:'POST = Power-On Self-Test. Controleert alle hardwarecomponenten vóór het laden van het OS.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'easy',
+ q:'Welke partitietabel ondersteunt schijven groter dan 2 TB?',
+ opts:['MBR','FAT32','GPT','NTFS'],
+ ans:2, exp:'GPT (GUID Partition Table) ondersteunt schijven tot zettabytes en tot 128 partities.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'medium',
+ q:'Wat is de maximale schijfgrootte die MBR ondersteunt?',
+ opts:['1 TB','2 TB','4 TB','8 TB'],
+ ans:1, exp:'MBR (Master Boot Record) ondersteunt schijven tot maximaal ongeveer 2 TB.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'medium',
+ q:'Wat doet Secure Boot?',
+ opts:['Versleutelt de harde schijf','Controleert of alleen vertrouwde software opstart','Versnelt het opstartproces','Stelt de opstartvolgorde automatisch in'],
+ ans:1, exp:'Secure Boot verifieert digitale handtekeningen om te voorkomen dat niet-vertrouwde software opstart.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'medium',
+ q:'Wat slaat de CMOS-chip op het moederbord op?',
+ opts:['Het besturingssysteem','Gebruikersbestanden en documenten','BIOS-instellingen zoals datum, tijd en opstartvolgorde','GPU-drivergegevens'],
+ ans:2, exp:'CMOS slaat BIOS/UEFI-instellingen op, gevoed door de CR2032-batterij.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'hard',
+ q:'Waarvoor wordt TPM gebruikt?',
+ opts:['CPU overklokken','Opslaan van sleutels voor BitLocker-versleuteling','RAM-snelheid verhogen','Netwerk-firewallinstellingen'],
+ ans:1, exp:'TPM (Trusted Platform Module) slaat cryptografische sleutels op en is vereist voor BitLocker en Windows 11.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'hard',
+ q:'XMP- en EXPO-profielen in BIOS worden gebruikt om:',
+ opts:['Secure Boot in te schakelen','RAM te overklokken naar de nominale snelheid','Firmware bij te werken','CMOS-instellingen te resetten'],
+ ans:1, exp:'XMP (Intel) en EXPO (AMD) zijn BIOS-profielen waarmee RAM op de opgegeven snelheid kan draaien.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'mcq',diff:'medium',
+ q:'Jumpers op een moederbord worden gebruikt om:',
+ opts:['Frontpanelknoppen aan te sluiten','Het BIOS-wachtwoord te resetten','De CPU-koeler te bevestigen','PCIe-lanen te configureren'],
+ ans:1, exp:'Jumpers worden gebruikt voor hardware-configuratie op moederbordniveau, o.a. het resetten van het BIOS-wachtwoord.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'tf',diff:'easy',
+ q:'UEFI is de moderne vervanger van de Legacy BIOS.',
+ ans:true, exp:'Correct. UEFI (Unified Extensible Firmware Interface) vervangt de Legacy BIOS op moderne systemen.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'tf',diff:'medium',
+ q:'Het verwijderen van de CMOS-batterij wist ook het BIOS-wachtwoord.',
+ ans:false, exp:'Onjuist. Het verwijderen van de batterij reset datum/tijd maar GEEN wachtwoorden. Gebruik jumpers voor dat doel.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'tf',diff:'medium',
+ q:'UEFI kan een grafische interface bieden die met een muis te bedienen is.',
+ ans:true, exp:'Correct. UEFI kan een volledige GUI met muisondersteuning bieden, in tegenstelling tot de tekst-gebaseerde BIOS.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'tf',diff:'hard',
+ q:'GPT ondersteunt maximaal 64 partities per schijf.',
+ ans:false, exp:'Onjuist. GPT ondersteunt standaard tot 128 partities. MBR ondersteunt slechts 4 primaire partities.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'fill',diff:'easy',
+ q:'De UEFI-beveiligingsfunctie die vertrouwde opstartsoftware verifieert heet ___ Boot.',
+ ans:'secure', hint:'Één woord', exp:'Secure Boot controleert digitale handtekeningen om onbetrouwbare code te blokkeren.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'fill',diff:'medium',
+ q:'De hardwarebeveiligingschip die vereist is voor Windows 11 en BitLocker heet ___.',
+ ans:'tpm', hint:'3 letters', exp:'TPM = Trusted Platform Module. Vereist voor Windows 11 en BitLocker-versleuteling.'},
+
+{ch:'H2',ch_label:'BIOS/UEFI',type:'fill',diff:'hard',
+ q:'Het bijwerken van de BIOS/UEFI-firmware naar een nieuwe versie heet de BIOS ___.',
+ ans:'flashen', hint:'Één woord', exp:'BIOS flashen = nieuwe firmware naar de chip schrijven. Nooit uitschakelen tijdens dit proces!'},
+
+// ── HOOFDSTUK 3: OPSTARTBARE MEDIA ──────────────────────
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'easy',
+ q:'Wat is een ISO-bestand?',
+ opts:['Een gecomprimeerd archief zoals ZIP','Een exacte kopie (image) van een cd/dvd','Een Windows-systeembestand','Een partitietabelindeling'],
+ ans:1, exp:'Een ISO-bestand is een exacte kopie van een cd of dvd, opgeslagen als één .iso-bestand.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'medium',
+ q:'Wat is het voordeel van Ventoy ten opzichte van Rufus?',
+ opts:['Ventoy installeert sneller','Ventoy ondersteunt meerdere ISO-bestanden op één USB','Ventoy werkt alleen op Mac','Ventoy maakt kleinere bestanden'],
+ ans:1, exp:'Ventoy ondersteunt meerdere ISO-bestanden op één USB (multiboot). Rufus kan maar één ISO tegelijk verwerken.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'medium',
+ q:'Welk Diskpart-commando wist alle gegevens van een geselecteerde schijf?',
+ opts:['format','erase','clean','delete disk'],
+ ans:2, exp:'Het commando "clean" verwijdert alle partities en data van de geselecteerde schijf.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'easy',
+ q:'Wat is de minimale hoeveelheid RAM voor de installatie van Windows 11?',
+ opts:['1 GB','2 GB','4 GB','8 GB'],
+ ans:2, exp:'Windows 11 vereist minimaal 4 GB RAM.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'medium',
+ q:'Wat is de minimale opslagruimte voor een Windows 11-installatie?',
+ opts:['16 GB','32 GB','64 GB','128 GB'],
+ ans:2, exp:'Windows 11 vereist minimaal 64 GB opslagruimte op een SSD of NVMe.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'hard',
+ q:'Hoeveel RAM kan een 32-bits processor maximaal adresseren?',
+ opts:['2 GB','4 GB','8 GB','16 GB'],
+ ans:1, exp:'2³² = 4.294.967.296 bytes = 4 GB. Een 32-bits processor kan niet meer dan 4 GB RAM gebruiken.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'mcq',diff:'medium',
+ q:'Welke Windows 11-editie is bedoeld voor scholen en universiteiten?',
+ opts:['Windows 11 Home','Windows 11 Pro','Windows 11 Enterprise','Windows 11 Education'],
+ ans:3, exp:'Windows 11 Education is speciaal ontworpen voor onderwijsinstellingen.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'tf',diff:'easy',
+ q:'Bij Ventoy moet je de USB-stick opnieuw flashen telkens wanneer je een nieuw ISO-bestand toevoegt.',
+ ans:false, exp:'Onjuist. Met Ventoy kopieer je ISO-bestanden gewoon naar de stick — geen herflashing nodig.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'tf',diff:'medium',
+ q:'Rufus kan de TPM- en Secure Boot-vereisten van Windows 11 omzeilen.',
+ ans:true, exp:'Correct. Rufus biedt opties om TPM, Secure Boot en RAM-controles over te slaan bij het aanmaken van de USB.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'tf',diff:'hard',
+ q:'Een 64-bits toepassing kan worden uitgevoerd op een 32-bits besturingssysteem.',
+ ans:false, exp:'Onjuist. 64-bits software vereist een 64-bits OS en CPU. 32-bits software kan wél op 64-bits draaien.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'fill',diff:'easy',
+ q:'De bestandsextensie van een ISO-imagebestand is ___.',
+ ans:'.iso', hint:'Met punt ervoor', exp:'ISO-bestanden hebben de extensie .iso, bijv. Windows11.iso.'},
+
+{ch:'H3',ch_label:'Opstartbare Media',type:'fill',diff:'medium',
+ q:'Het Windows CLI-hulpprogramma om een USB-stick te wissen vóór het opstartbaar maken heet ___.',
+ ans:'diskpart', hint:'Één woord', exp:'Diskpart wordt gebruikt om schijven en partities via de commandoregel te beheren.'},
+
+// ── HOOFDSTUK 4: INSTALLATIE ──────────────────────
+{ch:'H4',ch_label:'Installatie',type:'mcq',diff:'easy',
+ q:'Wat is het verschil tussen een Upgrade en een Schone installatie?',
+ opts:['Upgrade is sneller maar vraagt meer schijfruimte','Upgrade behoudt programma\'s en data; Schone installatie wist alles','Schone installatie is alleen voor nieuwe computers','Ze zijn hetzelfde proces'],
+ ans:1, exp:'Upgrade behoudt programma\'s en data. Schone installatie wist alles en installeert opnieuw.'},
+
+{ch:'H4',ch_label:'Installatie',type:'mcq',diff:'medium',
+ q:'Waarom trek je de netwerkkabel tijdens de Windows-installatie uit?',
+ opts:['Om te voorkomen dat Windows malware downloadt','Om de Microsoft-accountvereiste over te slaan en de installatie te versnellen','Omdat er geen netwerkstuurprogramma beschikbaar is tijdens installatie','Om Windows Update te voorkomen'],
+ ans:1, exp:'Zonder netwerkverbinding kun je een lokaal account aanmaken in plaats van een verplicht Microsoft-account.'},
+
+{ch:'H4',ch_label:'Installatie',type:'mcq',diff:'medium',
+ q:'Waar verander je de computernaam (hostname) in Windows 11?',
+ opts:['Configuratiescherm → Systeem → Geavanceerd','Instellingen → Systeem → Info → Naam van deze pc wijzigen','Apparaatbeheer → Eigenschappen','Taakbeheer → Prestaties'],
+ ans:1, exp:'Via Instellingen → Systeem → Info → Naam van deze pc wijzigen pas je de hostname aan in Windows 11.'},
+
+{ch:'H4',ch_label:'Installatie',type:'mcq',diff:'hard',
+ q:'Om de TPM- en Secure Boot-controles tijdens installatie te omzeilen, bewerk je het register op:',
+ opts:['HKEY_CURRENT_USER\\Software\\Windows','HKEY_LOCAL_MACHINE\\SYSTEM\\Setup\\LABIC','HKEY_LOCAL_MACHINE\\HARDWARE\\TPM','HKEY_LOCAL_MACHINE\\SYSTEM\\BIOS'],
+ ans:1, exp:'Maak de sleutel LABIC onder HKEY_LOCAL_MACHINE\\SYSTEM\\Setup en voeg DWORD-waarden toe: BypassTPMCheck=1 en BypassSecureBootCheck=1.'},
+
+{ch:'H4',ch_label:'Installatie',type:'mcq',diff:'medium',
+ q:'Waar vind je optionele stuurprogramma-updates in Windows 11?',
+ opts:['Apparaatbeheer → Stuurprogramma bijwerken','Windows Update → Geavanceerde opties → Optionele updates','Microsoft Store → Stuurprogramma\'s','Configuratiescherm → Hardware → Stuurprogramma\'s'],
+ ans:1, exp:'Windows Update → Geavanceerde opties → Optionele updates bevat stuurprogramma-updates van fabrikanten.'},
+
+{ch:'H4',ch_label:'Installatie',type:'tf',diff:'easy',
+ q:'Je hebt een productcode nodig om Windows 11 Education in het lab te installeren.',
+ ans:false, exp:'Onjuist. Tijdens de installatie klik je op "Ik heb geen productcode" en selecteer je de editie handmatig.'},
+
+{ch:'H4',ch_label:'Installatie',type:'tf',diff:'medium',
+ q:'Een geel uitroepteken in Apparaatbeheer betekent dat een stuurprogramma ontbreekt of defect is.',
+ ans:true, exp:'Correct. Een geel uitroepteken (⚠️) in Apparaatbeheer wijst op een probleem met een stuurprogramma.'},
+
+{ch:'H4',ch_label:'Installatie',type:'fill',diff:'medium',
+ q:'De unieke netwerknaam die aan een computer wordt toegewezen heet de ___.',
+ ans:'hostname', hint:'Één woord', exp:'De hostname (computernaam) identificeert de computer op het netwerk.'},
+
+{ch:'H4',ch_label:'Installatie',type:'fill',diff:'hard',
+ q:'De DWORD-registerwaarde die op 1 gezet wordt om de TPM-vereiste te omzeilen heet Bypass___Check.',
+ ans:'tpm', hint:'3 letters', exp:'BypassTPMCheck = 1 slaat de TPM 2.0-controle over tijdens de Windows 11-installatie.'},
+
+// ── HOOFDSTUK 5: WINDOWS TOOLS ──────────────────────
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'easy',
+ q:'Welk commando opent het Lokale gebruikersbeheer?',
+ opts:['usermgr.msc','localusers.msc','lusrmgr.msc','users.cpl'],
+ ans:2, exp:'lusrmgr.msc opent Lokale gebruikers en groepen om gebruikers en groepen te beheren.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'easy',
+ q:'Welk commando opent Taakbeheer?',
+ opts:['taskman','taskmgr','taskmanager','procmgr'],
+ ans:1, exp:'taskmgr opent Taakbeheer voor het bewaken van processen, services en prestaties.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'easy',
+ q:'Waar worden 32-bits toepassingen geïnstalleerd op een 64-bits Windows-systeem?',
+ opts:['C:\\Program Files','C:\\Applications (x86)','C:\\Program Files (x86)','C:\\Windows\\System32'],
+ ans:2, exp:'C:\\Program Files (x86) bevat 32-bits toepassingen op 64-bits Windows-systemen.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'medium',
+ q:'Welk commando opent direct de netwerkkaarteninstellingen?',
+ opts:['netadapt.cpl','ncpa.cpl','network.msc','net.cpl'],
+ ans:1, exp:'ncpa.cpl opent Netwerkverbindingen (adapterinstellingen) direct vanuit het uitvoervenster.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'medium',
+ q:'Waarvoor staat MMC?',
+ opts:['Master Management Console','Microsoft Management Console','Module Management Center','Modular Microsoft Configuration'],
+ ans:1, exp:'MMC = Microsoft Management Console. Centraliseert meerdere beheerhulpmiddelen (modules) in één venster.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'hard',
+ q:'Welke map bevat per-gebruiker toepassingsinstellingen met de submappen Roaming, Local en LocalLow?',
+ opts:['C:\\ProgramData','C:\\Users\\Public','C:\\Users\\[naam]\\AppData','C:\\Windows\\System32\\config'],
+ ans:2, exp:'AppData in het gebruikersprofiel slaat per-gebruiker toepassingsdata op in Roaming, Local en LocalLow.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'mcq',diff:'medium',
+ q:'Welke map bevat de essentiële Windows-systeembestanden en DLL-bestanden?',
+ opts:['C:\\Windows\\SysFiles','C:\\Windows\\System32','C:\\Program Files\\Windows','C:\\System\\Core'],
+ ans:1, exp:'C:\\Windows\\System32 bevat essentiële Windows-systeembestanden, DLL\'s en uitvoerbare bestanden.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'tf',diff:'easy',
+ q:'De Microsoft Store biedt veiligere app-installaties dan willekeurige .exe-bestanden van het internet.',
+ ans:true, exp:'Correct. Apps in de Microsoft Store worden door Microsoft gecontroleerd, wat het veiligheidsrisico verlaagt.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'tf',diff:'medium',
+ q:'De map C:\\ProgramData is standaard zichtbaar in Windows Verkenner.',
+ ans:false, exp:'Onjuist. ProgramData is standaard verborgen. Schakel "Verborgen items weergeven" in Windows Verkenner in.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'fill',diff:'easy',
+ q:'Het Windows-hulpmiddel om lokale gebruikers en groepen te beheren open je met het commando ___.',
+ ans:'lusrmgr.msc', hint:'Formaat: xxxxx.msc', exp:'lusrmgr.msc opent Lokale gebruikers en groepen.'},
+
+{ch:'H5',ch_label:'Windows Tools',type:'fill',diff:'medium',
+ q:'De basismap van de Windows-installatieschijf, aangeduid als rootdirectory, is ___.',
+ ans:'c:', hint:'Stationsletter met dubbele punt', exp:'C: is de traditionele rootdirectory in Windows (C:\\).'},
+
+// ── HOOFDSTUK 6: TERMINAL ──────────────────────
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'easy',
+ q:'Welk CMD-commando toont alle bestanden en mappen in de huidige map?',
+ opts:['ls','list','dir','show'],
+ ans:2, exp:'"dir" is het Windows CMD-commando om mapinhoud weer te geven. "ls" is het Linux-equivalent.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'easy',
+ q:'Hoe ga je één niveau hoger naar de bovenliggende map in CMD?',
+ opts:['cd /up','cd..','cd\\','cd~'],
+ ans:1, exp:'"cd.." gaat één mapniveau omhoog naar de bovenliggende map.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'easy',
+ q:'Welk commando wist het CMD-scherm?',
+ opts:['clear','cls','clr','clean'],
+ ans:1, exp:'"cls" (clear screen) wist het Opdrachtpromptvenster. In Linux gebruik je "clear".'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'medium',
+ q:'Welk commando kopieert een map met alle inhoud in CMD?',
+ opts:['copy','cp','xcopy','alleen robocopy'],
+ ans:2, exp:'"xcopy" kopieert mappen met alle inhoud. "copy" werkt alleen voor afzonderlijke bestanden.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'medium',
+ q:'Wat doet het jokerteken "*" in het commando "dir c*"?',
+ opts:['Toont alle bestanden op de C-schijf','Toont alleen .c-bestanden','Toont alle items die beginnen met de letter c','Verwijdert bestanden die beginnen met c'],
+ ans:2, exp:'Het jokerteken * matcht willekeurige tekens. "dir c*" toont alle bestanden/mappen die beginnen met "c".'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'medium',
+ q:'Welk CMD-commando verwijdert een map ÉN alle inhoud?',
+ opts:['del /S','rmdir','rmdir /S','erase /F'],
+ ans:2, exp:'"rmdir /S" verwijdert een map en alle submappen en bestanden recursief.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'hard',
+ q:'Welk commando voegt een opmerking toe aan een batch-bestand die NIET wordt uitgevoerd?',
+ opts:['// opmerking','# opmerking','REM opmerking',':: opmerking alleen'],
+ ans:2, exp:'REM (Remark) voegt niet-uitvoerbare opmerkingen toe aan batch-bestanden.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'mcq',diff:'medium',
+ q:'Welk commando beëindigt een actief proces op naam in CMD?',
+ opts:['kill notepad.exe','taskkill /IM notepad.exe','endtask notepad.exe','stop /IM notepad.exe'],
+ ans:1, exp:'"taskkill /IM procesnaam.exe" beëindigt een actief proces op naam.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'tf',diff:'easy',
+ q:'CMD (Opdrachtprompt) is hoofdlettergevoelig — "DIR" en "dir" zijn verschillende commando\'s.',
+ ans:false, exp:'Onjuist. CMD is NIET hoofdlettergevoelig. "DIR", "dir" en "Dir" doen allemaal hetzelfde.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'tf',diff:'medium',
+ q:'Een batch-bestand (.bat) kan een ander batch-bestand aanroepen via het CALL-commando.',
+ ans:true, exp:'Correct. Met CALL kun je batch-bestanden nesten — het ene script roept het andere aan.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'tf',diff:'medium',
+ q:'Het commando "xcopy" maakt automatisch de doelmap aan als deze nog niet bestaat.',
+ ans:true, exp:'Correct. xcopy maakt de doelmap automatisch aan, in tegenstelling tot het basiscommando copy.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'fill',diff:'easy',
+ q:'Het CMD-commando om een nieuwe map aan te maken is ___.',
+ ans:'mkdir', hint:'5 letters', exp:'"mkdir" (make directory) maakt een nieuwe map. Equivalent aan "md".'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'fill',diff:'medium',
+ q:'Om de help-informatie van een CMD-commando te zien, voeg je ___ toe na het commando.',
+ ans:'/?', hint:'2 tekens', exp:'"commando /?" toont alle opties en syntaxis van dat commando.'},
+
+{ch:'H6',ch_label:'Terminal (CMD)',type:'fill',diff:'hard',
+ q:'De bestandsextensie van een CMD-scriptbestand is ___.',
+ ans:'.bat', hint:'Met punt ervoor', exp:'Batch-bestanden hebben de extensie .bat en voeren CMD-commando\'s automatisch uit.'},
+
+// ── HOOFDSTUK 7: VIRTUALISATIE ──────────────────────
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'easy',
+ q:'Wat is het voornaamste doel van virtualisatie?',
+ opts:['Computers sneller maken','Één fysiek systeem opdelen in meerdere virtuele machines','Gegevens automatisch back-uppen','Sneller verbinding maken met het internet'],
+ ans:1, exp:'Virtualisatie splitst één fysieke machine in meerdere geïsoleerde VM\'s die elk een eigen OS draaien.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'easy',
+ q:'Hoe wordt een Type 1-hypervisor ook wel genoemd?',
+ opts:['Hosted hypervisor','Virtual Machine Tool','Bare Metal hypervisor','Guest OS manager'],
+ ans:2, exp:'Type 1-hypervisors worden Bare Metal genoemd omdat ze rechtstreeks op de hardware draaien zonder host OS.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'medium',
+ q:'Welk van de volgende is een voorbeeld van een Type 2 (Hosted) hypervisor?',
+ opts:['VMware ESXi','Microsoft Hyper-V','VirtualBox','Proxmox'],
+ ans:2, exp:'VirtualBox is een Type 2-hypervisor — hij draait als toepassing bovenop een host OS.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'medium',
+ q:'Wat is een VHDX-bestand in Hyper-V?',
+ opts:['Een virtuele netwerkkaart','Een VM-configuratiebestand','Een virtuele harde schijf','Een controlepunt-back-up'],
+ ans:2, exp:'VHDX is het formaat voor virtuele harde schijven in Hyper-V. Het wordt opgeslagen als bestand op de host.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'medium',
+ q:'Welke Hyper-V virtuele switch geeft een VM toegang tot het internet via de NIC van de host?',
+ opts:['Privé-switch','Standaardswitch','Interne switch','Externe switch'],
+ ans:3, exp:'De Externe switch koppelt (bridge) de fysieke NIC van de host, zodat de VM toegang heeft tot LAN en internet.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'hard',
+ q:'Welke Hyper-V virtuele switch laat VM\'s ALLEEN met elkaar communiceren (niet met de host)?',
+ opts:['Standaardswitch','Interne switch','Privé-switch','Externe switch'],
+ ans:2, exp:'De Privé-switch isoleert VM\'s volledig — ze kunnen alleen communiceren met andere VM\'s op dezelfde switch.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'medium',
+ q:'Waarom kies je Generatie 2 bij het aanmaken van een Hyper-V VM voor Windows 11?',
+ opts:['Generatie 2 gebruikt minder RAM','Generatie 2 gebruikt UEFI, vereist door Windows 11','Generatie 2 ondersteunt meer CPU\'s','Generatie 2 is sneller voor gaming'],
+ ans:1, exp:'Generatie 2-VM\'s gebruiken UEFI (GPT), een vereiste voor de installatie van Windows 11.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'mcq',diff:'hard',
+ q:'Wat gebeurt er met de TCP/IPv4-instelling van de host-NIC bij het aanmaken van een Externe switch?',
+ opts:['De host krijgt een tweede IP-adres','TCP/IPv4 wordt uitgeschakeld en verplaatst naar de virtuele switch','Het wordt permanent verwijderd','Er verandert niets'],
+ ans:1, exp:'De Externe switch koppelt de NIC — TCP/IPv4 verhuist van de fysieke NIC naar de switch. Schakel het nooit handmatig opnieuw in op de fysieke NIC.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'tf',diff:'easy',
+ q:'Een Type 1-hypervisor heeft een host-besturingssysteem nodig om te werken.',
+ ans:false, exp:'Onjuist. Type 1 (Bare Metal) draait rechtstreeks op de hardware, zonder host OS.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'tf',diff:'medium',
+ q:'Virtualisatie moet in de BIOS/UEFI worden ingeschakeld om Hyper-V te laten werken.',
+ ans:true, exp:'Correct. CPU-virtualisatieondersteuning (Intel VT-x of AMD-V) moet zijn ingeschakeld in BIOS/UEFI.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'tf',diff:'medium',
+ q:'Een Hyper-V controlepunt maakt het mogelijk een VM te herstellen naar een eerdere toestand.',
+ ans:true, exp:'Correct. Controlepunten zijn momentopnames van de VM-toestand die op elk moment hersteld kunnen worden.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'tf',diff:'hard',
+ q:'De interne virtuele switch geeft VM\'s toegang tot het internet.',
+ ans:false, exp:'Onjuist. De Interne switch staat alleen VM↔VM- en VM↔host-communicatie toe. Geen internettoegang.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'fill',diff:'easy',
+ q:'De software die fysieke hardwarebronnen beheert en verdeelt over virtuele machines heet een ___.',
+ ans:'hypervisor', hint:'Één woord', exp:'Een hypervisor (VMM) verdeelt CPU, RAM, opslag en netwerk over VM\'s.'},
+
+{ch:'H7',ch_label:'Virtualisatie',type:'fill',diff:'medium',
+ q:'Het bestandsformaat voor virtuele harde schijven in Hyper-V heet ___.',
+ ans:'vhdx', hint:'4 letters', exp:'VHDX is het Hyper-V-formaat voor virtuele harde schijven, opgeslagen als bestand op de host.'},
+
+// ── HOOFDSTUK 8: WSL ──────────────────────
+{ch:'H8',ch_label:'WSL',type:'mcq',diff:'easy',
+ q:'Waarvoor staat WSL?',
+ opts:['Windows Shell Layer','Windows Subsystem for Linux','Windows System Loader','Wide System Linux'],
+ ans:1, exp:'WSL = Windows Subsystem for Linux. Hiermee kun je Linux-tools rechtstreeks in Windows gebruiken.'},
+
+{ch:'H8',ch_label:'WSL',type:'mcq',diff:'medium',
+ q:'Welk commando installeert WSL met de standaard Ubuntu-distributie?',
+ opts:['wsl --setup','install-wsl','wsl --install','wsl -setup ubuntu'],
+ ans:2, exp:'"wsl --install" installeert WSL 2 met Ubuntu als standaarddistributie.'},
+
+{ch:'H8',ch_label:'WSL',type:'mcq',diff:'medium',
+ q:'Welk commando toont alle momenteel geïnstalleerde WSL-distributies?',
+ opts:['wsl --list','wsl --show','wsl --distros','wsl -l'],
+ ans:0, exp:'"wsl --list" (of "wsl -l") toont alle geïnstalleerde distributies.'},
+
+{ch:'H8',ch_label:'WSL',type:'mcq',diff:'hard',
+ q:'Welk commando toont ALLE beschikbare distributies om te installeren (niet alleen de geïnstalleerde)?',
+ opts:['wsl --list','wsl --list --all','wsl --list --online','wsl --available'],
+ ans:2, exp:'"wsl --list --online" toont alle distributies die via Microsoft beschikbaar zijn om te installeren.'},
+
+{ch:'H8',ch_label:'WSL',type:'tf',diff:'easy',
+ q:'WSL 2 vereist een aparte virtuele machine om Linux-distributies uit te voeren.',
+ ans:false, exp:'Onjuist. WSL draait Linux rechtstreeks in Windows zonder een aparte VM zoals Hyper-V nodig te hebben.'},
+
+{ch:'H8',ch_label:'WSL',type:'tf',diff:'medium',
+ q:'Je kunt Debian installeren als WSL-distributie met het commando "wsl --install -d Debian".',
+ ans:true, exp:'Correct. De vlag -d geeft de distributie aan. "wsl --install -d Debian" installeert Debian.'},
+
+{ch:'H8',ch_label:'WSL',type:'fill',diff:'medium',
+ q:'Om de huidige WSL-versie en standaarddistributie te controleren gebruik je het commando wsl ___.',
+ ans:'--status', hint:'Begint met --', exp:'"wsl --status" toont de WSL-versie, standaarddistributie en kernelversie.'},
+
+// ── HOOFDSTUK 9: LINUX ──────────────────────
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'easy',
+ q:'Welke pakketbeheerder wordt gebruikt door Ubuntu en Debian?',
+ opts:['rpm','yum','apt','pacman'],
+ ans:2, exp:'apt (Advanced Package Tool) is de pakketbeheerder voor Debian-gebaseerde distributies zoals Ubuntu.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'easy',
+ q:'Welk commando toont de inhoud van een map in Linux?',
+ opts:['dir','list','ls','show'],
+ ans:2, exp:'"ls" (list) is het Linux-commando om mapinhoud te tonen. In Windows CMD gebruik je "dir".'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'easy',
+ q:'Waarvoor staat LTS in "Ubuntu 24.04 LTS"?',
+ opts:['Latest Technology Support','Long Term Support','Linux Terminal System','Large Thread Stability'],
+ ans:1, exp:'LTS = Long Term Support. Ubuntu LTS-releases krijgen 5 jaar beveiligings- en onderhoudsupdates.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'medium',
+ q:'Welk commando vernieuwt de lijst met beschikbare pakketten (zonder iets te installeren)?',
+ opts:['sudo apt upgrade','sudo apt update','sudo apt refresh','sudo apt sync'],
+ ans:1, exp:'"sudo apt update" vernieuwt de lokale pakketlijst vanuit de repository. Er wordt GEEN software geïnstalleerd.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'medium',
+ q:'Welke map bevat systeembrede configuratiebestanden in Linux?',
+ opts:['/var','/bin','/etc','/home'],
+ ans:2, exp:'/etc bevat systeemconfiguratiebestanden zoals /etc/passwd, /etc/hosts en /etc/ssh/sshd_config.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'medium',
+ q:'Op welke standaardpoort luistert SSH?',
+ opts:['80','443','22','21'],
+ ans:2, exp:'SSH luistert standaard op poort 22. Dit kan worden gewijzigd in /etc/ssh/sshd_config.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'medium',
+ q:'Welk commando verwijdert een pakket ÉN de bijbehorende configuratiebestanden?',
+ opts:['apt remove','apt delete','apt purge','apt uninstall'],
+ ans:2, exp:'"apt purge" verwijdert het pakket én alle configuratiebestanden. "apt remove" bewaart de configuratie.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'hard',
+ q:'Wat betekent het #-teken als promptsymbool in de Linux-terminal?',
+ opts:['Een opmerking in de terminal','Je bent aangemeld als root','Het systeem is bezig','Er draait een script'],
+ ans:1, exp:'# als prompt = root-gebruiker. $ als prompt = gewone gebruiker. Dit is een belangrijk veiligheidsindicator.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'hard',
+ q:'Tot welke Linux-familie behoort Ubuntu?',
+ opts:['RHEL-familie','Arch-familie','Debian-familie','Slackware-familie'],
+ ans:2, exp:'Ubuntu behoort tot de Debian-familie en gebruikt .deb-pakketten en de apt-pakketbeheerder.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'medium',
+ q:'Welk commando installeert een lokaal .deb-bestand in Linux?',
+ opts:['apt install bestand.deb','dpkg -i bestand.deb','rpm -i bestand.deb','install bestand.deb'],
+ ans:1, exp:'"dpkg -i bestand.deb" installeert een lokaal Debian-pakketbestand dat niet in de repository staat.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'hard',
+ q:'Welke map bevat logbestanden in Linux?',
+ opts:['/etc/logs','/var/log','/home/logs','/sys/log'],
+ ans:1, exp:'/var/log is de standaardlocatie voor systeem- en toepassingslogbestanden in Linux.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'medium',
+ q:'Wat is GRUB in Linux?',
+ opts:['Een pakketbeheerder','Een teksteditor','De bootloader','Een firewall-tool'],
+ ans:2, exp:'GRUB (Grand Unified Bootloader) is de bootloader die bij het opstarten het OS-keuzemenu toont.'},
+
+{ch:'H9',ch_label:'Linux',type:'mcq',diff:'hard',
+ q:'Na het aanpassen van het SSH-configuratiebestand, welke commando\'s moet je uitvoeren?',
+ opts:['Alleen herstarten','apt update && apt upgrade','systemctl daemon-reload && systemctl restart ssh','service ssh start alleen'],
+ ans:2, exp:'Voer eerst "systemctl daemon-reload" uit om systemd te herladen, dan "systemctl restart ssh" om de wijzigingen toe te passen.'},
+
+{ch:'H9',ch_label:'Linux',type:'tf',diff:'easy',
+ q:'Linux-terminalcommando\'s zijn hoofdlettergevoelig.',
+ ans:true, exp:'Correct. Linux IS hoofdlettergevoelig. "ls" en "LS" zijn verschillende commando\'s. Anders dan Windows CMD.'},
+
+{ch:'H9',ch_label:'Linux',type:'tf',diff:'easy',
+ q:'Verborgen bestanden in Linux beginnen met een punt (.).',
+ ans:true, exp:'Correct. Bestanden en mappen die beginnen met een punt zijn verborgen. Gebruik "ls -a" om ze te tonen.'},
+
+{ch:'H9',ch_label:'Linux',type:'tf',diff:'medium',
+ q:'"apt update" installeert de nieuwste software-updates op je systeem.',
+ ans:false, exp:'Onjuist. "apt update" vernieuwt alleen de pakketlijst. Gebruik "apt upgrade" om updates te installeren.'},
+
+{ch:'H9',ch_label:'Linux',type:'tf',diff:'medium',
+ q:'Het commando sudo voert één commando uit met rootrechten.',
+ ans:true, exp:'Correct. "sudo" (SuperUser Do) voert één commando uit als root en vraagt je wachtwoord.'},
+
+{ch:'H9',ch_label:'Linux',type:'tf',diff:'hard',
+ q:'RPM-pakketten (.rpm) kunnen op Ubuntu worden geïnstalleerd via de apt-pakketbeheerder.',
+ ans:false, exp:'Onjuist. Ubuntu gebruikt .deb-pakketten en apt/dpkg. RPM-pakketten zijn voor RHEL-distributies (Fedora, CentOS).'},
+
+{ch:'H9',ch_label:'Linux',type:'tf',diff:'hard',
+ q:'De map /root en de map / (root) zijn hetzelfde in Linux.',
+ ans:false, exp:'Onjuist. "/" is de root van het volledige bestandssysteem. "/root" is de thuismap van de root-gebruiker.'},
+
+{ch:'H9',ch_label:'Linux',type:'fill',diff:'easy',
+ q:'Het Linux-commando om de inhoud van een map weer te geven is ___.',
+ ans:'ls', hint:'2 letters', exp:'"ls" toont de inhoud van een map. Gebruik "ls -a" voor verborgen bestanden.'},
+
+{ch:'H9',ch_label:'Linux',type:'fill',diff:'medium',
+ q:'Om een pakket te installeren in Ubuntu gebruik je het commando sudo apt ___.',
+ ans:'install', hint:'Één woord', exp:'"sudo apt install pakketnaam" downloadt en installeert een pakket vanuit de repository.'},
+
+{ch:'H9',ch_label:'Linux',type:'fill',diff:'easy',
+ q:'De sneltoets om een terminal te openen in Ubuntu is Ctrl + Alt + ___.',
+ ans:'t', hint:'1 letter', exp:'Ctrl + Alt + T is de standaard sneltoets om een terminal te openen in Ubuntu.'},
+
+{ch:'H9',ch_label:'Linux',type:'fill',diff:'medium',
+ q:'De Nano-sneltoets om een bestand op te slaan is Ctrl + ___.',
+ ans:'o', hint:'1 letter', exp:'Ctrl+O (Write Out) slaat het huidige bestand op in Nano. Ctrl+X sluit af.'},
+
+{ch:'H9',ch_label:'Linux',type:'fill',diff:'hard',
+ q:'Het Linux-commando om een bestand te downloaden via een URL met behoud van de originele bestandsnaam is curl ___.',
+ ans:'-o', hint:'Koppelteken + letter', exp:'"curl -O URL" downloadt een bestand en behoudt de originele bestandsnaam uit de URL.'},
+
+{ch:'H9',ch_label:'Linux',type:'fill',diff:'medium',
+ q:'Om via SSH verbinding te maken met een server op een andere poort gebruik je de parameter ___.',
+ ans:'-p', hint:'Koppelteken + letter', exp:'"ssh -p 22000 gebruiker@host" maakt verbinding op poort 22000 in plaats van de standaardpoort 22.'},
+
+];
+
+// ══════════════════════════════════════════════════
+//  HOOFDSTUK METADATA
+// ══════════════════════════════════════════════════
+const CHAPTERS = [
+  {id:'H1', label:'H1 – Assemblage',          color:'#4f8ef7', bg:'rgba(79,142,247,.12)'},
+  {id:'H2', label:'H2 – BIOS/UEFI',           color:'#6ee7b7', bg:'rgba(110,231,183,.12)'},
+  {id:'H3', label:'H3 – Opstartbare Media',    color:'#f472b6', bg:'rgba(244,114,182,.12)'},
+  {id:'H4', label:'H4 – Installatie',          color:'#fbbf24', bg:'rgba(251,191,36,.12)'},
+  {id:'H5', label:'H5 – Windows Tools',        color:'#a78bfa', bg:'rgba(167,139,250,.12)'},
+  {id:'H6', label:'H6 – Terminal (CMD)',        color:'#f87171', bg:'rgba(248,113,113,.12)'},
+  {id:'H7', label:'H7 – Virtualisatie',        color:'#34d399', bg:'rgba(52,211,153,.12)'},
+  {id:'H8', label:'H8 – WSL',                  color:'#38bdf8', bg:'rgba(56,189,248,.12)'},
+  {id:'H9', label:'H9 – Linux',                color:'#fb923c', bg:'rgba(251,146,60,.12)'},
+];
+
+// ══════════════════════════════════════════════════
+//  TOESTAND
+// ══════════════════════════════════════════════════
+let selectedChapters = new Set(['H1','H2','H3','H4','H5','H6','H7','H8','H9']);
+let selectedMode     = 'mixed';
+let examQuestions    = [];
+let currentIdx       = 0;
+let correctCount     = 0;
+let userAnswers      = [];
+let timerInterval    = null;
+let timerLeft        = 0;
+let timerPerQ        = 0;
+let examStartTime    = 0;
+
+// ══════════════════════════════════════════════════
+//  HOME OPBOUWEN
+// ══════════════════════════════════════════════════
+function buildHome() {
+  const grid = document.getElementById('chapterGrid');
+  const counts = {};
+  BANK.forEach(q => { counts[q.ch] = (counts[q.ch]||0) + 1; });
+
+  CHAPTERS.forEach(ch => {
+    const card = document.createElement('div');
+    card.className = 'ch-card selected';
+    card.dataset.ch = ch.id;
+    card.innerHTML = `
+      <div class="ch-num">${ch.id}</div>
+      <div class="ch-name">${ch.label.replace(/H\d+ – /,'')}</div>
+      <div class="ch-count">${counts[ch.id]||0} vragen</div>`;
+    card.onclick = () => toggleChapter(ch.id, card);
+    grid.appendChild(card);
+  });
+}
+
+function toggleChapter(id, card) {
+  if (selectedChapters.has(id)) { selectedChapters.delete(id); card.classList.remove('selected'); }
+  else                           { selectedChapters.add(id);    card.classList.add('selected'); }
+  updateStartBtn();
+}
+
+function selectAll()  {
+  document.querySelectorAll('.ch-card').forEach(c => { selectedChapters.add(c.dataset.ch); c.classList.add('selected'); });
+  updateStartBtn();
+}
+function selectNone() {
+  document.querySelectorAll('.ch-card').forEach(c => { selectedChapters.delete(c.dataset.ch); c.classList.remove('selected'); });
+  updateStartBtn();
+}
+function selectMode(mode, btn) {
+  selectedMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function updateStartBtn() {
+  document.getElementById('startBtn').disabled = selectedChapters.size === 0;
+}
+
+// ══════════════════════════════════════════════════
+//  EXAMEN STARTEN
+// ══════════════════════════════════════════════════
+function startExam() {
+  const qCount = parseInt(document.getElementById('qCount').value);
+  timerPerQ    = parseInt(document.getElementById('timerSel').value);
+  const diff   = document.getElementById('diffSel').value;
+
+  let pool = BANK.filter(q => selectedChapters.has(q.ch));
+  if (diff !== 'all')         pool = pool.filter(q => q.diff === diff);
+  if (selectedMode !== 'mixed') pool = pool.filter(q => q.type === selectedMode);
+  if (!pool.length) { alert('Geen vragen gevonden voor deze selectie. Probeer een andere moeilijkheidsgraad of vraagtype.'); return; }
+
+  pool          = shuffle([...pool]);
+  examQuestions = pool.slice(0, Math.min(qCount, pool.length));
+  currentIdx    = 0;
+  correctCount  = 0;
+  userAnswers   = [];
+  examStartTime = Date.now();
+
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ══════════════════════════════════════════════════
+//  VRAAG WEERGEVEN
+// ══════════════════════════════════════════════════
+function renderQuestion() {
+  const q     = examQuestions[currentIdx];
+  const total = examQuestions.length;
+  const pct   = (currentIdx / total) * 100;
+
+  document.getElementById('qProgressFill').style.width  = pct + '%';
+  document.getElementById('qProgressLabel').textContent = `Vraag ${currentIdx+1} van ${total}`;
+  document.getElementById('qNum').textContent           = `${currentIdx+1} / ${total}`;
+
+  const chMeta = CHAPTERS.find(c => c.id === q.ch) || {};
+  const tag    = document.getElementById('qChapterTag');
+  tag.textContent      = q.ch_label;
+  tag.style.background = chMeta.bg    || 'rgba(255,255,255,.08)';
+  tag.style.color      = chMeta.color || '#fff';
+
+  const typeLabels = {mcq:'Meerkeuze', tf:'Juist / Fout', fill:'Invulvraag'};
+  document.getElementById('qTypeTag').textContent = typeLabels[q.type] || '';
+  document.getElementById('qText').innerHTML      = q.q.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  const body = document.getElementById('qBody');
+  body.innerHTML = '';
+
+  if (q.type === 'mcq') {
+    const letters = ['A','B','C','D'];
+    body.innerHTML = `<div class="options">` +
+      q.opts.map((opt, i) =>
+        `<div class="opt" data-idx="${i}" onclick="selectOpt(this,${i})">
+          <span class="opt-letter">${letters[i]}</span>
+          <span>${opt}</span>
+        </div>`).join('') + `</div>`;
+  } else if (q.type === 'tf') {
+    body.innerHTML = `<div class="tf-row">
+      <button class="tf-btn" onclick="selectTF(this,true)">✓ Juist</button>
+      <button class="tf-btn" onclick="selectTF(this,false)">✕ Fout</button>
+    </div>`;
+  } else if (q.type === 'fill') {
+    body.innerHTML = `<div class="fill-wrap">
+      <input class="fill-input" id="fillInput" type="text"
+             placeholder="Typ je antwoord…"
+             onkeydown="if(event.key==='Enter') submitAnswer()">
+      <div class="fill-hint">Hint: ${q.hint||'—'}</div>
+    </div>`;
+    setTimeout(() => document.getElementById('fillInput')?.focus(), 100);
+  }
+
+  const fb = document.getElementById('qFeedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+
+  document.getElementById('submitBtn').disabled = q.type === 'fill' ? false : true;
+  document.getElementById('submitBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+
+  if (timerPerQ > 0) { document.getElementById('qTimer').classList.remove('hidden'); startTimer(timerPerQ); }
+  else               { document.getElementById('qTimer').classList.add('hidden'); }
+}
+
+let selectedOptIdx = null;
+let selectedTFVal  = null;
+
+function selectOpt(el, idx) {
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedOptIdx = idx;
+  document.getElementById('submitBtn').disabled = false;
+}
+function selectTF(el, val) {
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTFVal = val;
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// ══════════════════════════════════════════════════
+//  ANTWOORD CONTROLEREN
+// ══════════════════════════════════════════════════
+function submitAnswer() {
+  stopTimer();
+  const q = examQuestions[currentIdx];
+  let isCorrect = false, userAnsDisplay = '';
+
+  if (q.type === 'mcq') {
+    if (selectedOptIdx === null) return;
+    isCorrect      = selectedOptIdx === q.ans;
+    userAnsDisplay = q.opts[selectedOptIdx];
+    document.querySelectorAll('.opt').forEach((el, i) => {
+      el.classList.add('disabled');
+      if (i === q.ans) el.classList.add('correct');
+      else if (i === selectedOptIdx && !isCorrect) el.classList.add('wrong');
+    });
+    selectedOptIdx = null;
+
+  } else if (q.type === 'tf') {
+    if (selectedTFVal === null) return;
+    isCorrect      = selectedTFVal === q.ans;
+    userAnsDisplay = selectedTFVal ? 'Juist' : 'Fout';
+    document.querySelectorAll('.tf-btn').forEach(el => {
+      el.classList.add('disabled');
+      const btnVal = el.textContent.includes('Juist');
+      if (btnVal === q.ans) el.classList.add('correct');
+      else if (btnVal === selectedTFVal && !isCorrect) el.classList.add('wrong');
+    });
+    selectedTFVal = null;
+
+  } else if (q.type === 'fill') {
+    const input     = document.getElementById('fillInput');
+    const userVal   = input.value.trim().toLowerCase();
+    const correct   = q.ans.toLowerCase();
+    isCorrect       = userVal === correct || userVal === correct.replace(/^\./,'') || ('.'+userVal === correct);
+    userAnsDisplay  = input.value.trim();
+    input.disabled  = true;
+    input.classList.add(isCorrect ? 'correct' : 'wrong');
+  }
+
+  if (isCorrect) correctCount++;
+  userAnswers.push({ q, isCorrect, userAnsDisplay });
+
+  const fb = document.getElementById('qFeedback');
+  fb.className  = 'feedback show ' + (isCorrect ? 'ok' : 'bad');
+  fb.innerHTML  = `<strong>${isCorrect ? '✓ Correct!' : '✗ Onjuist'}</strong>${q.exp}` +
+    (!isCorrect && q.type !== 'tf'
+      ? `<br><span style="color:var(--correct);margin-top:4px;display:block">Juist antwoord: <strong>${q.type==='mcq' ? q.opts[q.ans] : q.ans}</strong></span>`
+      : '');
+
+  document.getElementById('liveScore').textContent = correctCount;
+  document.getElementById('submitBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════════════
+function startTimer(seconds) {
+  timerLeft = seconds;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerLeft--;
+    updateTimerDisplay();
+    if (timerLeft <= 0) { stopTimer(); autoTimeOut(); }
+  }, 1000);
+}
+function updateTimerDisplay() {
+  const el = document.getElementById('qTimer');
+  el.textContent = `0:${timerLeft.toString().padStart(2,'0')}`;
+  el.className   = 'q-timer';
+  if (timerLeft <= 5)       el.classList.add('danger');
+  else if (timerLeft <= 10) el.classList.add('warn');
+}
+function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+
+function autoTimeOut() {
+  const q = examQuestions[currentIdx];
+  userAnswers.push({ q, isCorrect: false, userAnsDisplay: '(tijd voorbij)' });
+
+  const correct = q.type==='mcq' ? q.opts[q.ans] : (q.type==='tf' ? (q.ans?'Juist':'Fout') : q.ans);
+  const fb = document.getElementById('qFeedback');
+  fb.className  = 'feedback show bad';
+  fb.innerHTML  = `<strong>⏱ Tijd voorbij!</strong>${q.exp}` +
+    `<br><span style="color:var(--correct);margin-top:4px;display:block">Juist antwoord: <strong>${correct}</strong></span>`;
+
+  document.querySelectorAll('.opt,.tf-btn').forEach(el => el.classList.add('disabled'));
+  const fi = document.getElementById('fillInput');
+  if (fi) fi.disabled = true;
+
+  document.getElementById('submitBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════
+//  VOLGENDE / AFRONDEN
+// ══════════════════════════════════════════════════
+function nextQuestion() {
+  currentIdx++;
+  if (currentIdx >= examQuestions.length) showResults();
+  else renderQuestion();
+}
+
+function confirmQuit() {
+  if (confirm('Wil je het examen stoppen? Je voortgang gaat verloren.')) { stopTimer(); goHome(); }
+}
+
+// ══════════════════════════════════════════════════
+//  RESULTATEN
+// ══════════════════════════════════════════════════
+function showResults() {
+  stopTimer();
+  showScreen('results');
+
+  const total   = examQuestions.length;
+  const pct     = Math.round((correctCount / total) * 100);
+  const elapsed = Math.round((Date.now() - examStartTime) / 1000);
+
+  const circumference = 2 * Math.PI * 62;
+  setTimeout(() => {
+    document.getElementById('ringFg').style.strokeDashoffset = circumference * (1 - pct/100);
+    document.getElementById('ringFg').style.stroke = pct>=70 ? '#22c55e' : pct>=50 ? '#f59e0b' : '#ef4444';
+  }, 100);
+
+  document.getElementById('scorePct').textContent = pct + '%';
+
+  let grade, msg;
+  if      (pct >= 90) { grade = '🏆 Uitstekend!';        msg = 'Fantastisch resultaat — je beheerst de leerstof!'; }
+  else if (pct >= 80) { grade = '🌟 Zeer goed!';          msg = 'Sterke prestatie. Zo te houden!'; }
+  else if (pct >= 70) { grade = '✅ Geslaagd!';           msg = 'Je bent geslaagd met een degelijk resultaat.'; }
+  else if (pct >= 55) { grade = '⚠️ Bijna geslaagd';     msg = 'Dichtbij — bekijk de foutieve antwoorden hieronder.'; }
+  else                 { grade = '📚 Blijven studeren';   msg = 'Herhaal de hoofdstukken en probeer het opnieuw.'; }
+
+  document.getElementById('resultGrade').textContent = grade;
+  document.getElementById('resultMsg').textContent   = msg;
+  document.getElementById('rCorrect').textContent    = correctCount;
+  document.getElementById('rWrong').textContent      = total - correctCount;
+  document.getElementById('rTime').textContent       = elapsed < 60 ? elapsed+'s' : Math.floor(elapsed/60)+'m '+( elapsed%60)+'s';
+
+  // Per-hoofdstuk overzicht
+  const byChapter = {};
+  userAnswers.forEach(a => {
+    const ch = a.q.ch_label;
+    if (!byChapter[ch]) byChapter[ch] = {correct:0, total:0};
+    byChapter[ch].total++;
+    if (a.isCorrect) byChapter[ch].correct++;
+  });
+
+  document.getElementById('chBreakdown').innerHTML = Object.entries(byChapter).map(([ch, data]) => {
+    const p     = Math.round((data.correct / data.total) * 100);
+    const color = p>=70 ? '#22c55e' : p>=50 ? '#f59e0b' : '#ef4444';
+    return `<div class="ch-row">
+      <div class="ch-row-label">${ch}</div>
+      <div class="ch-bar-wrap"><div class="ch-bar-fill" style="width:0%;background:${color}" data-w="${p}"></div></div>
+      <div class="ch-row-pct">${p}%</div>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => document.querySelectorAll('.ch-bar-fill').forEach(el => { el.style.width = el.dataset.w+'%'; }), 150);
+
+  // Gemiste vragen
+  const missed     = userAnswers.filter(a => !a.isCorrect);
+  const reviewList = document.getElementById('reviewList');
+  if (!missed.length) {
+    reviewList.innerHTML = '<div style="font-size:13px;color:var(--correct);padding:12px">🎉 Geen fouten — perfect!</div>';
+  } else {
+    reviewList.innerHTML = missed.map(a => {
+      const correct = a.q.type==='mcq' ? a.q.opts[a.q.ans] : a.q.type==='tf' ? (a.q.ans?'Juist':'Fout') : a.q.ans;
+      return `<div class="review-item bad">
+        <div class="review-q">${a.q.q.replace(/`([^`]+)`/g,'<code>$1</code>')}</div>
+        <div class="review-your">Jouw antwoord: ${a.userAnsDisplay||'(geen antwoord)'}</div>
+        <div class="review-correct">Correct: ${correct}</div>
+        <div class="review-ch">${a.q.ch} · ${a.q.ch_label}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function toggleReview() {
+  const list   = document.getElementById('reviewList');
+  const tog    = document.getElementById('reviewToggle');
+  const hidden = list.style.display === 'none';
+  list.style.display = hidden ? 'flex' : 'none';
+  tog.textContent    = hidden ? '▲' : '▼';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome()    { stopTimer(); showScreen('home'); }
+function retryExam() { startExam(); }
+
+buildHome();
+</script>
+</body>
+</html>

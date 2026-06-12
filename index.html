@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IC Study Hub — Installation & Configuration</title>
+<meta name="description" content="Free interactive study tools for the Installation & Configuration course. Course, exam simulator, flashcards, cheat sheet and more.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+/* ── TOKENS ── */
+:root {
+  --void:    #07090f;
+  --surface: #0d1117;
+  --raised:  #131920;
+  --card:    #161e2a;
+  --rim:     rgba(255,255,255,0.06);
+  --rim2:    rgba(255,255,255,0.11);
+  --rim3:    rgba(255,255,255,0.18);
+  --ink:     #dde4f0;
+  --ink2:    #8b95aa;
+  --ink3:    #4a5468;
+  --signal:  #5b9cf6;  /* primary blue */
+  --go:      #34d399;  /* green */
+  --heat:    #fb7185;  /* red/pink */
+  --sun:     #fbbf24;  /* amber */
+  --violet:  #a78bfa;  /* purple */
+  --sky:     #38bdf8;  /* light blue */
+  --coral:   #f97316;  /* orange */
+  --mono: 'Space Mono', monospace;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--void);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(91,156,246,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91,156,246,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(7,9,15,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--rim);
+  padding: 0 32px;
+  height: 56px;
+  display: flex; align-items: center; gap: 16px;
+}
+
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.nav-logo-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 8px var(--signal);
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.nav-links {
+  display: flex; gap: 4px; margin-left: auto;
+}
+
+.nav-link {
+  font-size: 12px; color: var(--ink2);
+  padding: 5px 12px; border-radius: 6px;
+  text-decoration: none; transition: all .15s;
+}
+
+.nav-link:hover { background: var(--raised); color: var(--ink); }
+
+.nav-cta {
+  background: var(--signal); color: #fff;
+  font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 7px;
+  text-decoration: none; transition: opacity .15s;
+  font-family: var(--sans);
+}
+.nav-cta:hover { opacity: .88; }
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 24px 60px;
+  text-align: center;
+}
+
+.hero-glow {
+  position: absolute; top: 20%; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(91,156,246,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+}
+
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--signal);
+  opacity: .4;
+}
+
+/* ── TERMINAL HERO (signature element) ── */
+.terminal {
+  background: var(--raised);
+  border: 1px solid var(--rim2);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 36px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(91,156,246,.08);
+}
+
+.term-titlebar {
+  background: var(--card);
+  border-bottom: 1px solid var(--rim);
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.term-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.term-dot.r { background: #ff5f57; }
+.term-dot.y { background: #febc2e; }
+.term-dot.g { background: #28c840; }
+
+.term-title {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink3); margin-left: auto; margin-right: auto;
+  transform: translateX(-16px);
+}
+
+.term-body {
+  padding: 18px 20px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 2;
+  text-align: left;
+  min-height: 140px;
+}
+
+.term-line { display: flex; align-items: flex-start; gap: 8px; }
+.term-prompt { color: var(--go); flex-shrink: 0; }
+.term-cmd { color: var(--sky); }
+.term-out { color: var(--ink2); padding-left: 16px; }
+.term-out .hl { color: var(--signal); font-weight: 700; }
+.term-cursor {
+  display: inline-block; width: 8px; height: 14px;
+  background: var(--signal); vertical-align: middle;
+  animation: cursor-blink .9s step-end infinite;
+}
+@keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── HERO TEXT ── */
+.hero-title {
+  font-size: clamp(36px, 7vw, 72px);
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+
+.hero-title .line1 { color: var(--ink); }
+.hero-title .line2 {
+  background: linear-gradient(135deg, var(--signal) 0%, var(--sky) 50%, var(--go) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 16px;
+  color: var(--ink2);
+  max-width: 520px;
+  margin: 0 auto 36px;
+  line-height: 1.7;
+}
+
+/* ── HERO STATS ── */
+.hero-stats {
+  display: flex; gap: 24px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 40px;
+}
+
+.h-stat {
+  text-align: center;
+}
+
+.h-stat-val {
+  font-family: var(--mono);
+  font-size: 28px; font-weight: 700;
+  color: var(--ink);
+  display: block;
+}
+
+.h-stat-lbl {
+  font-size: 11px; color: var(--ink3);
+  letter-spacing: .06em; text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.h-stat-sep { width: 1px; background: var(--rim2); align-self: stretch; }
+
+/* ── HERO CTA ── */
+.hero-ctas {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+
+.cta-primary {
+  background: var(--signal);
+  color: #fff; font-weight: 700; font-size: 14px;
+  padding: 14px 28px; border-radius: 10px;
+  text-decoration: none; transition: all .2s;
+  font-family: var(--sans);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 0 24px rgba(91,156,246,.25);
+}
+.cta-primary:hover { opacity: .9; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(91,156,246,.35); }
+
+.cta-secondary {
+  background: transparent;
+  color: var(--ink2); font-size: 14px; font-weight: 500;
+  padding: 14px 24px; border-radius: 10px;
+  text-decoration: none; transition: all .2s;
+  border: 1px solid var(--rim2);
+  font-family: var(--sans);
+  display: flex; align-items: center; gap: 8px;
+}
+.cta-secondary:hover { border-color: var(--rim3); color: var(--ink); background: var(--raised); }
+
+/* ── SCROLL INDICATOR ── */
+.scroll-hint {
+  position: absolute; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 10px; color: var(--ink3); letter-spacing: .1em;
+  text-transform: uppercase; font-family: var(--mono);
+  animation: float 2s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-5px)} }
+
+/* ── SECTION WRAPPER ── */
+.section {
+  position: relative; z-index: 1;
+  padding: 80px 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.section-eyebrow {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--signal); margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 700; letter-spacing: -.02em;
+  margin-bottom: 10px;
+}
+
+.section-sub {
+  font-size: 15px; color: var(--ink2);
+  max-width: 520px; line-height: 1.65;
+  margin-bottom: 40px;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rim2), transparent);
+  margin: 0 24px;
+}
+
+/* ── TOOL CARDS ── */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.tool-card {
+  background: var(--card);
+  border: 1px solid var(--rim);
+  border-radius: 14px;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  display: flex; flex-direction: column;
+  gap: 0;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  border-radius: 14px 14px 0 0;
+  opacity: 0; transition: opacity .2s;
+}
+
+.tool-card:hover {
+  border-color: var(--rim2);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0,0,0,.4);
+}
+.tool-card:hover::after { opacity: 1; }
+
+.tool-card.featured {
+  grid-column: span 2;
+  background: linear-gradient(135deg, var(--card) 0%, rgba(91,156,246,.06) 100%);
+  border-color: rgba(91,156,246,.2);
+}
+
+.tool-icon {
+  font-size: 28px; margin-bottom: 14px;
+}
+
+.tool-tag {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 6px;
+}
+
+.tool-name {
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -.01em; margin-bottom: 8px;
+}
+
+.tool-desc {
+  font-size: 13px; color: var(--ink2);
+  line-height: 1.65; flex: 1;
+  margin-bottom: 16px;
+}
+
+.tool-meta {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tool-badge {
+  font-size: 10px; padding: 3px 8px;
+  border-radius: 20px; font-weight: 600;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.tool-arrow {
+  margin-left: auto; color: var(--ink3);
+  font-size: 14px; transition: transform .2s;
+}
+.tool-card:hover .tool-arrow { transform: translateX(4px); color: var(--ink); }
+
+/* card accent colours via ::after */
+.tool-card.blue::after   { background: var(--signal); }
+.tool-card.green::after  { background: var(--go); }
+.tool-card.pink::after   { background: var(--heat); }
+.tool-card.amber::after  { background: var(--sun); }
+.tool-card.violet::after { background: var(--violet); }
+.tool-card.sky::after    { background: var(--sky); }
+.tool-card.coral::after  { background: var(--coral); }
+.tool-card.teal::after   { background: var(--go); }
+
+/* ── CHAPTER STRIP ── */
+.chapter-strip {
+  display: flex; gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--rim);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.chapter-strip::-webkit-scrollbar { display: none; }
+
+.ch-tile {
+  flex: 1; min-width: 100px;
+  padding: 16px 14px;
+  border-right: 1px solid var(--rim);
+  background: var(--card);
+  text-align: center;
+  cursor: default;
+  transition: background .15s;
+}
+.ch-tile:last-child { border-right: none; }
+.ch-tile:hover { background: var(--raised); }
+
+.ch-tile-icon { font-size: 20px; margin-bottom: 5px; }
+.ch-tile-label { font-family: var(--mono); font-size: 9px; color: var(--ink3); letter-spacing: .08em; margin-bottom: 3px; }
+.ch-tile-name { font-size: 11px; font-weight: 600; color: var(--ink2); line-height: 1.3; }
+
+/* ── HOW TO USE ── */
+.steps-list {
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid var(--rim);
+  border-radius: 12px; overflow: hidden;
+}
+
+.step-row {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--rim);
+  background: var(--card);
+  transition: background .15s;
+}
+.step-row:last-child { border-bottom: none; }
+.step-row:hover { background: var(--raised); }
+
+.step-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  color: var(--signal);
+  width: 28px; height: 28px;
+  border: 1px solid rgba(91,156,246,.3);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+.step-info { flex: 1; }
+.step-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.step-desc { font-size: 12.5px; color: var(--ink2); line-height: 1.6; }
+.step-desc code {
+  font-family: var(--mono); font-size: 11px;
+  background: var(--surface); color: var(--signal);
+  padding: 1px 5px; border-radius: 4px;
+  border: 1px solid var(--rim2);
+}
+
+/* ── LANGUAGE TOGGLE ── */
+.lang-section {
+  background: var(--card);
+  border: 1px solid var(--rim);
+  border-radius: 14px;
+  padding: 28px;
+  display: flex; align-items: center; gap: 20px;
+  flex-wrap: wrap;
+}
+
+.lang-flag-pair {
+  display: flex; gap: 10px;
+}
+
+.flag-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 8px;
+  border: 1px solid var(--rim2);
+  background: var(--raised);
+  color: var(--ink); font-size: 13px; font-weight: 500;
+  text-decoration: none; transition: all .15s; font-family: var(--sans);
+}
+.flag-btn:hover { border-color: var(--rim3); background: var(--surface); transform: translateY(-1px); }
+
+/* ── FOOTER ── */
+.footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--rim);
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.footer-logo {
+  font-family: var(--mono); font-size: 14px; font-weight: 700;
+  color: var(--ink); margin-bottom: 8px;
+}
+
+.footer-sub {
+  font-size: 12px; color: var(--ink3);
+  margin-bottom: 20px; line-height: 1.6;
+}
+
+.footer-links {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.footer-link {
+  font-size: 12px; color: var(--ink2);
+  text-decoration: none; transition: color .15s;
+}
+.footer-link:hover { color: var(--signal); }
+
+.footer-copy {
+  font-size: 11px; color: var(--ink3);
+  font-family: var(--mono);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .tool-card.featured { grid-column: span 1; }
+  .nav-links { display: none; }
+  .hero-stats { gap: 16px; }
+  .h-stat-sep { display: none; }
+  .ch-tile-name { display: none; }
+  .lang-section { flex-direction: column; }
+  .hero { padding-top: 90px; }
+}
+
+/* ── REVEAL ANIMATION ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    IC Study Hub
+  </div>
+  <div class="nav-links">
+    <a href="#tools" class="nav-link">Tools</a>
+    <a href="#chapters" class="nav-link">Chapters</a>
+    <a href="#howto" class="nav-link">How to use</a>
+  </div>
+  <a href="IC_Course_EN.html" class="nav-cta">Start Course →</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-eyebrow">ICT · Operating Systems &amp; Networks · 2025–2026</div>
+
+  <!-- Terminal — the signature element -->
+  <div class="terminal" id="terminal">
+    <div class="term-titlebar">
+      <div class="term-dot r"></div>
+      <div class="term-dot y"></div>
+      <div class="term-dot g"></div>
+      <div class="term-title">ic-study — bash</div>
+    </div>
+    <div class="term-body" id="termBody">
+      <div class="term-line">
+        <span class="term-prompt">$</span>
+        <span class="term-cmd" id="typedCmd"></span>
+        <span class="term-cursor" id="termCursor"></span>
+      </div>
+      <div id="termOutput" style="margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <h1 class="hero-title">
+    <div class="line1">Your complete study hub for</div>
+    <div class="line2">Installation &amp; Configuration</div>
+  </h1>
+
+  <p class="hero-sub">
+    Everything you need to ace the IC exam — an interactive course, practice quiz, exam simulator, flashcards, spaced repetition, cheat sheet and glossary. All free, all in your browser.
+  </p>
+
+  <div class="hero-stats">
+    <div class="h-stat">
+      <span class="h-stat-val">9</span>
+      <div class="h-stat-lbl">Chapters</div>
+    </div>
+    <div class="h-stat-sep"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">26</span>
+      <div class="h-stat-lbl">Lessons</div>
+    </div>
+    <div class="h-stat-sep"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">300+</span>
+      <div class="h-stat-lbl">Practice questions</div>
+    </div>
+    <div class="h-stat-sep"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">100%</span>
+      <div class="h-stat-lbl">Free</div>
+    </div>
+  </div>
+
+  <div class="hero-ctas">
+    <a href="IC_Course_EN.html" class="cta-primary">🚀 Start the Course</a>
+    <a href="IC_StudyApp_EN.html" class="cta-secondary">🎯 Jump to Exam Prep</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <span>↓</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── TOOLS ── -->
+<section class="section" id="tools">
+  <div class="section-eyebrow">Study tools</div>
+  <h2 class="section-title">Everything in one place</h2>
+  <p class="section-sub">Six tools built specifically for this course. Use them in order or jump to what you need right now.</p>
+
+  <div class="tools-grid reveal">
+
+    <!-- Featured: Course -->
+    <a href="IC_Course_EN.html" class="tool-card featured blue">
+      <div class="tool-icon">📚</div>
+      <div class="tool-tag">Start here · English</div>
+      <div class="tool-name">Interactive Course</div>
+      <div class="tool-desc">
+        26 lessons across all 9 chapters. Each lesson has explanations, syntax-highlighted code blocks, comparison tables, step-by-step guides and a mini quiz. Progress is saved in your browser.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(91,156,246,.12);color:var(--signal)">9 chapters</span>
+        <span class="tool-badge" style="background:rgba(91,156,246,.12);color:var(--signal)">26 lessons</span>
+        <span class="tool-badge" style="background:rgba(91,156,246,.12);color:var(--signal)">XP system</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Study App EN -->
+    <a href="IC_StudyApp_EN.html" class="tool-card green">
+      <div class="tool-icon">🎯</div>
+      <div class="tool-tag">Practice · English</div>
+      <div class="tool-name">Study App</div>
+      <div class="tool-desc">
+        5 modes in one: Practice Quiz, Flashcards, Spaced Repetition, Exam Simulation and Weak Spots Dashboard. 300+ questions. Progress tracked across sessions.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(52,211,153,.12);color:var(--go)">300+ questions</span>
+        <span class="tool-badge" style="background:rgba(52,211,153,.12);color:var(--go)">5 modes</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Study App NL -->
+    <a href="IC_StudyApp_NL.html" class="tool-card teal">
+      <div class="tool-icon">🎯</div>
+      <div class="tool-tag">Oefenen · Nederlands</div>
+      <div class="tool-name">Studie-app</div>
+      <div class="tool-desc">
+        Dezelfde 5 modi in het Nederlands: Oefenquiz, Flashkaarten, Gespreide Herhaling, Examen Simulatie en Zwakke Punten Dashboard.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(52,211,153,.12);color:var(--go)">300+ vragen</span>
+        <span class="tool-badge" style="background:rgba(52,211,153,.12);color:var(--go)">5 modi</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Cheat Sheet EN -->
+    <a href="IC_CheatSheet_EN.html" class="tool-card amber">
+      <div class="tool-icon">📋</div>
+      <div class="tool-tag">Last-day revision · English</div>
+      <div class="tool-name">Exam Cheat Sheet</div>
+      <div class="tool-desc">
+        Every critical fact, comparison table, command and exam trap across all 9 chapters. Expandable cards, live search, click to copy commands.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(251,191,36,.12);color:var(--sun)">20+ traps</span>
+        <span class="tool-badge" style="background:rgba(251,191,36,.12);color:var(--sun)">All commands</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Cheat Sheet NL -->
+    <a href="IC_CheatSheet_NL.html" class="tool-card amber">
+      <div class="tool-icon">📋</div>
+      <div class="tool-tag">Laatste dag · Nederlands</div>
+      <div class="tool-name">Examen Spiekbrief</div>
+      <div class="tool-desc">
+        Alle kritieke feiten, vergelijkingen, commando's en valkuilen uit alle 9 hoofdstukken. Uitklapbare kaarten, zoeken, klik om te kopiëren.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(251,191,36,.12);color:var(--sun)">20+ valkuilen</span>
+        <span class="tool-badge" style="background:rgba(251,191,36,.12);color:var(--sun)">Alle commando's</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Glossary EN -->
+    <a href="IC_Glossary_EN.html" class="tool-card violet">
+      <div class="tool-icon">📖</div>
+      <div class="tool-tag">Reference · English</div>
+      <div class="tool-name">Terms & Definitions</div>
+      <div class="tool-desc">
+        80 terms across all chapters. Filter by chapter, search any term or definition, click to reveal explanation. Perfect for vocabulary review.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(167,139,250,.12);color:var(--violet)">80 terms</span>
+        <span class="tool-badge" style="background:rgba(167,139,250,.12);color:var(--violet)">Searchable</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Glossary NL -->
+    <a href="IC_Glossary.html" class="tool-card violet">
+      <div class="tool-icon">📖</div>
+      <div class="tool-tag">Naslagwerk · Nederlands</div>
+      <div class="tool-name">Termen & Definities</div>
+      <div class="tool-desc">
+        80 termen uit alle hoofdstukken. Filter per hoofdstuk, zoek op term of definitie, klik om de uitleg te zien.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(167,139,250,.12);color:var(--violet)">80 termen</span>
+        <span class="tool-badge" style="background:rgba(167,139,250,.12);color:var(--violet)">Doorzoekbaar</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Commands Reference -->
+    <a href="IC_Commands_EN.html" class="tool-card sky">
+      <div class="tool-icon">⌨️</div>
+      <div class="tool-tag">Reference · English</div>
+      <div class="tool-name">Commands Reference</div>
+      <div class="tool-desc">
+        Every CMD, Linux, WSL, apt, SSH, Nano and keyboard shortcut in one searchable page. Click any row to copy the command to clipboard.
+      </div>
+      <div class="tool-meta">
+        <span class="tool-badge" style="background:rgba(56,189,248,.12);color:var(--sky)">100+ commands</span>
+        <span class="tool-badge" style="background:rgba(56,189,248,.12);color:var(--sky)">Click to copy</span>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── CHAPTERS ── -->
+<section class="section" id="chapters">
+  <div class="section-eyebrow">Course content</div>
+  <h2 class="section-title">All 9 chapters covered</h2>
+  <p class="section-sub">From hardware assembly to Linux SSH — every topic in the course is covered in depth.</p>
+
+  <div class="chapter-strip reveal">
+    <div class="ch-tile">
+      <div class="ch-tile-icon">🔩</div>
+      <div class="ch-tile-label">Ch. 1</div>
+      <div class="ch-tile-name">Computer Assembly</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">⚙️</div>
+      <div class="ch-tile-label">Ch. 2</div>
+      <div class="ch-tile-name">BIOS / UEFI</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">💾</div>
+      <div class="ch-tile-label">Ch. 3</div>
+      <div class="ch-tile-name">Bootable Media</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">🪟</div>
+      <div class="ch-tile-label">Ch. 4</div>
+      <div class="ch-tile-name">Installation</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">🛠️</div>
+      <div class="ch-tile-label">Ch. 5</div>
+      <div class="ch-tile-name">Windows Tools</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">⌨️</div>
+      <div class="ch-tile-label">Ch. 6</div>
+      <div class="ch-tile-name">Terminal (CMD)</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">🖥️</div>
+      <div class="ch-tile-label">Ch. 7</div>
+      <div class="ch-tile-name">Virtualisation</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">🐧</div>
+      <div class="ch-tile-label">Ch. 8</div>
+      <div class="ch-tile-name">WSL</div>
+    </div>
+    <div class="ch-tile">
+      <div class="ch-tile-icon">🐧</div>
+      <div class="ch-tile-label">Ch. 9</div>
+      <div class="ch-tile-name">Linux Intro</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── HOW TO USE ── -->
+<section class="section" id="howto">
+  <div class="section-eyebrow">Recommended approach</div>
+  <h2 class="section-title">How to get the most out of this</h2>
+  <p class="section-sub">Use the tools in this order for the best results. The whole sequence takes about a week.</p>
+
+  <div class="steps-list reveal">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">📚 Read through the Interactive Course</div>
+        <div class="step-desc">Start with the course for each chapter. Read the lessons, study the code blocks and tables, and answer the mini quiz at the end of every lesson. Build your foundation before testing yourself.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">🃏 Run Flashcards for each chapter</div>
+        <div class="step-desc">After each chapter in the course, open the Study App → Flashcards. Filter to just that chapter and flip through all the cards. Mark what you know and miss. This builds vocabulary before you start quizzing.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-info">
+        <div class="step-title">📝 Practice Quiz — chapter by chapter</div>
+        <div class="step-desc">Once you've done flashcards for a chapter, open Practice Quiz, filter to that chapter only, and work through Easy → Medium → Hard. Aim for 80%+ before moving on. Read every explanation carefully.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-info">
+        <div class="step-title">🔁 Spaced Repetition — daily, 10 minutes</div>
+        <div class="step-desc">Every single day, open the Study App → Spaced Repetition and work through your due cards. The system tracks what you miss and brings it back at the right time. This is the most proven study method — do not skip it.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div class="step-info">
+        <div class="step-title">📊 Check Weak Spots Dashboard weekly</div>
+        <div class="step-desc">Open the Weak Spots tab to see which chapters are red. Drill those chapters specifically using the Practice Quiz. Don't waste time on chapters where you're already scoring 80%+.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">6</div>
+      <div class="step-info">
+        <div class="step-title">🎯 Exam Simulation — once a week</div>
+        <div class="step-desc">Treat it like the real thing. No notes, no hints, full 45 minutes. This trains your brain to perform under exam conditions and reveals any remaining gaps before the actual test.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">7</div>
+      <div class="step-info">
+        <div class="step-title">📋 Cheat Sheet — the morning of the exam</div>
+        <div class="step-desc">Open the Cheat Sheet, press <code>Expand all</code>, and scan all the ⚠️ Exam Traps. These cover the most common wrong answers in the exam. A 30-minute scan that morning can save you multiple points.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── LANGUAGE ── -->
+<section class="section">
+  <div class="lang-section reveal">
+    <div style="flex:1;">
+      <div class="section-eyebrow" style="margin-bottom:6px;">Two languages</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px;">English & Nederlands</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:1.65;">The Study App and Cheat Sheet are available in both English and Dutch. The course is currently in English. Pick whichever language you study best in.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="font-size:11px;color:var(--ink3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;">Study App</div>
+      <div class="lang-flag-pair">
+        <a href="IC_StudyApp_EN.html" class="flag-btn">🇬🇧 English</a>
+        <a href="IC_StudyApp_NL.html" class="flag-btn">🇧🇪 Nederlands</a>
+      </div>
+      <div style="font-size:11px;color:var(--ink3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;">Cheat Sheet</div>
+      <div class="lang-flag-pair">
+        <a href="IC_CheatSheet_EN.html" class="flag-btn">🇬🇧 English</a>
+        <a href="IC_CheatSheet_NL.html" class="flag-btn">🇧🇪 Nederlands</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="footer-logo">IC Study Hub</div>
+  <div class="footer-sub">
+    Installation &amp; Configuration · ICT, Operating Systems &amp; Networks · 2025–2026<br>
+    Built for students. Free forever. No login required.
+  </div>
+  <div class="footer-links">
+    <a href="IC_Course_EN.html"      class="footer-link">Course</a>
+    <a href="IC_StudyApp_EN.html"    class="footer-link">Study App (EN)</a>
+    <a href="IC_StudyApp_NL.html"    class="footer-link">Studie-app (NL)</a>
+    <a href="IC_CheatSheet_EN.html"  class="footer-link">Cheat Sheet (EN)</a>
+    <a href="IC_CheatSheet_NL.html"  class="footer-link">Spiekbrief (NL)</a>
+    <a href="IC_Glossary_EN.html"    class="footer-link">Glossary</a>
+    <a href="IC_Commands_EN.html"    class="footer-link">Commands</a>
+  </div>
+  <div class="footer-copy">Made with ❤️ · All tools run locally in your browser · No data collected</div>
+</footer>
+
+<script>
+// ── TERMINAL ANIMATION ──
+const sequences = [
+  {
+    cmd: 'ls ic-study/',
+    output: [
+      '<span style="color:#58a6ff">📚 IC_Course_EN.html</span>',
+      '<span style="color:#34d399">🎯 IC_StudyApp_EN.html</span>',
+      '<span style="color:#fbbf24">📋 IC_CheatSheet_EN.html</span>',
+      '<span style="color:#a78bfa">📖 IC_Glossary_EN.html</span>',
+      '<span style="color:#38bdf8">⌨️  IC_Commands_EN.html</span>',
+    ]
+  },
+  {
+    cmd: 'echo "Ready to ace the exam? 🎓"',
+    output: ['<span style="color:#34d399">Ready to ace the exam? 🎓</span>']
+  },
+  {
+    cmd: 'wsl --status',
+    output: [
+      '<span style="color:#8b95aa">Default Distribution: Ubuntu</span>',
+      '<span style="color:#8b95aa">Default Version: 2</span>',
+      '<span style="color:#34d399">WSL is ready ✓</span>',
+    ]
+  },
+  {
+    cmd: 'sudo apt update && sudo apt upgrade',
+    output: [
+      '<span style="color:#8b95aa">Hit:1 http://archive.ubuntu.com focal InRelease</span>',
+      '<span style="color:#34d399">All packages up to date ✓</span>',
+    ]
+  },
+];
+
+let seqIdx = 0;
+let charIdx = 0;
+let phase = 'typing'; // typing | pausing | clearing | output
+let outputIdx = 0;
+
+const typedEl  = document.getElementById('typedCmd');
+const cursorEl = document.getElementById('termCursor');
+const outputEl = document.getElementById('termOutput');
+
+function termTick() {
+  const seq = sequences[seqIdx];
+  if (phase === 'typing') {
+    if (charIdx < seq.cmd.length) {
+      typedEl.textContent += seq.cmd[charIdx++];
+      setTimeout(termTick, 55 + Math.random() * 40);
+    } else {
+      phase = 'pausing';
+      setTimeout(termTick, 700);
+    }
+  } else if (phase === 'pausing') {
+    cursorEl.style.display = 'none';
+    outputEl.innerHTML = seq.output.map(l =>
+      `<div class="term-out">${l}</div>`
+    ).join('');
+    phase = 'waiting';
+    setTimeout(termTick, 2400);
+  } else if (phase === 'waiting') {
+    outputEl.innerHTML = '';
+    typedEl.textContent = '';
+    cursorEl.style.display = 'inline-block';
+    charIdx = 0;
+    seqIdx = (seqIdx + 1) % sequences.length;
+    phase = 'typing';
+    setTimeout(termTick, 400);
+  }
+}
+
+setTimeout(termTick, 800);
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── SMOOTH ANCHOR ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>

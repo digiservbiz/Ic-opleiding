@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IC Examen Spiekbrief — Laatste Dag Herhaling</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --ink: #0d1117;
+  --ink2: #161b22;
+  --ink3: #1f2937;
+  --wire: rgba(255,255,255,0.07);
+  --wire2: rgba(255,255,255,0.13);
+  --wire3: rgba(255,255,255,0.22);
+  --text: #e6edf3;
+  --dim: #8b949e;
+  --muted: #484f58;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+  /* chapter accent colors */
+  --c1: #58a6ff; --c2: #3fb950; --c3: #f78166;
+  --c4: #d2a8ff; --c5: #ffa657; --c6: #ff7b72;
+  --c7: #79c0ff; --c8: #56d364; --c9: #e3b341;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--ink);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(180deg, #0d1117 0%, #111827 100%);
+  border-bottom: 1px solid var(--wire);
+  padding: 48px 24px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(88,166,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-size: clamp(28px, 6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.hero-title .accent { color: var(--c1); }
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--dim);
+  max-width: 480px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+
+/* chapter pills in hero */
+.chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto 28px;
+}
+
+.ch-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: var(--sans);
+  background: var(--ink2);
+  color: var(--dim);
+  border-color: var(--wire2);
+}
+
+.ch-pill:hover { color: var(--text); transform: translateY(-1px); }
+.ch-pill.active { color: var(--ink); font-weight: 700; border-color: transparent; }
+
+/* search */
+.search-wrap {
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); font-size: 14px; pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--ink2);
+  border: 1px solid var(--wire2);
+  border-radius: 10px;
+  padding: 10px 14px 10px 38px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: var(--sans);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--c1); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── CHAPTER BLOCK ── */
+.ch-block {
+  border-radius: 12px;
+  border: 1px solid var(--wire);
+  background: var(--ink2);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.ch-block:hover { border-color: var(--wire2); }
+.ch-block.open { border-color: var(--wire3); }
+
+.ch-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.ch-header:hover { background: rgba(255,255,255,0.02); }
+
+.ch-accent-bar {
+  width: 3px;
+  height: 36px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ch-icon { font-size: 20px; flex-shrink: 0; }
+
+.ch-info { flex: 1; }
+
+.ch-label {
+  font-size: 9px;
+  font-family: var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 2px;
+}
+
+.ch-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ch-pill-count {
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--ink3);
+  color: var(--dim);
+  border: 1px solid var(--wire);
+}
+
+.ch-chevron {
+  color: var(--muted);
+  font-size: 14px;
+  transition: transform 0.25s;
+  flex-shrink: 0;
+}
+
+.ch-block.open .ch-chevron { transform: rotate(180deg); }
+
+.ch-body {
+  display: none;
+  border-top: 1px solid var(--wire);
+}
+
+.ch-block.open .ch-body { display: block; }
+
+/* ── FACT CARDS ── */
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--wire);
+}
+
+.fact-card {
+  background: var(--ink2);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: background 0.12s;
+  position: relative;
+}
+
+.fact-card:hover { background: var(--ink3); }
+
+.fact-card.expanded { background: var(--ink3); }
+
+.fact-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.fact-indicator {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.fact-term {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.fact-expand-icon {
+  font-size: 11px;
+  color: var(--muted);
+  transition: transform 0.2s;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.fact-card.expanded .fact-expand-icon { transform: rotate(180deg); }
+
+.fact-detail {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--wire);
+  font-size: 12.5px;
+  color: var(--dim);
+  line-height: 1.7;
+}
+
+.fact-card.expanded .fact-detail { display: block; }
+
+.fact-detail code {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--ink);
+  color: var(--c1);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.fact-detail .highlight {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── COMPARISON TABLE ── */
+.compare-wrap { padding: 16px 18px; }
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.compare-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--ink3);
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  border-bottom: 1px solid var(--wire2);
+}
+
+.compare-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--wire);
+  vertical-align: top;
+  line-height: 1.5;
+  color: var(--dim);
+}
+
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
+
+.compare-table td:first-child {
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ── CMD REFERENCE ── */
+.cmd-list { padding: 0; }
+
+.cmd-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--wire);
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.cmd-row:last-child { border-bottom: none; }
+.cmd-row:hover { background: rgba(255,255,255,0.025); }
+
+.cmd-code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--c1);
+  background: var(--ink);
+  padding: 4px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid var(--wire2);
+}
+
+.cmd-desc {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.cmd-row:hover .cmd-desc { color: var(--text); }
+
+/* ── EXAM TRAPS ── */
+.traps-list { padding: 12px 18px; display: flex; flex-direction: column; gap: 8px; }
+
+.trap-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--ink);
+  border: 1px solid var(--wire);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.trap-item:hover { border-color: var(--wire2); background: var(--ink3); }
+.trap-item.expanded { border-color: rgba(239,68,68,0.3); }
+
+.trap-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+.trap-content { flex: 1; }
+
+.trap-q {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.trap-a {
+  display: none;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.65;
+  padding-top: 8px;
+  border-top: 1px solid var(--wire);
+}
+
+.trap-item.expanded .trap-a { display: block; }
+.trap-a .correct { color: #3fb950; font-weight: 600; }
+.trap-a .wrong { color: #f78166; }
+.trap-a code { font-family: var(--mono); font-size: 10.5px; background: var(--ink); color: var(--c1); padding: 1px 4px; border-radius: 3px; }
+
+/* ── QUICK REFS (small pill grids) ── */
+.pill-grid { padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+.ref-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  border: 1px solid var(--wire2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.ref-pill:hover { border-color: var(--wire3); background: var(--ink3); transform: translateY(-1px); }
+
+.ref-pill-key {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.ref-pill-val { color: var(--dim); font-size: 11.5px; }
+.ref-pill:hover .ref-pill-val { color: var(--text); }
+
+/* ── SEARCH HIGHLIGHT ── */
+mark {
+  background: rgba(88,166,255,0.25);
+  color: var(--text);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ── NO RESULTS ── */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  display: none;
+}
+
+.no-results-icon { font-size: 36px; margin-bottom: 10px; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--ink3); border: 1px solid var(--wire3);
+  color: var(--text); padding: 8px 18px;
+  border-radius: 8px; font-size: 12.5px;
+  opacity: 0; transition: all 0.2s;
+  pointer-events: none; z-index: 999;
+  font-family: var(--sans);
+}
+
+/* ── PROGRESS BAR ── */
+.reading-bar {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--wire); z-index: 100;
+}
+.reading-fill {
+  height: 100%; background: linear-gradient(90deg, var(--c1), var(--c7));
+  width: 0%; transition: width 0.1s;
+}
+
+/* ── STICKY COUNTER ── */
+.sticky-bar {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(13,17,23,0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--wire);
+  padding: 8px 20px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; color: var(--muted);
+}
+
+.sticky-counts { display: flex; gap: 12px; flex-wrap: wrap; }
+.sticky-count { display: flex; align-items: center; gap: 5px; }
+.sticky-dot { width: 6px; height: 6px; border-radius: 50%; }
+.expand-all-btn {
+  margin-left: auto;
+  background: var(--ink3); border: 1px solid var(--wire2);
+  color: var(--dim); font-size: 11px; padding: 4px 10px;
+  border-radius: 5px; cursor: pointer; font-family: var(--sans);
+  transition: all 0.15s;
+}
+.expand-all-btn:hover { color: var(--text); border-color: var(--wire3); }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); font-family: var(--mono);
+  padding: 10px 18px 4px;
+  border-bottom: 1px solid var(--wire);
+}
+
+@media (max-width: 600px) {
+  .hero { padding: 32px 16px 24px; }
+  .facts-grid { grid-template-columns: 1fr; }
+  .cmd-row { grid-template-columns: 1fr; gap: 4px; }
+  .main { padding: 20px 12px 60px; }
+  .sticky-counts { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="reading-bar"><div class="reading-fill" id="readingFill"></div></div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-eyebrow">ICT · BS &amp; Netwerken · 2025–2026</div>
+  <h1 class="hero-title">Examen <span class="accent">Spiekbrief</span></h1>
+  <p class="hero-sub">Alle cruciale feiten, vergelijkingen, commando's en valkuilen — alle 9 hoofdstukken. Klik op een kaart om te openen.</p>
+
+  <div class="chapter-nav" id="chapterNav"></div>
+
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="searchInput" type="text"
+           placeholder="Zoek naar een term, commando of concept…"
+           oninput="handleSearch()" autocomplete="off">
+  </div>
+</div>
+
+<!-- ── STICKY BAR ── -->
+<div class="sticky-bar">
+  <div class="sticky-counts" id="stickyCounts"></div>
+  <button class="expand-all-btn" onclick="toggleAll()">Alles openen</button>
+</div>
+
+<!-- ── MAIN ── -->
+<main class="main" id="mainContent"></main>
+
+<div class="no-results" id="noResults">
+  <div class="no-results-icon">🔍</div>
+  <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Niets gevonden</div>
+  <div>Probeer een andere zoekterm.</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA — all 9 chapters
+// ═══════════════════════════════════════════════════════
+const CHAPTERS = [
+{
+  id:'ch1', label:'Chapter 1', title:'Computer Assemblage', icon:'🔩',
+  color:'var(--c1)',
+  sections:[
+    {
+      type:'facts', title:'Kerncomponenten',
+      items:[
+        {term:'CPU (Central Processing Unit)',detail:'De hersenen van de computer. Executes all calculations and instructions. Made by Intel (LGA socket) or AMD (PGA/LGA socket). Performance = Clock Speed × Architecture.'},
+        {term:'Kloksnelheid',detail:'Measured in GHz. 1 GHz = 1000 MHz. Hoger = meer cycli per seconde. Formule: <code>CPU Frequency = Multiplier × Bus Speed</code>'},
+        {term:'P-cores vs E-cores',detail:'<span class="highlight">P-cores (Performance):</span> zware taken — gaming, video editing. <span class="highlight">E-cores (Efficiency):</span> lichte achtergrondtaken. Modern Intel hybrid architecture.'},
+        {term:'Cachegeheugen L1/L2/L3',detail:'<span class="highlight">L1:</span> Snelste, kleinste, per kern. <span class="highlight">L2:</span> Gemiddeld, per kern. <span class="highlight">L3:</span> Grootste, traagste, GEDEELD door alle kernen.'},
+        {term:'Moederbord (MoBo)',detail:'Hoofdprintplaat. Connects CPU, RAM, GPU, storage. Vormfactoren: <span class="highlight">ATX</span> (full size), <span class="highlight">mATX</span> (mid), <span class="highlight">Mini-ITX</span> (small). Chipset bepaalt PCIe-lanen, USB-poorten.'},
+        {term:'RAM (Random Access Memory)',detail:'Werkgeheugen. Gewist bij uitzetten. Generations: DDR4, DDR5 — NIET uitwisselbaar. <span class="highlight">Dual channel</span> = twee sticks samenwerken, verdubbelt bandbreedte.'},
+        {term:'Opslagtypes',detail:'<span class="highlight">HDD:</span> Mechanisch, SATA, traag. <span class="highlight">SSD:</span> Flash, SATA, snel. <span class="highlight">M.2 NVMe:</span> PCIe-interface, snelst. Protocol: HDD/SSD = AHCI, NVMe = NVMe protocol.'},
+        {term:'GPU (Grafische kaart)',detail:'Verwerkt rendering en beelduitvoer. VRAM (Video RAM) uses GDDR memory. Much higher bandwidth than regular DDR (256-bit vs 64-bit).'},
+        {term:'PSU (Voedingseenheid)',detail:'Converteert netspanning naar gelijkstroom. Vermogen in Watt. <span class="highlight">80+ certification</span> = efficiëntie: Bronze → Silver → Gold → Platinum → Titanium.'},
+        {term:'ESD Bescherming',detail:'Elektrostatische ontlading kan componenten permanent beschadigen. Gebruik altijd een antistatische mat of polsband. Raak metalen behuizing aan om te ontladen.'},
+      ]
+    },
+    {
+      type:'compare', title:'Opslag Snelheidsvergelijking',
+      headers:['Type','Interface','Snelheid','Gebruik'],
+      rows:[
+        ['HDD','SATA','~120 MB/s','Massaopslag, back-ups'],
+        ['SSD (SATA)','SATA','~550 MB/s','OS-schijf, dagelijks gebruik'],
+        ['M.2 NVMe','PCIe 3.0','~3500 MB/s','Hoge prestaties, snelle opstart'],
+        ['M.2 NVMe','PCIe 4.0','~7000 MB/s','Werkstations, gaming-pc\'s'],
+      ]
+    },
+    {
+      type:'compare', title:'Intel CPU Naam Ontcijferen: i7-8550U',
+      headers:['Deel','Waarde','Betekenis'],
+      rows:[
+        ['Model','i7','Prestatieklasse (i3 < i5 < i7 < i9)'],
+        ['Generation','8','8e generatie (Coffee Lake)'],
+        ['SKU','550','Prestaties binnen generatie (hoger = beter)'],
+        ['Suffix','U','Ultralaag verbruik (U = mobiel, K = ontgrendeld, H = hoge prestaties mobiel)'],
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch2', label:'Chapter 2', title:'BIOS / UEFI', icon:'⚙️',
+  color:'var(--c2)',
+  sections:[
+    {
+      type:'facts', title:'Sleutelbegrippen',
+      items:[
+        {term:'BIOS (Basic Input Output System)',detail:'Legacy firmware-chip op het moederbord. Beheert POST en hardware-initialisatie. Tekst-interface, alleen toetsenbord. Geen GUI, geen muis.'},
+        {term:'POST (Power-On Self-Test)',detail:'Diagnostische controle bij elke opstart. Controleert CPU, RAM, opslag en andere hardware. Fouten = pieptonen van de ingebouwde luidspreker.'},
+        {term:'UEFI (Unified Extensible Firmware Interface)',detail:'Moderne vervanger voor BIOS. Verbeteringen: GPT-ondersteuning, Fast Boot, GUI met muis, Secure Boot, TPM-integratie.'},
+        {term:'Secure Boot',detail:'UEFI feature that controleert digitale handtekeningen van opstartsoftware. Blokkeert niet-vertrouwde code bij het opstarten. Vereist voor Windows 11.'},
+        {term:'TPM (Trusted Platform Module)',detail:'Hardware-chip die cryptografische sleutels opslaat. Gebruikt voor BitLocker-versleuteling and Windows 11 requirement. Vereiste versie: <code>TPM 2.0</code>'},
+        {term:'CMOS-chip',detail:'Slaat BIOS-instellingen op: datum, tijd, opstartvolgorde. Gevoed door de <span class="highlight">CR2032 knoopcelbatterij</span>. Als batterij leeg → instellingen hersteld naar standaard.'},
+        {term:'Jumpers',detail:'Hardware-pinnen op het moederbord. Gebruikt voor hardwareconfiguratie. Primair gebruik: <span class="highlight">BIOS-wachtwoord resetten</span>. CMOS-batterij verwijderen wist GEEN wachtwoorden.'},
+        {term:'XMP / EXPO Profielen',detail:'BIOS-profielen om RAM op de nominale snelheid te laten draaien. <span class="highlight">XMP</span> = Intel, <span class="highlight">EXPO</span> = AMD. Zonder profielen draait RAM op lagere standaardsnelheid.'},
+        {term:'BIOS Flashen',detail:'Nieuwe firmware naar de BIOS-chip schrijven. Werkt functies bij en repareert fouten. <span class="highlight">⚠️ NOOIT uitschakelen tijdens flashen</span> — dit maakt het moederbord onbruikbaar.'},
+        {term:'Fast Boot',detail:'UEFI-functie die sommige POST-controles overslaat and initialises hardware in parallel. Reduces startup time. Bijwerking: kan BIOS-toegang blokkeren. Oplossing: eerst volledig afsluiten.'},
+      ]
+    },
+    {
+      type:'compare', title:'MBR vs GPT — Ken Dit Van Buiten',
+      headers:['Kenmerk','MBR (Legacy BIOS)','GPT (UEFI)'],
+      rows:[
+        ['Max drive size','~2 TB','Zettabytes (vrijwel onbeperkt)'],
+        ['Max partitions','4 primaire partities','128 partities'],
+        ['Firmware','Legacy BIOS','UEFI'],
+        ['Boot record','Eerste sector van schijf','Meerdere reservekopieën'],
+        ['Windows 11','❌ Niet ondersteund','✅ Vereist'],
+        ['Secure Boot','❌ Niet beschikbaar','✅ Ondersteund'],
+      ]
+    },
+    {
+      type:'traps', title:'Veelvoorkomende Examen Valkuilen',
+      items:[
+        {q:'Het verwijderen van de CMOS-batterij wist het BIOS-wachtwoord.',a:'<span class="wrong">❌ ONJUIST.</span> Het verwijderen van de batterij reset datum/tijd maar GEEN wachtwoorden. Gebruik <code>jumpers</code> om het wachtwoord te wissen.'},
+        {q:'UEFI en BIOS gebruiken allebei MBR-partitietabellen.',a:'<span class="wrong">❌ ONJUIST.</span> UEFI gebruikt <span class="correct">GPT</span>. Legacy BIOS gebruikt MBR. UEFI can boot MBR in CSM (compatibility) mode, but GPT is the native format.'},
+        {q:'Secure Boot versleutelt je schijf.',a:'<span class="wrong">❌ ONJUIST.</span> Secure Boot verifieert alleen handtekeningen van opstartsoftware. Schijfversleuteling wordt gedaan door <span class="correct">BitLocker + TPM</span>.'},
+        {q:'Fast Boot maakt het altijd sneller om BIOS te openen.',a:'<span class="wrong">❌ ONJUIST.</span> Fast Boot kan je juist VERHINDEREN om BIOS te openen. If stuck, do a full shutdown (not restart), daarna power on.'},
+        {q:'GPT ondersteunt maximaal 64 partities.',a:'<span class="wrong">❌ ONJUIST.</span> GPT ondersteunt tot <span class="correct">128 partities</span> by default. MBR is limited to 4 primary partitions.'},
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch3', label:'Chapter 3', title:'Opstartbare Media', icon:'💾',
+  color:'var(--c3)',
+  sections:[
+    {
+      type:'facts', title:'Kernconcepten',
+      items:[
+        {term:'ISO-bestand',detail:'Een exacte kopiekopie van een cd/dvd als één bestand. Extension: <code>.iso</code>. Standaard: ISO-9660. Gebruikt voor OS-installaties.'},
+        {term:'Ventoy',detail:'Multiboot USB-tool. Eén keer installeren, daarna ISO-bestanden kopiëren. Ondersteunt meerdere ISO's, GPT en Secure Boot. <span class="highlight">Geen herflashing nodig bij toevoegen van ISO's.</span>'},
+        {term:'Rufus',detail:'Single-ISO USB-aanmaakinstrument. Kan Windows 11-systeemvereisten omzeilen (TPM, Secure Boot, RAM checks) during USB creation.'},
+        {term:'Diskpart',detail:'Windows CLI-hulpmiddel voor schijfbeheer. Key sequence: <code>diskpart</code> → <code>list disk</code> → <code>select disk N</code> → <code>clean</code>'},
+        {term:'Media Creation Tool',detail:'Officieel Microsoft-hulpprogramma om Windows ISO te downloaden or create a bootable USB. Available at microsoft.com/software-download/windows11.'},
+        {term:'Een ISO Mounten',detail:'ISO-bestand koppelen zodat het als virtueel dvd-station verschijnt in File Explorer. Dubbelklik op het ISO-bestand. Alleen-lezen — inhoud kan niet worden gewijzigd.'},
+        {term:'Windows Edities',detail:'<span class="highlight">Home</span> → consumenten. <span class="highlight">Pro</span> → klein bedrijf. <span class="highlight">Enterprise</span> → grote organisaties. <span class="highlight">Education</span> → scholen en universiteiten.'},
+        {term:'Windows Versie Naamgeving',detail:'Formaat: <code>YYH#</code>. Example: <code>24H2</code> = Jaar 2024, tweede helft (H2). Versies geleverd via Windows Update. Elke versie = nieuwe functies en bugfixes.'},
+      ]
+    },
+    {
+      type:'compare', title:'Windows 11 Minimale Vereisten — Ken Deze Uit Je Hoofd',
+      headers:['Component','Minimum','Opmerking'],
+      rows:[
+        ['CPU','1 GHz, 2 kernen, 64-bit','Intel 8e gen+ of AMD Ryzen 2000+'],
+        ['RAM','4 GB','8 GB aanbevolen'],
+        ['Storage','64 GB','SSD of NVMe sterk aanbevolen'],
+        ['GPU','DirectX 12 compatibel','De meeste moderne GPU\'s voldoen'],
+        ['Secure Boot','Moet ingeschakeld zijn','In UEFI-instellingen'],
+        ['TPM','TPM 2.0 vereist','Inschakelen in UEFI indien niet actief'],
+        ['Display','720p, 9" diagonal','Practically any modern monitor'],
+      ]
+    },
+    {
+      type:'compare', title:'32-bit vs 64-bit',
+      headers:['Kenmerk','32-bit','64-bit'],
+      rows:[
+        ['Max RAM','4 GB (2³²)','16 EB (2⁶⁴)'],
+        ['Run 32-bit apps','✅ Yes','✅ Ja (via WOW64)'],
+        ['Run 64-bit apps','❌ Nee','✅ Ja'],
+        ['Windows 11','❌ Not supported','✅ Supported'],
+        ['Performance','Limited','Full'],
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch4', label:'Chapter 4', title:'Windows Installatie', icon:'🪟',
+  color:'var(--c4)',
+  sections:[
+    {
+      type:'facts', title:'Installatiestappen &amp; Concepten',
+      items:[
+        {term:'Schone Installatie vs Upgrade',detail:'<span class="highlight">Upgrade:</span> Behoudt programma's en persoonlijke data. Windows 10 → Windows 11. <span class="highlight">Clean Install:</span> Wist ALLES. Nieuw OS. Aanbevolen voor beste prestaties and no legacy issues.'},
+        {term:'Netwerkkabel Loskoppelen',detail:'Voor Windows installeren: netwerkkabel loskoppelen. Dit slaat de Microsoft-accountvereiste over and en laat je een <span class="highlight">lokaal account</span> aanmaken.'},
+        {term:'Toetsenbordinstelling',detail:'Tijdens Belgische labinstallatie: Language = <code>Belgium</code>, Keyboard = <code>Belgian Punkt (Belgisch Punt)</code>. Een fout hier veroorzaakt verkeerde tekens when typing passwords.'},
+        {term:'Hostnaam Formaat',detail:'Wijzigen na installatie: Settings → System → About → Rename this PC. Laboratoriumformaat: <code>DTL1004_Firstname</code> or <code>DTL1006_Firstname</code>'},
+        {term:'Domeindeelname (Lokaal Account)',detail:'Tijdens OOBE-installatie: click <code>"Sign-in options"</code> → <code>"Domain join aanmaken"</code>. This creates a lokaal account without requiring a Microsoft account or internet.'},
+        {term:'Stuurprogramma Installatie',detail:'Na Windows-installatie: Windows Update → Advanced Options → <span class="highlight">Optional Updates</span>. Dit downloadt fabrikantsstuurprogramma's. Controleer Apparaatbeheer op gele ⚠️ uitroeptekens.'},
+        {term:'TPM Bypass Register',detail:'Voor niet-ondersteunde hardware: tijdens installatie druk <code>Shift+F10</code> → type <code>regedit</code> → navigeer naar <code>HKEY_LOCAL_MACHINE\\SYSTEM\\Setup</code> → maak sleutel <code>LABIC</code> → voeg DWORD-waarden toe: <code>BypassTPMCheck = 1</code>, <code>BypassSecureBootCheck = 1</code>'},
+      ]
+    },
+    {
+      type:'traps', title:'Installatie Examen Valkuilen',
+      items:[
+        {q:'Je hebt altijd een productcode nodig om Windows 11 Education te installeren.',a:'<span class="wrong">❌ ONJUIST.</span> Klik tijdens installatie op <span class="correct">"Ik heb geen productcode"</span>, daarna select the edition manually. No key needed for lab installations.'},
+        {q:'Fast Boot moet uitgeschakeld zijn voordat je UEFI kunt openen.',a:'<span class="wrong">Gedeeltelijk misleidend.</span> Fast Boot kan UEFI-toegang blokkeren. Oplossing: doe een <span class="correct">volledige afsluiting</span> (not restart) first, daarna power on and press Del/F2/F10.'},
+        {q:'De registerwaarde BypassTPMCheck schakelt de Secure Boot-controle uit.',a:'<span class="wrong">❌ ONJUIST.</span> <code>BypassTPMCheck = 1</code> slaat de TPM-controle over. Voor Secure Boot: <code>BypassSecureBootCheck = 1</code>. Het zijn <span class="correct">twee aparte DWORD-waarden</span>.'},
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch5', label:'Chapter 5', title:'Windows Tools', icon:'🛠️',
+  color:'var(--c5)',
+  sections:[
+    {
+      type:'compare', title:'Essential Run Commando's — Know All of These',
+      headers:['Commando','Opent','Gebruik voor'],
+      rows:[
+        ['lusrmgr.msc','Lokaal gebruikersbeheer','Gebruikers en groepen aanmaken/verwijderen'],
+        ['taskmgr','Taakbeheer','Processen, CPU/RAM en services bewaken'],
+        ['devmgmt.msc','Apparaatbeheer','Stuurprogramma\'s beheren, ⚠️ hardwareproblemen zien'],
+        ['ncpa.cpl','Netwerkverbindingen','Netwerkadapters bekijken/configureren'],
+        ['mmc','Beheerconsole','Meerdere beheerhulpmiddelen centraliseren'],
+        ['diskmgmt.msc','Schijfbeheer','Schijven partitioneren en formatteren'],
+        ['msinfo32','Systeeminfo','Volledig hardware/software-overzicht'],
+        ['regedit','Register-editor','Windows-registerdatabase bewerken'],
+      ]
+    },
+    {
+      type:'facts', title:'Windows Mappenstructuur',
+      items:[
+        {term:'C:\\ (Rootmap)',detail:'Basis van alles. Alle mappen en bestanden vertakken hiervanuit. In Windows Verkenner is dit je C-schijf.'},
+        {term:'C:\\Program Files',detail:'Installaties van 64-bits toepassingen. On 64-bit Windows only.'},
+        {term:'C:\\Program Files (x86)',detail:'Installaties van 32-bits toepassingen. Bestaat alleen op 64-bits Windows-systemen.'},
+        {term:'C:\\ProgramData',detail:'Gedeelde toepassingsdata voor ALLE gebruikers. Standaard verborgen. Schakel "Verborgen items weergeven" in to see it.'},
+        {term:'C:\\Users\\[naam]\\AppData',detail:'Per-gebruiker toepassingsinstellingen. Verborgen. Drie submappen: <span class="highlight">Roaming</span> (gesynchroniseerd over pc's), <span class="highlight">Local</span> (apparaatspecifiek), <span class="highlight">LocalLow</span> (laagvertrouwen apps).'},
+        {term:'C:\\Windows\\System32',detail:'Kern Windows DLL's en uitvoerbare bestanden. Kritieke systeembestanden. <span class="highlight">Verwijder hier nooit handmatig iets.</span>'},
+        {term:'C:\\Users\\Public',detail:'Toegankelijk voor ALLE lokale gebruikers en via netwerk. Good for shared files in a lab environment.'},
+        {term:'Taakbeheer Tabbladen',detail:'<span class="highlight">Processes</span> = door gebruiker gestarte apps. <span class="highlight">Services</span> = achtergrond systeemprocessen. <span class="highlight">Performance</span> = live CPU/RAM/GPU-grafieken. <span class="highlight">Startup apps</span> = wat opstart bij het opstarten.'},
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch6', label:'Chapter 6', title:'Terminal (CMD)', icon:'⌨️',
+  color:'var(--c6)',
+  sections:[
+    {
+      type:'cmds', title:'Navigatie &amp; Bestandsbewerkingen',
+      items:[
+        {cmd:'dir',desc:'Bestanden en mappen in huidige map weergeven'},
+        {cmd:'dir c*',desc:'Items weergeven die beginnen met "c" (jokerteken)'},
+        {cmd:'cd [folder]',desc:'Naar een map gaan'},
+        {cmd:'cd..',desc:'Één niveau omhoog naar bovenliggende map'},
+        {cmd:'cd\\',desc:'Naar rootmap gaan (C:\\)'},
+        {cmd:'X:',desc:'Naar stationsletter schakelen (bijv. D: voor USB)'},
+        {cmd:'mkdir [name]',desc:'Een nieuwe map aanmaken'},
+        {cmd:'rmdir [name]',desc:'Een LEGE map verwijderen'},
+        {cmd:'rmdir /S [name]',desc:'Map EN alle inhoud verwijderen'},
+        {cmd:'copy [src] [dest]',desc:'Één bestand kopiëren'},
+        {cmd:'xcopy [src] [dest]',desc:'Volledige map met inhoud kopiëren'},
+        {cmd:'move [src] [dest]',desc:'Bestand/map verplaatsen (verwijdert van bron)'},
+        {cmd:'rename [old] [new]',desc:'Een bestand of map hernoemen'},
+        {cmd:'del [file]',desc:'Een bestand permanent verwijderen'},
+        {cmd:'tree',desc:'Mappenstructuur als visuele boom weergeven'},
+        {cmd:'tree /F',desc:'Mappenstructuur inclusief alle bestanden weergeven'},
+        {cmd:'cls',desc:'CMD-scherm wissen'},
+        {cmd:'exit',desc:'Opdrachtprompt sluiten'},
+        {cmd:'tasklist',desc:'Alle actieve processen weergeven'},
+        {cmd:'taskkill /IM name.exe',desc:'Een actief proces op naam beëindigen'},
+        {cmd:'command /?',desc:'Help weergeven voor elk commando'},
+      ]
+    },
+    {
+      type:'facts', title:'Batch File Commando's',
+      items:[
+        {term:'@echo off',detail:'Hides the working directory and command text from output. Makes batch scripts look clean. The <code>@</code> also hides the echo off command itself.'},
+        {term:'echo [text]',detail:'Prints text to the screen. Used for messages, separators, or creating simple text files.'},
+        {term:'REM [comment]',detail:'Adds a comment/remark to the batch file. NOT executed. Used for documentation. <code>::</code> also works as a comment.'},
+        {term:'PAUSE',detail:'Halts the script and waits for the user to press any key. Displays "Press any key to continue..."'},
+        {term:'CALL [script.bat]',detail:'Runs another batch file from within the current one (nesting). Returns to current script after the called script finishes.'},
+      ]
+    },
+    {
+      type:'traps', title:'CMD Examen Valkuilen',
+      items:[
+        {q:'CMD is hoofdlettergevoelig zoals Linux.',a:'<span class="wrong">❌ ONJUIST.</span> CMD is <span class="correct">NIET hoofdlettergevoelig</span>. "DIR", "dir", "Dir" all work. Linux terminal IS case-sensitive.'},
+        {q:'"copy" en "xcopy" doen hetzelfde.',a:'<span class="wrong">❌ ONJUIST.</span> <code>copy</code> kopieert één bestand. <code>xcopy</code> kopieert volledige mappen with all contents and automatically creates the destination folder.'},
+        {q:'cd\\ gaat naar C:\\Windows.',a:'<span class="wrong">❌ ONJUIST.</span> <code>cd\\</code> gaat naar de <span class="correct">rootmap</span> van het huidige station (e.g. C:\\), not to the Windows folder.'},
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch7', label:'Chapter 7', title:'Virtualisatie', icon:'🖥️',
+  color:'var(--c7)',
+  sections:[
+    {
+      type:'facts', title:'Kernconcepten',
+      items:[
+        {term:'Virtualisatie',detail:'Splitst één fysieke machine in meerdere geïsoleerde VM's. Elke VM heeft een eigen OS. Beheerd door de hypervisor. Voordelen: minder fysieke servers, beter resourcegebruik, eenvoudige snapshots, meerdere OS-versies testen.'},
+        {term:'Hypervisor (VMM)',detail:'Software die CPU, RAM, opslag en NIC aan VM's toewijst. Fungeert als beheerder tussen hardware en VM's.'},
+        {term:'Type 1 — Bare Metal',detail:'Draait RECHTSTREEKS op hardware. Geen host-OS nodig. <span class="highlight">Directe hardwaretoegang = beste prestaties.</span> Gebruikt in bedrijven/datacentra. Examples: Hyper-V, VMware ESXi, Proxmox.'},
+        {term:'Type 2 — Hosted',detail:'Draait als TOEPASSING bovenop een host-OS. Geen directe hardwaretoegang. <span class="highlight">Gebruikt op persoonlijke computers.</span> Examples: VirtualBox, VMware Workstation.'},
+        {term:'VHDX-bestand',detail:'Virtuele harde schijf formaat voor Hyper-V. Opgeslagen als gewoon bestand op de host op: <code>C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\</code>'},
+        {term:'Generatie 1 vs 2',detail:'<span class="highlight">Gen 1 = Legacy BIOS (MBR)</span> — voor ouder OS. <span class="highlight">Gen 2 = UEFI (GPT)</span> — vereist voor Windows 11. Kies altijd Gen 2 voor Windows 11 VM's.'},
+        {term:'Dynamisch Geheugen',detail:'Hyper-V-functie die RAM automatisch aanpast allocated to a VM op basis van behoefte. Kan dalen tot 2 GB bij inactiviteit and increase when busy.'},
+        {term:'Controlepunt',detail:'A snapshot of the VM\'s state at a point in time. Kan er op elk moment naar terugkeren. Gebruik vóór riskante bewerkingen. Vervangt GEEN back-up.'},
+      ]
+    },
+    {
+      type:'compare', title:'Virtuele Switch Typen — Dit Staat Altijd op het Examen',
+      headers:['Switch Type','VM ↔ VM','VM ↔ Host','VM ↔ Internet','Opmerking'],
+      rows:[
+        ['Private','✅ Same switch only','❌','❌','Meest geïsoleerd. VM\'s in een bubbel.'],
+        ['Internal','✅ Same switch','✅','❌','VM + Host kunnen communiceren, geen internet.'],
+        ['External','✅','✅','✅','Koppelt host NIC. Volledige netwerktoegang.'],
+        ['Default','✅','✅','✅','Automatisch aangemaakt. NIET omgekeerd. Vermijd in oefeningen.'],
+      ]
+    },
+    {
+      type:'traps', title:'Virtualisatie Examen Valkuilen',
+      items:[
+        {q:'Een Type 1-hypervisor heeft een host-OS nodig.',a:'<span class="wrong">❌ ONJUIST.</span> Type 1 (Bare Metal) draait RECHTSTREEKS op hardware — <span class="correct">geen host-OS nodig</span>. That\'s the defining feature that separates it from Type 2.'},
+        {q:'De Interne Switch geeft VM\'s internettoegang.',a:'<span class="wrong">❌ ONJUIST.</span> Intern = alleen VM ↔ VM en VM ↔ Host. <span class="correct">Geen internet.</span> Gebruik de Externe Switch voor internettoegang.'},
+        {q:'Na het aanmaken van een Externe Switch kun je TCP/IPv4 op de fysieke NIC inschakelen.',a:'<span class="wrong">❌ DOE DIT NOOIT.</span> Externe Switch koppelt de NIC — TCP/IPv4 verplaatst automatisch naar de switch. Inschakelen op de fysieke NIC geeft twee IP-adressen en veroorzaakt conflicten.'},
+        {q:'Hyper-V Generatie 1 is beter voor Windows 11.',a:'<span class="wrong">❌ ONJUIST.</span> Windows 11 vereist UEFI. <span class="correct">Generatie 2 gebruikt UEFI (GPT)</span>. Gen 1 uses Legacy BIOS (MBR) — incompatible with Windows 11.'},
+        {q:'Virtualisatie werkt zonder het in BIOS/UEFI in te schakelen.',a:'<span class="wrong">❌ ONJUIST.</span> CPU-virtualisatie (Intel VT-x of AMD-V) MOET ingeschakeld zijn in BIOS/UEFI. If Hyper-V Platform is greyed out, this is why.'},
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch8', label:'Chapter 8', title:'WSL', icon:'🐧',
+  color:'var(--c8)',
+  sections:[
+    {
+      type:'cmds', title:'WSL Commando's',
+      items:[
+        {cmd:'wsl --install',desc:'WSL 2 installeren met standaard Ubuntu-distributie'},
+        {cmd:'wsl --install -d Debian',desc:'Een specifieke Linux-distributie installeren'},
+        {cmd:'wsl --list',desc:'Alle geïnstalleerde WSL-distributies weergeven'},
+        {cmd:'wsl --list --online',desc:'Alle beschikbare te installeren distributies tonen'},
+        {cmd:'wsl --list --verbose',desc:'Geïnstalleerde distro\'s met versie en status tonen'},
+        {cmd:'wsl --status',desc:'WSL-versie en standaarddistributie controleren'},
+        {cmd:'wsl --shutdown',desc:'Alle actieve WSL-instanties stoppen'},
+      ]
+    },
+    {
+      type:'facts', title:'WSL Key Feiten',
+      items:[
+        {term:'WSL (Windows Subsystem for Linux)',detail:'Draait Linux CLI-tools en distributies IN Windows. Geen aparte virtuele machine nodig. Gevoed door de Virtual Machine Platform Windows feature.'},
+        {term:'WSL 2',detail:'Tweede versie van WSL. Uses the Virtual Machine Platform for volledige Linux-kernelcompatibiliteit. Betere prestaties dan WSL 1. Herstart vereist na installatie.'},
+        {term:'Ondersteunde Distro\'s',detail:'Ubuntu (standaard), Debian, Kali Linux, openSUSE en meer. Meerdere distributies tegelijk installeren.'},
+        {term:'Toepassingsgebied',detail:'Voer Linux-commando's, scripts en tools uit in Windows. Gebruik naast Windows-toepassingen. Linux leren zonder volledige VM of dual-boot.'},
+      ]
+    },
+  ]
+},
+
+{
+  id:'ch9', label:'Chapter 9', title:'Linux', icon:'🐧',
+  color:'var(--c9)',
+  sections:[
+    {
+      type:'facts', title:'Linux Grondbeginselen',
+      items:[
+        {term:'Linux Families',detail:'<span class="highlight">RHEL-familie</span> (Red Hat, Fedora, CentOS) → gebruikt RPM-pakketten (.rpm). <span class="highlight">Debian-familie</span> (Ubuntu, Mint, Debian) → gebruikt DEB-pakketten (.deb). Different package managers, same Linux kernel.'},
+        {term:'Ubuntu LTS',detail:'Long Term Support. 5 jaar gegarandeerde updates. Versie = jaar+maand: <code>24.04</code> = April 2024. Nieuwe versie elke 6 maanden (april en oktober).'},
+        {term:'GRUB',detail:'Grand Unified Bootloader. Het menu bij het opstarten van Linux. Laat je kiezen welk OS of kernel opstart.'},
+        {term:'Terminalprompts',detail:'<span class="highlight">$</span> = gewone gebruiker. <span class="highlight">#</span> = root-gebruiker (supergebruiker). Kritieke beveiligingsindicator — weet wie je bent vóór het uitvoeren van commando's.'},
+        {term:'sudo vs su',detail:'<span class="highlight">sudo [command]</span> = voert ÉÉN commando uit als root. Vraagt je wachtwoord. <span class="highlight">su -</span> = schakelt OVER naar de root-gebruiker (volledige sessie). Vraagt het root-wachtwoord. Gebruik sudo voor veiligheid.'},
+        {term:'Verborgen Bestanden',detail:'Bestanden en mappen die beginnen met <code>.</code> zijn verborgen. <code>ls</code> toont ze NIET. Use <code>ls -a</code> om alles te zien inclusief verborgen bestanden.'},
+        {term:'SSH (Secure Shell)',detail:'Protocol voor beveiligde externe verbindingen. Standaardpoort: <code>22</code>. Configuratiebestand: <code>/etc/ssh/sshd_config</code>. Na bewerken configuratie: voer uit <code>systemctl daemon-reload</code> daarna <code>systemctl restart ssh</code>'},
+        {term:'Nano Teksteditor',detail:'Eenvoudige terminalteksteditor. <code>Ctrl+O</code> = save. <code>Ctrl+X</code> = exit. <code>Ctrl+W</code> = search. Regels die beginnen met <code>#</code> zijn opmerkingen (genegeerd door het systeem).'},
+      ]
+    },
+    {
+      type:'compare', title:'apt Package Manager — Critical Commando's',
+      headers:['Commando','Wat het doet','Belangrijke opmerking'],
+      rows:[
+        ['sudo apt update','Vernieuwt de pakketlijst','Installeert NIETS'],
+        ['sudo apt upgrade','Installs available updates','Uitvoeren na apt update'],
+        ['sudo apt install [pkg]','Installs a package','Vanuit repository'],
+        ['sudo apt remove [pkg]','Uninstalls a package','Bewaart configuratiebestanden'],
+        ['sudo apt purge [pkg]','Uninstalls + deletes config','Schone verwijdering'],
+        ['apt search [keyword]','Search repository for package','Geen sudo nodig'],
+        ['apt show [pkg]','Show package information','Geen sudo nodig'],
+        ['sudo dpkg -i file.deb','Install local .deb file','Niet vanuit repository'],
+        ['dpkg -s [pkg]','Show installed package info','Controleer of geïnstalleerd'],
+      ]
+    },
+    {
+      type:'compare', title:'Linux Mappenstructuur',
+      headers:['Pad','Bevat','Onthouden'],
+      rows:[
+        ['/','Root van alles','NIET hetzelfde als /root'],
+        ['/home/[user]','Persoonlijke gebruikersbestanden','Zoals C:\\Users\\naam'],
+        ['/root','Thuismap van root-gebruiker','≠ / (rootmap)'],
+        ['/etc','Systeemconfiguratiebestanden','/etc/ssh/sshd_config'],
+        ['/var/log','Logbestanden','Controleer logs hier'],
+        ['/bin',  'Essentiële commando\'s (ls, cp, mv)','Basishulpmiddelen'],
+        ['/sbin', 'Beheerderscommando\'s (fsck, reboot)','Alleen voor root'],
+        ['/tmp',  'Tijdelijke bestanden','Gewist bij herstart'],
+        ['/dev',  'Apparaatbestanden (/dev/sda = HDD)','Hardware als bestanden'],
+      ]
+    },
+    {
+      type:'cmds', title:'Essential Linux Terminal Commando's',
+      items:[
+        {cmd:'ls',desc:'Mapinhoud weergeven'},
+        {cmd:'ls -a',desc:'ALLES weergeven inclusief verborgen bestanden'},
+        {cmd:'ls -l',desc:'Weergeven in lang formaat met rechten en grootte'},
+        {cmd:'cd /path',desc:'Naar absoluut pad gaan'},
+        {cmd:'cd ..',desc:'Één niveau omhoog'},
+        {cmd:'cd ~',desc:'Naar thuismap gaan'},
+        {cmd:'cd /',desc:'Naar rootmap gaan'},
+        {cmd:'mkdir [name]',desc:'Een nieuwe map aanmaken'},
+        {cmd:'rmdir [name]',desc:'Lege map verwijderen'},
+        {cmd:'rm -r [folder]',desc:'Map en ALLE inhoud verwijderen'},
+        {cmd:'rm [file]',desc:'Een bestand verwijderen'},
+        {cmd:'cp [src] [dest]',desc:'Een bestand kopiëren'},
+        {cmd:'cp -r [dir] [dest]',desc:'Een map met alle inhoud kopiëren'},
+        {cmd:'mv [src] [dest]',desc:'Bestand/map verplaatsen of hernoemen'},
+        {cmd:'touch [file]',desc:'Een leeg bestand aanmaken'},
+        {cmd:'cat > [file]',desc:'Bestand aanmaken en inhoud typen (Ctrl+D om op te slaan)'},
+        {cmd:'find / -name "file"',desc:'Bestand op naam zoeken'},
+        {cmd:'curl -O [URL]',desc:'Bestand downloaden met originele bestandsnaam'},
+        {cmd:'sudo apt update',desc:'Pakketlijst vernieuwen (installeert NIETS)'},
+        {cmd:'sudo apt upgrade',desc:'Beschikbare updates installeren'},
+        {cmd:'sudo apt install [pkg]',desc:'Een pakket installeren'},
+        {cmd:'sudo apt purge [pkg]',desc:'Pakket + configuratiebestanden verwijderen'},
+        {cmd:'ssh user@ip',desc:'Verbinding maken met externe server via SSH (poort 22)'},
+        {cmd:'ssh -p 22000 user@ip',desc:'Via SSH verbinden op aangepaste poort'},
+        {cmd:'systemctl status ssh',desc:'SSH-servicestatus controleren'},
+        {cmd:'systemctl enable ssh',desc:'SSH inschakelen om bij opstarten te starten'},
+        {cmd:'systemctl restart ssh',desc:'SSH-service herstarten (configuratiewijzigingen toepassen)'},
+        {cmd:'systemctl daemon-reload',desc:'Systemd herladen na wijziging configuratiebestand'},
+        {cmd:'sudo nano /etc/ssh/sshd_config',desc:'SSH-serverconfiguratie bewerken'},
+        {cmd:'adduser [name]',desc:'Interactief een nieuw gebruikersaccount aanmaken'},
+      ]
+    },
+    {
+      type:'traps', title:'Linux Examen Valkuilen',
+      items:[
+        {q:'"apt update" installeert de nieuwste software-updates.',a:'<span class="wrong">❌ ONJUIST.</span> <code>apt update</code> vernieuwt alleen <span class="correct">de pakketlijst</span> of available packages. To actually install updates, run <code>apt upgrade</code>.'},
+        {q:'RPM-pakketten kunnen op Ubuntu worden geïnstalleerd met apt.',a:'<span class="wrong">❌ ONJUIST.</span> Ubuntu gebruikt <span class="correct">.deb-pakketten</span>. RPM is for RHEL-based distros (Fedora, CentOS). Use <code>dpkg -i file.deb</code> for local package files.'},
+        {q:'De map /root en de map / zijn hetzelfde.',a:'<span class="wrong">❌ ONJUIST.</span> <code>/</code> is de root van het volledige bestandssysteem. <code>/root</code> is de thuismap van de root-gebruiker. They are completely different locations.'},
+        {q:'"apt remove" verwijdert een pakket en al zijn instellingen volledig.',a:'<span class="wrong">❌ ONJUIST.</span> <code>apt remove</code> verwijdert het pakket maar <span class="correct">bewaart configuratiebestanden</span>. Use <code>apt purge</code> to also delete config files.'},
+        {q:'Linux-commando\'s zijn niet hoofdlettergevoelig zoals Windows CMD.',a:'<span class="wrong">❌ ONJUIST.</span> Linux IS hoofdlettergevoelig. <code>ls</code> and <code>LS</code> are different commands. <code>Documents</code> and <code>documents</code> are different folders.'},
+        {q:'Na het wijzigen van /etc/ssh/sshd_config herstart SSH automatisch.',a:'<span class="wrong">❌ ONJUIST.</span> Je moet handmatig uitvoeren: <code>systemctl daemon-reload</code> daarna <code>systemctl restart ssh</code>. Wijzigingen worden pas toegepast na het herstarten van de service.'},
+      ]
+    },
+  ]
+},
+];
+
+// ═══════════════════════════════════════════════════════
+//  BUILD
+// ═══════════════════════════════════════════════════════
+function build(){
+  // chapter nav pills
+  const nav = document.getElementById('chapterNav');
+  nav.innerHTML = '<button class="ch-pill active" data-ch="all" onclick="filterChapter(\'all\',this)" style="background:var(--ink3);color:var(--text);">Alle hoofdstukken</button>';
+  CHAPTERS.forEach(ch => {
+    nav.innerHTML += `<button class="ch-pill" data-ch="${ch.id}" onclick="filterChapter('${ch.id}',this)" style="--col:${ch.color}">${ch.label}</button>`;
+  });
+
+  // main content
+  const main = document.getElementById('mainContent');
+  main.innerHTML = CHAPTERS.map(ch => buildChapterBlock(ch)).join('');
+
+  // sticky counts
+  buildStickyCounts();
+}
+
+function buildChapterBlock(ch){
+  const sectionsHTML = ch.sections.map(s => buildSection(s, ch.color)).join('');
+  const totalItems = ch.sections.reduce((sum,s) => sum + (s.items||s.rows||[]).length, 0);
+  return `
+<div class="ch-block" id="${ch.id}" data-ch="${ch.id}">
+  <div class="ch-header" onclick="toggleChapter('${ch.id}')">
+    <div class="ch-accent-bar" style="background:${ch.color}"></div>
+    <div class="ch-icon">${ch.icon}</div>
+    <div class="ch-info">
+      <div class="ch-label">${ch.label}</div>
+      <div class="ch-title">${ch.title}</div>
+    </div>
+    <div class="ch-pill-count">${totalItems} items</div>
+    <div class="ch-chevron">▾</div>
+  </div>
+  <div class="ch-body">${sectionsHTML}</div>
+</div>`;
+}
+
+function buildSection(s, color){
+  let html = `<div class="section-label">${s.title}</div>`;
+  if(s.type === 'facts'){
+    html += `<div class="facts-grid">` +
+      s.items.map(item => `
+        <div class="fact-card" onclick="toggleFact(this)">
+          <div class="fact-top">
+            <div class="fact-indicator" style="background:${color}"></div>
+            <div class="fact-term">${item.term}</div>
+            <div class="fact-expand-icon">▾</div>
+          </div>
+          <div class="fact-detail">${item.detail}</div>
+        </div>`).join('') + `</div>`;
+  }
+  else if(s.type === 'compare'){
+    html += `<div class="compare-wrap"><table class="compare-table">
+      <thead><tr>${s.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${s.rows.map(row=>`<tr>${row.map((c,i)=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+  else if(s.type === 'cmds'){
+    html += `<div class="cmd-list">` +
+      s.items.map(item => `
+        <div class="cmd-row" onclick="copyCmd('${item.cmd.replace(/'/g,"\\'")}')">
+          <div class="cmd-code">${item.cmd}</div>
+          <div class="cmd-desc">${item.desc}</div>
+        </div>`).join('') + `</div>`;
+  }
+  else if(s.type === 'traps'){
+    html += `<div class="traps-list">` +
+      s.items.map(item => `
+        <div class="trap-item" onclick="toggleTrap(this)">
+          <div class="trap-icon">⚠️</div>
+          <div class="trap-content">
+            <div class="trap-q">${item.q}</div>
+            <div class="trap-a">${item.a}</div>
+          </div>
+          <div style="color:var(--muted);font-size:13px;transition:transform .2s;" class="trap-chevron">▾</div>
+        </div>`).join('') + `</div>`;
+  }
+  return html;
+}
+
+function buildStickyCounts(){
+  const counts = document.getElementById('stickyCounts');
+  const types = [
+    {label:'Feiten', color:'var(--c1)', count: CHAPTERS.reduce((s,c)=>s+c.sections.filter(x=>x.type==='facts').reduce((ss,x)=>ss+(x.items||[]).length,0),0)},
+    {label:'Vergelijkingen', color:'var(--c2)', count: CHAPTERS.reduce((s,c)=>s+c.sections.filter(x=>x.type==='compare').reduce((ss,x)=>ss+(x.rows||[]).length,0),0)},
+    {label:'Commando's', color:'var(--c6)', count: CHAPTERS.reduce((s,c)=>s+c.sections.filter(x=>x.type==='cmds').reduce((ss,x)=>ss+(x.items||[]).length,0),0)},
+    {label:'Examen valkuilen', color:'var(--c3)', count: CHAPTERS.reduce((s,c)=>s+c.sections.filter(x=>x.type==='traps').reduce((ss,x)=>ss+(x.items||[]).length,0),0)},
+  ];
+  counts.innerHTML = types.map(t =>
+    `<div class="sticky-count"><div class="sticky-dot" style="background:${t.color}"></div><span>${t.count} ${t.label}</span></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  INTERACTIONS
+// ═══════════════════════════════════════════════════════
+function toggleChapter(id){
+  const block = document.getElementById(id);
+  block.classList.toggle('open');
+}
+
+function toggleFact(el){
+  el.classList.toggle('expanded');
+}
+
+function toggleTrap(el){
+  el.classList.toggle('expanded');
+  const chev = el.querySelector('.trap-chevron');
+  if(chev) chev.style.transform = el.classList.contains('expanded') ? 'rotate(180deg)' : '';
+}
+
+let allOpen = false;
+function toggleAll(){
+  allOpen = !allOpen;
+  document.querySelectorAll('.ch-block').forEach(b => {
+    if(allOpen) b.classList.add('open');
+    else b.classList.remove('open');
+  });
+  if(allOpen){
+    document.querySelectorAll('.fact-card').forEach(c => c.classList.add('expanded'));
+    document.querySelectorAll('.trap-item').forEach(t => {
+      t.classList.add('expanded');
+      const chev = t.querySelector('.trap-chevron');
+      if(chev) chev.style.transform = 'rotate(180deg)';
+    });
+  } else {
+    document.querySelectorAll('.fact-card').forEach(c => c.classList.remove('expanded'));
+    document.querySelectorAll('.trap-item').forEach(t => {
+      t.classList.remove('expanded');
+      const chev = t.querySelector('.trap-chevron');
+      if(chev) chev.style.transform = '';
+    });
+  }
+  document.querySelector('.expand-all-btn').textContent = allOpen ? 'Alles sluiten' : 'Alles openen';
+}
+
+function filterChapter(id, btn){
+  document.querySelectorAll('.ch-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.ch-block').forEach(b => {
+    if(id === 'all'){
+      b.style.display = '';
+    } else {
+      b.style.display = b.dataset.ch === id ? '' : 'none';
+      if(b.dataset.ch === id) b.classList.add('open');
+    }
+  });
+  if(id === 'all'){
+    document.querySelector('.ch-pill').style.background = 'var(--ink3)';
+  }
+}
+
+// style active chapter pills
+document.querySelectorAll('.ch-pill[data-ch]:not([data-ch="all"])').forEach((pill,i) => {
+  const color = CHAPTERS[i]?.color || '#888';
+  pill.addEventListener('mouseenter', () => {
+    if(!pill.classList.contains('active')) pill.style.borderColor = color;
+  });
+  pill.addEventListener('mouseleave', () => {
+    if(!pill.classList.contains('active')) pill.style.borderColor = '';
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════════════
+function handleSearch(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const main = document.getElementById('mainContent');
+  const noRes = document.getElementById('noResults');
+
+  if(!q){
+    // restore
+    document.querySelectorAll('.ch-block').forEach(b => b.style.display = '');
+    document.querySelectorAll('.fact-term,.cmd-desc,.trap-q,.compare-table td').forEach(el => {
+      el.innerHTML = el.innerHTML.replace(/<\/?mark>/g,'');
+    });
+    noRes.style.display = 'none';
+    return;
+  }
+
+  let anyVisible = false;
+
+  document.querySelectorAll('.ch-block').forEach(block => {
+    const text = block.textContent.toLowerCase();
+    if(text.includes(q)){
+      block.style.display = '';
+      block.classList.add('open');
+      anyVisible = true;
+
+      // expand matching fact cards
+      block.querySelectorAll('.fact-card').forEach(card => {
+        const t = card.textContent.toLowerCase();
+        if(t.includes(q)) card.classList.add('expanded');
+      });
+
+      block.querySelectorAll('.trap-item').forEach(trap => {
+        const t = trap.textContent.toLowerCase();
+        if(t.includes(q)){
+          trap.classList.add('expanded');
+          const chev = trap.querySelector('.trap-chevron');
+          if(chev) chev.style.transform = 'rotate(180deg)';
+        }
+      });
+    } else {
+      block.style.display = 'none';
+    }
+  });
+
+  noRes.style.display = anyVisible ? 'none' : 'block';
+  main.style.display = anyVisible ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  COPY COMMAND
+// ═══════════════════════════════════════════════════════
+function copyCmd(cmd){
+  navigator.clipboard.writeText(cmd).catch(()=>{});
+  const t = document.getElementById('toast');
+  t.textContent = `📋 Gekopieerd: ${cmd}`;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(16px)';
+  }, 1800);
+}
+
+// ═══════════════════════════════════════════════════════
+//  READING PROGRESS BAR
+// ═══════════════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('readingFill');
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  el.style.width = (scrollTop / docHeight * 100) + '%';
+});
+
+// ═══════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUT
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if(e.key === '/' && document.activeElement !== document.getElementById('searchInput')){
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  if(e.key === 'Escape'){
+    document.getElementById('searchInput').value = '';
+    handleSearch();
+    document.getElementById('searchInput').blur();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+//  CHAPTER PILL ACTIVE COLOR
+// ═══════════════════════════════════════════════════════
+function setActivePillStyle(){
+  document.querySelectorAll('.ch-pill.active[data-ch]:not([data-ch="all"])').forEach((pill,i) => {
+    const idx = CHAPTERS.findIndex(c=>c.id===pill.dataset.ch);
+    if(idx>=0){
+      const color = CHAPTERS[idx].color.replace('var(--','').replace(')','');
+      const hex = getComputedStyle(document.documentElement).getPropertyValue('--'+color).trim();
+      pill.style.background = hex;
+      pill.style.borderColor = 'transparent';
+      pill.style.color = '#0d1117';
+    }
+  });
+}
+
+// Override filterChapter to also style pills
+const _origFilter = filterChapter;
+window.filterChapter = function(id, btn){
+  _origFilter(id, btn);
+  document.querySelectorAll('.ch-pill').forEach(p => {
+    if(p.classList.contains('active')){
+      if(p.dataset.ch === 'all'){
+        p.style.background = 'var(--ink3)';
+        p.style.color = 'var(--text)';
+        p.style.borderColor = 'var(--wire2)';
+      } else {
+        const idx = CHAPTERS.findIndex(c=>c.id===p.dataset.ch);
+        if(idx>=0){
+          p.style.background = CHAPTERS[idx].color;
+          p.style.color = '#0d1117';
+          p.style.borderColor = 'transparent';
+        }
+      }
+    } else {
+      p.style.background = 'var(--ink2)';
+      p.style.color = 'var(--dim)';
+      p.style.borderColor = 'var(--wire2)';
+    }
+  });
+};
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+build();
+</script>
+</body>
+</html>

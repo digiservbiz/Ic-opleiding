@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IC Study App — Installatie & Configuration</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#090d18;--bg2:#111827;--bg3:#1a2236;--bg4:#222d45;--bg5:#2a3554;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.13);
+  --text:#e4e8f4;--muted:#5a6480;--dim:#8b92a8;
+  --accent:#5b8ef8;--accent2:#7c5bf8;
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--sky:#38bdf8;--pink:#f472b6;
+  --mono:'IBM Plex Mono',monospace;--sans:'Inter',system-ui,sans-serif;
+  --r:10px;--r-sm:6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ── NAV ── */
+.app-nav{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 24px;display:flex;align-items:center;gap:0;
+  position:sticky;top:0;z-index:50;height:52px;
+}
+.nav-logo{
+  font-size:13px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;margin-right:28px;white-space:nowrap;
+}
+.nav-logo span{color:var(--accent);}
+.nav-tabs{display:flex;gap:2px;flex:1;overflow-x:auto;}
+.nav-tab{
+  padding:6px 14px;border-radius:var(--r-sm);font-size:12.5px;
+  color:var(--muted);cursor:pointer;white-space:nowrap;
+  border:none;background:none;font-family:var(--sans);
+  transition:all .15s;display:flex;align-items:center;gap:6px;
+}
+.nav-tab:hover{color:var(--text);background:var(--bg3);}
+.nav-tab.active{color:var(--accent);background:rgba(91,142,248,.1);}
+.nav-tab .tab-icon{font-size:14px;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.streak-badge{
+  font-family:var(--mono);font-size:11px;padding:3px 10px;
+  border-radius:20px;background:rgba(245,158,11,.1);
+  border:1px solid rgba(245,158,11,.2);color:var(--amber);
+}
+
+/* ── COMMON ── */
+.page{flex:1;padding:28px;max-width:900px;width:100%;margin:0 auto;}
+.page-wide{flex:1;padding:28px;width:100%;}
+.section-title{
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;
+}
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;
+}
+.btn{
+  padding:10px 20px;border-radius:var(--r-sm);font-size:13px;
+  font-weight:600;cursor:pointer;border:none;font-family:var(--sans);
+  transition:all .15s;
+}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{opacity:.88;}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
+.btn-secondary:hover{background:var(--bg4);}
+.btn-success{background:var(--green);color:#fff;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-lg{padding:14px 28px;font-size:15px;border-radius:var(--r);}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;}
+kbd{font-family:var(--mono);font-size:10px;padding:2px 5px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;color:var(--muted);}
+
+/* ── DASHBOARD ── */
+.dash-hero{
+  background:linear-gradient(135deg,var(--bg2) 0%,var(--bg3) 100%);
+  border:1px solid var(--border);border-radius:var(--r);padding:28px;
+  margin-bottom:20px;position:relative;overflow:hidden;
+}
+.dash-hero::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(91,142,248,.12) 0%,transparent 70%);
+}
+.dash-greeting{font-size:22px;font-weight:700;margin-bottom:4px;}
+.dash-sub{font-size:13px;color:var(--dim);}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.stat-val{font-size:26px;font-weight:700;font-family:var(--mono);}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+.stat-box.accent .stat-val{color:var(--accent);}
+.stat-box.green  .stat-val{color:var(--green);}
+.stat-box.amber  .stat-val{color:var(--amber);}
+.stat-box.pink   .stat-val{color:var(--pink);}
+
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.mode-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px;cursor:pointer;transition:all .2s;text-align:left;
+  position:relative;overflow:hidden;
+}
+.mode-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:var(--r) var(--r) 0 0;transition:opacity .2s;opacity:0;
+}
+.mode-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.mode-card:hover::before{opacity:1;}
+.mc-practice::before{background:var(--accent);}
+.mc-flash::before{background:var(--pink);}
+.mc-spaced::before{background:var(--amber);}
+.mc-exam::before{background:var(--red);}
+.mc-weak::before{background:var(--green);}
+.mode-card .mc-icon{font-size:28px;margin-bottom:10px;}
+.mode-card .mc-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.mode-card .mc-desc{font-size:12px;color:var(--dim);line-height:1.5;}
+.mode-card .mc-badge{
+  display:inline-block;margin-top:8px;font-size:10px;padding:2px 8px;
+  border-radius:20px;font-weight:500;
+}
+
+/* chapter performance bars */
+.ch-perf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;}
+.ch-perf-row{display:flex;align-items:center;gap:10px;}
+.ch-perf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ch-perf-name{font-size:12px;color:var(--dim);min-width:130px;}
+.ch-perf-bar-wrap{flex:1;height:5px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.ch-perf-bar{height:100%;border-radius:4px;transition:width 1s ease;}
+.ch-perf-pct{font-size:11px;font-family:var(--mono);color:var(--muted);min-width:32px;text-align:right;}
+
+/* ── PRACTICE CONFIG ── */
+.config-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px;}
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:16px;}
+.ch-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:12px 14px;cursor:pointer;transition:all .15s;position:relative;user-select:none;
+}
+.ch-card:hover{border-color:var(--border2);}
+.ch-card.selected{border-color:var(--accent);background:rgba(91,142,248,.08);}
+.ch-card.selected::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--accent);font-size:12px;font-weight:700;}
+.ch-num{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;}
+.ch-name{font-size:12.5px;font-weight:500;line-height:1.3;}
+.ch-cnt{font-size:10px;color:var(--muted);margin-top:2px;}
+.config-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+.config-item{display:flex;flex-direction:column;gap:5px;}
+.config-label{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:13px;padding:7px 10px;border-radius:var(--r-sm);outline:none;}
+select:focus{border-color:var(--accent);}
+input[type=range]{accent-color:var(--accent);}
+.range-row{display:flex;align-items:center;gap:8px;}
+.range-val{font-family:var(--mono);font-size:13px;color:var(--accent);min-width:28px;}
+.type-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.type-pill{
+  padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;
+  border:1px solid var(--border2);color:var(--muted);background:var(--bg3);
+  transition:all .15s;user-select:none;
+}
+.type-pill.on{border-color:var(--accent);color:var(--accent);background:rgba(91,142,248,.1);}
+
+/* ── QUIZ TOPBAR ── */
+.quiz-topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:10px 24px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:20;flex-wrap:wrap;
+}
+.q-prog-wrap{flex:1;min-width:100px;}
+.q-prog-lbl{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.q-prog-bar{height:3px;background:var(--bg4);border-radius:3px;overflow:hidden;}
+.q-prog-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .4s ease;}
+.q-timer{font-family:var(--mono);font-size:13px;padding:4px 10px;border-radius:var(--r-sm);background:var(--bg3);border:1px solid var(--border);min-width:56px;text-align:center;}
+.q-timer.warn{color:var(--amber);border-color:rgba(245,158,11,.3);}
+.q-timer.danger{color:var(--red);border-color:rgba(239,68,68,.3);animation:pulse .6s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.q-live{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.q-live b{color:var(--green);}
+.quit-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--sans);transition:all .15s;}
+.quit-btn:hover{color:var(--red);border-color:rgba(239,68,68,.3);}
+
+/* ── Q CARD ── */
+.quiz-body{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:32px 20px 60px;}
+.q-card{max-width:680px;width:100%;}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.q-ch-tag{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.q-type-tag{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.q-diff{font-size:10px;padding:2px 7px;border-radius:20px;}
+.diff-easy{background:rgba(34,197,94,.1);color:#86efac;}
+.diff-medium{background:rgba(245,158,11,.1);color:#fcd34d;}
+.diff-hard{background:rgba(239,68,68,.1);color:#fca5a5;}
+.q-num{font-size:10px;color:var(--muted);margin-left:auto;font-family:var(--mono);}
+.q-text{font-size:17px;font-weight:500;line-height:1.6;margin-bottom:24px;}
+.q-text code{font-family:var(--mono);font-size:13px;background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--accent);}
+
+.options{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:13px 16px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.5;user-select:none;
+}
+.opt:hover:not(.disabled){border-color:var(--accent);background:rgba(91,142,248,.07);}
+.opt-letter{
+  font-family:var(--mono);font-size:10px;width:20px;height:20px;border-radius:4px;
+  background:var(--bg4);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;font-weight:600;color:var(--muted);
+  border:1px solid var(--border);transition:all .15s;
+}
+.opt.selected:not(.revealed){border-color:var(--accent);background:rgba(91,142,248,.1);}
+.opt.selected:not(.revealed) .opt-letter{background:var(--accent);color:#fff;border-color:var(--accent);}
+.opt.correct{border-color:var(--green);background:rgba(34,197,94,.08);}
+.opt.correct .opt-letter{background:var(--green);color:#fff;border-color:var(--green);}
+.opt.wrong{border-color:var(--red);background:rgba(239,68,68,.08);}
+.opt.wrong .opt-letter{background:var(--red);color:#fff;border-color:var(--red);}
+.opt.disabled{cursor:default;}
+
+.tf-row{display:flex;gap:10px;}
+.tf-btn{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;color:var(--text);font-family:var(--sans);text-align:center;}
+.tf-btn:hover:not(.disabled){border-color:var(--accent);background:rgba(91,142,248,.07);}
+.tf-btn.selected{border-color:var(--accent);background:rgba(91,142,248,.1);}
+.tf-btn.correct{border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green);}
+.tf-btn.wrong{border-color:var(--red);background:rgba(239,68,68,.1);color:var(--red);}
+.tf-btn.disabled{cursor:default;}
+
+.fill-wrap{display:flex;flex-direction:column;gap:8px;}
+.fill-input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:13px 16px;font-size:14px;color:var(--text);font-family:var(--sans);outline:none;transition:border-color .15s;}
+.fill-input:focus{border-color:var(--accent);}
+.fill-input.correct{border-color:var(--green);background:rgba(34,197,94,.06);}
+.fill-input.wrong{border-color:var(--red);background:rgba(239,68,68,.06);}
+.fill-input:disabled{opacity:.8;cursor:default;}
+.fill-hint{font-size:11px;color:var(--muted);}
+
+.feedback{margin-top:16px;padding:13px 16px;border-radius:var(--r);font-size:13px;line-height:1.65;display:none;}
+.feedback.show{display:block;}
+.feedback.ok{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac;}
+.feedback.bad{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#fca5a5;}
+.feedback strong{font-weight:600;display:block;margin-bottom:2px;}
+
+.q-actions{margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ── FLASHCARD ── */
+.flash-config{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;}
+.flash-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;}
+.flash-counter{font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:20px;}
+.flash-card{
+  width:100%;max-width:580px;min-height:280px;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:36px;cursor:pointer;transition:transform .15s,box-shadow .15s;
+  position:relative;text-align:center;user-select:none;
+}
+.flash-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4);}
+.flash-side-label{
+  position:absolute;top:14px;left:18px;
+  font-size:10px;font-family:var(--mono);letter-spacing:.08em;
+  color:var(--muted);text-transform:uppercase;
+}
+.flash-ch-tag{position:absolute;top:14px;right:18px;font-size:10px;padding:2px 8px;border-radius:20px;}
+.flash-content{font-size:19px;font-weight:600;line-height:1.5;color:var(--text);}
+.flash-content.answer{font-size:15px;font-weight:400;color:var(--dim);}
+.flash-hint{margin-top:10px;font-size:11px;color:var(--muted);}
+.flash-tap{font-size:11px;color:var(--muted);margin-top:18px;}
+.flash-btns{display:flex;gap:12px;margin-top:20px;}
+.flash-btn-knew{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:12px 28px;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;font-family:var(--sans);transition:all .15s;}
+.flash-btn-knew:hover{background:rgba(34,197,94,.2);}
+.flash-btn-miss{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:12px 28px;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;font-family:var(--sans);transition:all .15s;}
+.flash-btn-miss:hover{background:rgba(239,68,68,.2);}
+.flash-progress{width:100%;max-width:580px;margin-top:16px;}
+.flash-prog-bar{height:4px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.flash-prog-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .3s ease;}
+.flash-stats{display:flex;gap:20px;margin-top:10px;font-size:11px;font-family:var(--mono);}
+.flash-stat-knew{color:var(--green);}
+.flash-stat-miss{color:var(--red);}
+
+/* ── SPACED REPETITION ── */
+.sr-info{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;font-size:12.5px;color:#fcd34d;line-height:1.6;}
+.sr-queue{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.sr-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:12.5px;}
+.sr-due-badge{font-size:10px;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.due-now{background:rgba(239,68,68,.12);color:var(--red);}
+.due-soon{background:rgba(245,158,11,.12);color:var(--amber);}
+.due-later{background:rgba(34,197,94,.12);color:var(--green);}
+
+/* ── EXAM SIM ── */
+.exam-hero{text-align:center;padding:40px 20px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.exam-ring{width:150px;height:150px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:var(--bg2);margin:0 auto 20px;}
+.exam-ring svg{position:absolute;top:0;left:0;width:100%;height:100%;transform:rotate(-90deg);}
+.exam-ring svg circle{fill:none;stroke-width:6;stroke-linecap:round;}
+.ring-bg{stroke:var(--bg4);}
+.ring-fg{stroke:var(--accent);transition:stroke-dashoffset 1.2s ease;}
+.ring-pct{font-size:30px;font-weight:700;font-family:var(--mono);z-index:1;}
+.ring-lbl{font-size:10px;color:var(--muted);font-family:var(--mono);z-index:1;}
+.exam-grade{font-size:22px;font-weight:700;margin-bottom:6px;}
+.exam-msg{font-size:13px;color:var(--dim);}
+
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;width:100%;max-width:460px;}
+.res-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;}
+.res-stat .rv{font-size:22px;font-weight:700;font-family:var(--mono);}
+.res-stat .rk{font-size:10px;color:var(--muted);margin-top:2px;}
+.res-stat.rc .rv{color:var(--green);}
+.res-stat.rw .rv{color:var(--red);}
+.res-stat.rt .rv{color:var(--accent);}
+
+/* ── WEAK SPOTS ── */
+.weak-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:20px;}
+.weak-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;}
+.weak-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.weak-dot{width:10px;height:10px;border-radius:50%;}
+.weak-title{font-size:13px;font-weight:600;}
+.weak-score{margin-left:auto;font-family:var(--mono);font-size:12px;}
+.weak-bar-wrap{height:6px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.weak-bar{height:100%;border-radius:4px;transition:width 1s ease;}
+.weak-meta{font-size:11px;color:var(--muted);}
+.weak-topics{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+.weak-topic-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--dim);}
+.weak-topic-bar-wrap{flex:1;height:3px;background:var(--bg4);border-radius:3px;overflow:hidden;}
+.weak-topic-fill{height:100%;border-radius:3px;}
+
+.heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0;}
+.heat-cell{
+  aspect-ratio:1;border-radius:3px;
+  background:var(--bg4);transition:all .3s;
+  cursor:default;position:relative;
+}
+.heat-cell[data-score]:hover::after{
+  content:attr(data-score);position:absolute;bottom:calc(100% + 4px);left:50%;
+  transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);
+  padding:2px 6px;border-radius:4px;font-size:10px;white-space:nowrap;pointer-events:none;
+  font-family:var(--mono);color:var(--text);
+}
+
+/* ── RESULTS REVIEW ── */
+.review-section{width:100%;max-width:680px;}
+.review-toggle-btn{
+  display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  background:none;border:none;font-family:var(--sans);margin-bottom:10px;
+  padding:0;
+}
+.review-list{display:flex;flex-direction:column;gap:8px;}
+.review-item{background:var(--bg2);border-left:3px solid var(--red);border-radius:var(--r);padding:13px 15px;font-size:12.5px;}
+.review-q{font-weight:500;margin-bottom:5px;line-height:1.4;}
+.review-q code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 4px;border-radius:3px;color:var(--accent);}
+.review-your{color:var(--red);font-size:11.5px;}
+.review-correct{color:var(--green);font-size:11.5px;}
+.review-ch{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono);}
+
+.res-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;justify-content:center;}
+
+/* ── MISC ── */
+.hidden{display:none!important;}
+.divider{height:1px;background:var(--border);margin:20px 0;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-title{font-size:15px;font-weight:600;color:var(--dim);margin-bottom:4px;}
+
+@media(max-width:600px){
+  .app-nav{padding:0 12px;}
+  .nav-logo{font-size:12px;margin-right:10px;}
+  .nav-tab{padding:5px 8px;font-size:11px;}
+  .page{padding:16px;}
+  .q-text{font-size:15px;}
+  .res-stats{grid-template-columns:repeat(3,1fr);}
+  .flash-content{font-size:16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav class="app-nav" id="appNav">
+  <div class="nav-logo">IC <span>Studie</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('dashboard')" data-tab="dashboard"><span class="tab-icon">🏠</span> Dashboard</button>
+    <button class="nav-tab" onclick="showTab('practice')"  data-tab="practice"><span class="tab-icon">📝</span> Oefenen</button>
+    <button class="nav-tab" onclick="showTab('flashcards')" data-tab="flashcards"><span class="tab-icon">🃏</span> Flashkaarten</button>
+    <button class="nav-tab" onclick="showTab('spaced')"    data-tab="spaced"><span class="tab-icon">🔁</span> Herhaling</button>
+    <button class="nav-tab" onclick="showTab('exam')"      data-tab="exam"><span class="tab-icon">🎯</span> Examen Sim.</button>
+    <button class="nav-tab" onclick="showTab('weak')"      data-tab="weak"><span class="tab-icon">📊</span> Zwakke Punten</button>
+  </div>
+  <div class="nav-right">
+    <div class="streak-badge" id="streakBadge">🔥 0 dagen op rij</div>
+  </div>
+</nav>
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div id="tab-dashboard" class="screen active">
+<div class="page-wide" style="max-width:960px;margin:0 auto;padding:28px;">
+  <div class="dash-hero">
+    <div class="dash-greeting" id="dashGreeting">Welcome back! 👋</div>
+    <div class="dash-sub">Klaar om te studeren? Kies een modus hieronder.</div>
+  </div>
+
+  <div class="stats-grid" id="dashStats">
+    <div class="stat-box accent"><div class="stat-val" id="ds-total">0</div><div class="stat-lbl">Vragen beantwoord</div></div>
+    <div class="stat-box green"> <div class="stat-val" id="ds-acc">—</div><div class="stat-lbl">Totale nauwkeurigheid</div></div>
+    <div class="stat-box amber"> <div class="stat-val" id="ds-sessions">0</div><div class="stat-lbl">Sessies voltooid</div></div>
+    <div class="stat-box pink">  <div class="stat-val" id="ds-mastered">0</div><div class="stat-lbl">Vragen beheerst</div></div>
+  </div>
+
+  <div class="section-title">Studiemodi</div>
+  <div class="mode-grid">
+    <div class="mode-card mc-practice" onclick="showTab('practice')">
+      <div class="mc-icon">📝</div>
+      <div class="mc-title">Oefenquiz</div>
+      <div class="mc-desc">Kies hoofdstukken, moeilijkheidsgraad en vraagtype. Direct feedback na elk antwoord.</div>
+      <div class="mc-badge" style="background:rgba(91,142,248,.1);color:var(--accent);">MCQ · J/F · Invullen</div>
+    </div>
+    <div class="mode-card mc-flash" onclick="showTab('flashcards')">
+      <div class="mc-icon">🃏</div>
+      <div class="mc-title">Flashcards</div>
+      <div class="mc-desc">Flip kaarten om definities te zien. Markeer wat je kent en oefen de moeilijke kaarten.</div>
+      <div class="mc-badge" style="background:rgba(244,114,182,.1);color:var(--pink);">Term → Definitie</div>
+    </div>
+    <div class="mode-card mc-spaced" onclick="showTab('spaced')">
+      <div class="mc-icon">🔁</div>
+      <div class="mc-title">Gespreide Herhaling</div>
+      <div class="mc-desc">Het systeem bijhoudt wat je mist en toont dit vaker. Bewezen effectief.</div>
+      <div class="mc-badge" style="background:rgba(245,158,11,.1);color:var(--amber);">Slimme planning</div>
+    </div>
+    <div class="mode-card mc-exam" onclick="showTab('exam')">
+      <div class="mc-icon">🎯</div>
+      <div class="mc-title">Examen Simulatie</div>
+      <div class="mc-desc">40 vragen, 45 minuten aftellen. Geen hints. Geen feedback tot het einde. Echte examendruk.</div>
+      <div class="mc-badge" style="background:rgba(239,68,68,.1);color:var(--red);">Getimed · Geen hints</div>
+    </div>
+    <div class="mode-card mc-weak" onclick="showTab('weak')">
+      <div class="mc-icon">📊</div>
+      <div class="mc-title">Weak Spots</div>
+      <div class="mc-desc">Visueel overzicht van je prestaties per hoofdstuk. Zie precies waar je meer moet studeren.</div>
+      <div class="mc-badge" style="background:rgba(34,197,94,.1);color:var(--green);">Prestatie heatmap</div>
+    </div>
+  </div>
+
+  <div class="section-title">Prestaties per hoofdstuk</div>
+  <div class="card">
+    <div class="ch-perf-grid" id="dashChPerf">
+      <div class="empty-state"><div class="empty-icon">📈</div><div style="font-size:12px;color:var(--muted)">Voltooi een sessie om je prestaties te zien.</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ PRACTICE ══════════════ -->
+<div id="tab-practice" class="screen">
+<div id="practice-config-view">
+<div class="page">
+  <div class="section-title" style="margin-bottom:16px;">Oefenquiz — Configure</div>
+  <div class="config-panel">
+    <div class="section-title">Hoofdstukken</div>
+    <div class="chapter-grid" id="practiceChapterGrid"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="btn btn-secondary" style="font-size:11px;padding:5px 12px;" onclick="chAll('practice')">All</button>
+      <button class="btn btn-secondary" style="font-size:11px;padding:5px 12px;" onclick="chNone('practice')">None</button>
+    </div>
+    <div class="config-row">
+      <div class="config-item">
+        <div class="config-label">Aantal vragen</div>
+        <div class="range-row">
+          <input type="range" id="p-qcount" min="5" max="60" value="20" step="5" oninput="document.getElementById('p-qcount-val').textContent=this.value">
+          <span class="range-val" id="p-qcount-val">20</span>
+        </div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Timer</div>
+        <select id="p-timer">
+          <option value="0">Geen timer</option>
+          <option value="15">15 sec</option>
+          <option value="20" selected>20 sec</option>
+          <option value="30">30 sec</option>
+          <option value="45">45 sec</option>
+          <option value="60">60 sec</option>
+        </select>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Moeilijkheidsgraad</div>
+        <select id="p-diff">
+          <option value="all" selected>Alle niveaus</option>
+          <option value="easy">Alleen makkelijk</option>
+          <option value="medium">Alleen gemiddeld</option>
+          <option value="hard">Alleen moeilijk</option>
+        </select>
+      </div>
+    </div>
+    <div class="config-item" style="margin-bottom:0;">
+      <div class="config-label" style="margin-bottom:6px;">Vraagtypen</div>
+      <div class="type-pills">
+        <div class="type-pill on" data-type="mcq" onclick="toggleType(this)">Meerkeuze</div>
+        <div class="type-pill on" data-type="tf"  onclick="toggleType(this)">Juist / Fout</div>
+        <div class="type-pill on" data-type="fill" onclick="toggleType(this)">Invullen</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-lg" id="startPracticeBtn" onclick="startPractice()">Oefening starten →</button>
+</div>
+</div>
+
+<!-- quiz view -->
+<div id="practice-quiz-view" class="hidden" style="display:flex;flex-direction:column;flex:1;">
+  <div class="quiz-topbar">
+    <div class="q-prog-wrap">
+      <div class="q-prog-lbl" id="p-prog-lbl">Vraag 1 van 20</div>
+      <div class="q-prog-bar"><div class="q-prog-fill" id="p-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-timer hidden" id="p-timer-el">0:20</div>
+    <div class="q-live">Score: <b id="p-live-score">0</b></div>
+    <button class="quit-btn" onclick="endPractice()">✕ Stoppen</button>
+  </div>
+  <div class="quiz-body">
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-ch-tag" id="p-ch-tag"></span>
+        <span class="q-type-tag" id="p-type-tag"></span>
+        <span class="q-diff" id="p-diff-tag"></span>
+        <span class="q-num" id="p-q-num"></span>
+      </div>
+      <div class="q-text" id="p-q-text"></div>
+      <div id="p-q-body"></div>
+      <div class="feedback" id="p-feedback"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="p-submit-btn" onclick="submitPractice()">Antwoord controleren</button>
+        <button class="btn btn-secondary hidden" id="p-next-btn" onclick="nextPractice()">Volgende →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- practice results -->
+<div id="practice-results-view" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+  <div class="exam-hero">
+    <div class="exam-ring">
+      <svg viewBox="0 0 150 150"><circle class="ring-bg" cx="75" cy="75" r="65"/><circle class="ring-fg" id="p-ring-fg" cx="75" cy="75" r="65" stroke-dasharray="408.4" stroke-dashoffset="408.4"/></svg>
+      <div class="ring-pct" id="p-ring-pct">0%</div>
+      <div class="ring-lbl">SCORE</div>
+    </div>
+    <div class="exam-grade" id="p-grade"></div>
+    <div class="exam-msg"   id="p-msg"></div>
+    <div class="res-stats">
+      <div class="res-stat rc"><div class="rv" id="p-rc">0</div><div class="rk">Correct</div></div>
+      <div class="res-stat rw"><div class="rv" id="p-rw">0</div><div class="rk">Wrong</div></div>
+      <div class="res-stat rt"><div class="rv" id="p-rt">—</div><div class="rk">Time</div></div>
+    </div>
+    <div class="review-section">
+      <button class="review-toggle-btn" onclick="toggleReview('p-review-list','p-rev-arrow')">
+        Gemiste vragen <span id="p-rev-arrow">▼</span>
+      </button>
+      <div class="review-list" id="p-review-list"></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn btn-primary" onclick="retryPractice()">🔁 Opnieuw</button>
+      <button class="btn btn-secondary" onclick="backToPracticeConfig()">⚙ Opnieuw instellen</button>
+      <button class="btn btn-secondary" onclick="showTab('dashboard')">🏠 Dashboard</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ FLASHCARDS ══════════════ -->
+<div id="tab-flashcards" class="screen">
+<div id="flash-config-view">
+<div class="page">
+  <div class="section-title" style="margin-bottom:16px;">Flashkaarten — Instellen</div>
+  <div class="flash-config">
+    <div class="section-title">Hoofdstukken</div>
+    <div class="chapter-grid" id="flashChapterGrid"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="btn btn-secondary" style="font-size:11px;padding:5px 12px;" onclick="chAll('flash')">All</button>
+      <button class="btn btn-secondary" style="font-size:11px;padding:5px 12px;" onclick="chNone('flash')">None</button>
+    </div>
+    <div class="config-row">
+      <div class="config-item">
+        <div class="config-label">Alleen gemiste kaarten</div>
+        <select id="f-gemist-only">
+          <option value="0">Alle kaarten</option>
+          <option value="1">Alleen eerder gemist</option>
+        </select>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Kaartlimiet</div>
+        <div class="range-row">
+          <input type="range" id="f-limit" min="5" max="80" value="30" step="5" oninput="document.getElementById('f-limit-val').textContent=this.value">
+          <span class="range-val" id="f-limit-val">30</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-lg" onclick="startFlash()">Flashkaarten starten →</button>
+</div>
+</div>
+
+<div id="flash-play-view" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+  <div class="quiz-topbar">
+    <div class="q-prog-wrap">
+      <div class="q-prog-lbl" id="f-prog-lbl">Kaart 1 van 30</div>
+      <div class="q-prog-bar"><div class="q-prog-fill" id="f-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-live">✅ <b id="f-knew">0</b> &nbsp; ❌ <b id="f-miss">0</b></div>
+    <button class="quit-btn" onclick="endFlash()">✕ Stoppen</button>
+  </div>
+  <div class="flash-wrap">
+    <div class="flash-counter" id="f-counter">1 / 30</div>
+    <div class="flash-card" id="flashCard" onclick="flipCard()">
+      <div class="flash-side-label" id="f-side-label">TERM</div>
+      <div class="flash-ch-tag" id="f-ch-tag"></div>
+      <div class="flash-content" id="f-content">Click to flip</div>
+      <div class="flash-hint hidden" id="f-hint-el"></div>
+    </div>
+    <div class="flash-tap" id="f-tap-hint">👆 Tik op kaart om het antwoord te zien</div>
+    <div class="flash-btns hidden" id="f-rating-btns">
+      <button class="flash-btn-knew" onclick="rateCard(true)">✓ Geweten!</button>
+      <button class="flash-btn-miss" onclick="rateCard(false)">✗ Gemist</button>
+    </div>
+    <div class="flash-progress">
+      <div class="flash-prog-bar"><div class="flash-prog-fill" id="f-prog-fill2" style="width:0%"></div></div>
+      <div class="flash-stats">
+        <span class="flash-stat-knew">✓ <span id="f-knew2">0</span> geweten</span>
+        <span class="flash-stat-miss">✗ <span id="f-miss2">0</span> gemist</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="flash-done-view" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+  <div class="exam-hero">
+    <div style="font-size:48px;margin-bottom:12px;">🃏</div>
+    <div class="exam-grade" id="f-done-title">Kaarten klaar!</div>
+    <div class="exam-msg" id="f-done-msg"></div>
+    <div class="res-stats" style="margin-top:20px;">
+      <div class="res-stat rc"><div class="rv" id="f-done-knew">0</div><div class="rk">Geweten</div></div>
+      <div class="res-stat rw"><div class="rv" id="f-done-miss">0</div><div class="rk">Gemist</div></div>
+      <div class="res-stat rt"><div class="rv" id="f-done-pct">0%</div><div class="rk">Nauwkeurigheid</div></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn btn-primary" onclick="drillGemist()">🔁 Drill gemist only</button>
+      <button class="btn btn-secondary" onclick="startFlash()">↺ Herstart kaarten</button>
+      <button class="btn btn-secondary" onclick="showTab('dashboard')">🏠 Dashboard</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ SPACED REPETITION ══════════════ -->
+<div id="tab-spaced" class="screen">
+<div id="spaced-home-view">
+<div class="page">
+  <div class="section-title" style="margin-bottom:16px;">Gespreide Herhaling</div>
+  <div class="sr-info">
+    🧠 <strong>Hoe het werkt:</strong> Elk antwoord wordt bijgehouden. Fout beantwoorde vragen komen sneller terug. Goed beantwoorde vragen worden gespreid. Het systeem maakt automatisch je persoonlijke studierij.
+  </div>
+  <div id="sr-queue-section">
+    <div class="section-title">Jouw wachtrij</div>
+    <div id="sr-queue-list"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+    <button class="btn btn-primary btn-lg" id="sr-start-btn" onclick="startSpaced()">Bestudeer openstaande kaarten →</button>
+    <button class="btn btn-secondary" onclick="resetSR()">Alle voortgang resetten</button>
+  </div>
+</div>
+</div>
+
+<div id="spaced-quiz-view" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+  <div class="quiz-topbar">
+    <div class="q-prog-wrap">
+      <div class="q-prog-lbl" id="sr-prog-lbl">Vraag 1 van ?</div>
+      <div class="q-prog-bar"><div class="q-prog-fill" id="sr-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-live">Reeks: <b id="sr-streak">0</b></div>
+    <button class="quit-btn" onclick="endSpaced()">✕ Stoppen</button>
+  </div>
+  <div class="quiz-body">
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-ch-tag" id="sr-ch-tag"></span>
+        <span class="q-type-tag" id="sr-type-tag"></span>
+        <span class="q-num" id="sr-q-num"></span>
+      </div>
+      <div class="q-text" id="sr-q-text"></div>
+      <div id="sr-q-body"></div>
+      <div class="feedback" id="sr-feedback"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="sr-submit-btn" onclick="submitSpaced()">Antwoord controleren</button>
+        <button class="btn btn-secondary hidden" id="sr-next-btn" onclick="nextSpaced()">Volgende →</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ EXAM SIMULATION ══════════════ -->
+<div id="tab-exam" class="screen">
+<div id="exam-home-view">
+<div class="page" style="max-width:560px;">
+  <div class="section-title" style="margin-bottom:16px;">Examen Simulatie</div>
+  <div class="card" style="margin-bottom:16px;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">📋 Examenregels</div>
+    <div style="font-size:13px;color:var(--dim);line-height:1.8;">
+      • <strong>40 vraags</strong> from all 9 chapters<br>
+      • <strong>45 minute</strong> totale aftelling<br>
+      • <strong>Geen hints</strong> and no instant feedback<br>
+      • <strong>No skipping</strong> — answer every vraag<br>
+      • Resultaten alleen aan het einde<br>
+      • Score ≥ 70% = Geslaagd ✅
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Moeilijkheidsgraad mix</div>
+    <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+      40% Easy &nbsp;·&nbsp; 40% Medium &nbsp;·&nbsp; 20% Hard<br>
+      Alle vraagtypen inbegrepen
+    </div>
+  </div>
+  <button class="btn btn-primary btn-lg" style="width:100%;" onclick="startExamSim()">Start Examen Simulatie →</button>
+  <div id="exam-best-score" style="margin-top:12px;text-align:center;font-size:12px;color:var(--muted);"></div>
+</div>
+</div>
+
+<div id="exam-quiz-view" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+  <div class="quiz-topbar">
+    <div class="q-prog-wrap">
+      <div class="q-prog-lbl" id="ex-prog-lbl">Vraag 1 van 40</div>
+      <div class="q-prog-bar"><div class="q-prog-fill" id="ex-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-timer" id="ex-timer">45:00</div>
+    <div class="q-live">Q <b id="ex-q-num-live">1</b>/40</div>
+    <button class="quit-btn" onclick="confirmQuitExam()">✕ Stoppen</button>
+  </div>
+  <div class="quiz-body">
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-ch-tag" id="ex-ch-tag"></span>
+        <span class="q-type-tag" id="ex-type-tag"></span>
+        <span class="q-num" id="ex-q-num"></span>
+      </div>
+      <div class="q-text" id="ex-q-text"></div>
+      <div id="ex-q-body"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="ex-next-btn" onclick="nextExam()" disabled>Volgende →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="exam-results-view" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+  <div class="exam-hero">
+    <div class="exam-ring">
+      <svg viewBox="0 0 150 150"><circle class="ring-bg" cx="75" cy="75" r="65"/><circle class="ring-fg" id="ex-ring-fg" cx="75" cy="75" r="65" stroke-dasharray="408.4" stroke-dashoffset="408.4"/></svg>
+      <div class="ring-pct" id="ex-ring-pct">0%</div>
+      <div class="ring-lbl">EINDSCORE</div>
+    </div>
+    <div class="exam-grade" id="ex-grade"></div>
+    <div class="exam-msg"   id="ex-msg"></div>
+    <div class="res-stats">
+      <div class="res-stat rc"><div class="rv" id="ex-rc">0</div><div class="rk">Correct</div></div>
+      <div class="res-stat rw"><div class="rv" id="ex-rw">0</div><div class="rk">Wrong</div></div>
+      <div class="res-stat rt"><div class="rv" id="ex-rt">—</div><div class="rk">Gebruikte tijd</div></div>
+    </div>
+    <div class="review-section">
+      <button class="review-toggle-btn" onclick="toggleReview('ex-review-list','ex-rev-arrow')">
+        Gemiste vragen <span id="ex-rev-arrow">▼</span>
+      </button>
+      <div class="review-list" id="ex-review-list"></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn btn-primary" onclick="startExamSim()">🔁 Examen opnieuw doen</button>
+      <button class="btn btn-secondary" onclick="showExamHome()">← Terug</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ WEAK SPOTS ══════════════ -->
+<div id="tab-weak" class="screen">
+<div class="page-wide" style="max-width:960px;margin:0 auto;padding:28px;">
+  <div class="section-title" style="margin-bottom:16px;">Zwakke Punten Dashboard</div>
+  <div id="weak-empty" class="empty-state">
+    <div class="empty-icon">📊</div>
+    <div class="empty-title">Nog geen gegevens</div>
+    <div style="font-size:12px;color:var(--muted)">Voltooi minstens één oefen- of examensessie om je zwakke punten te zien.</div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="showTab('practice')">Oefening starten →</button>
+  </div>
+  <div id="weak-content" class="hidden">
+    <div class="section-title">Prestaties per hoofdstuk</div>
+    <div class="weak-grid" id="weak-cards"></div>
+    <div class="divider"></div>
+    <div class="section-title">Activiteiten heatmap (laatste 49 sessies)</div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="heatmap" id="heatmap"></div>
+      <div style="display:flex;gap:16px;font-size:11px;color:var(--muted);margin-top:8px;">
+        <span>Minder actief</span>
+        <div style="display:flex;gap:3px;align-items:center;">
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--bg4);"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(91,142,248,.25);"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(91,142,248,.5);"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(91,142,248,.75);"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--accent);"></div>
+        </div>
+        <span>Meer actief</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="drillWeakChapter()">📝 Oefen mijn zwakste hoofdstuk</button>
+      <button class="btn btn-secondary" onclick="showTab('spaced')">🔁 Open Gespreide Herhaling</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  QUESTION BANK  300+ vraags
+// ════════════════════════════════════════════════════════
+const BANK=[
+// ── CH1 ASSEMBLY ──
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'easy',q:'What does CPU stand for?',opts:['Central Processing Unit','Core Processing Utility','Computer Power Unit','Central Program Uploader'],ans:0,exp:'CPU = Central Processing Unit. It executes all instructions in a computer.',flash:{term:'CPU',def:'Central Processing Unit — the main processor that executes all instructions.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'easy',q:'Which socket type does Intel use where the pins are on the motherboard?',opts:['PGA','AM5','LGA','FM2'],ans:2,exp:'LGA (Land Grid Array): pins are on the motherboard, not on the CPU.',flash:{term:'LGA Socket',def:'Land Grid Array — Intel socket type where pins are on the motherboard, not the CPU.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'easy',q:'What does RAM stand for?',opts:['Read Access Memory','Random Access Memory','Rapid Array Module','Run-time Allocated Memory'],ans:1,exp:'RAM = Random Access Memory — working memory, cleared on power off.',flash:{term:'RAM',def:'Random Access Memory — working memory of a computer, cleared when powered off.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'Which storage type is fastest?',opts:['HDD (SATA)','SSD (SATA)','M.2 NVMe (PCIe)','USB 3.0'],ans:2,exp:'M.2 NVMe via PCIe is the fastest — much lower latency than SATA.',flash:{term:'M.2 NVMe',def:'Fastest storage type — uses PCIe interface with very low latency. Much faster than SATA SSDs.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'What does the 80+ certification on a PSU indicate?',opts:['Maximum wattage','Power efficiency rating','Operating temperature','Noise level'],ans:1,exp:'80+ (Bronze/Gold/Platinum) rates how efficiently the PSU converts AC to DC.',flash:{term:'80+ Certification',def:'Efficiency rating for PSUs (Bronze, Gold, Platinum). Higher = less power wasted as heat.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'P-cores in a modern Intel CPU are designed for:',opts:['Light background tasks','Heavy tasks like gaming','Memory management','Network operations'],ans:1,exp:'P-cores = Performance Cores for heavy workloads. E-cores = Efficiency for background.',flash:{term:'P-cores vs E-cores',def:'P-cores (Performance): heavy tasks. E-cores (Efficiency): background/light tasks.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'hard',q:'CPU frequency is calculated as:',opts:['Multiplier + Bus Speed','Multiplier × Bus Speed','Bus Speed ÷ Multiplier','Multiplier × Cache'],ans:1,exp:'CPU frequency = Multiplier × Bus Speed. E.g. 27 × 100 MHz = 2700 MHz.',flash:{term:'CPU Frequency Formula',def:'CPU Frequency = Multiplier × Bus Speed (e.g. 27 × 100 MHz = 2700 MHz).'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'In "i7-8550U", what does the "8" represent?',opts:['SKU tier','Generation','Core count','Cache in MB'],ans:1,exp:'First digit after dash = generation. 8550U → 8th generation (Coffee Lake).',flash:{term:'Intel CPU Naming',def:'i[model]-[gen][SKU][suffix]. In i7-8550U: 8=generation, 550=SKU, U=ultra-low power.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'hard',q:'Which cache level is shared across ALL CPU cores?',opts:['L1 Data','L1 Instruction','L2','L3'],ans:3,exp:'L3 is shared by all cores. L1 and L2 are per-core.',flash:{term:'CPU Cache Levels',def:'L1 (fastest, per core) → L2 (per core) → L3 (shared by all cores, largest).'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'easy',q:'What does PSU stand for?',opts:['Processing Speed Unit','Power Supply Unit','Peripheral Storage Unit','Primary System Utility'],ans:1,exp:'PSU = Power Supply Unit. Converts AC mains to DC for all components.',flash:{term:'PSU',def:'Power Supply Unit — converts AC mains electricity to DC power for PC components.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'What does VRAM stand for and where is it found?',opts:['Variable RAM — on the CPU','Virtual RAM — on the motherboard','Video RAM — on the graphics card','Volatile RAM — on the SSD'],ans:2,exp:'VRAM = Video RAM. Located on the GPU, stores image/frame data. Uses GDDR.',flash:{term:'VRAM',def:'Video RAM — dedicated memory on the GPU for storing image data. Uses GDDR memory.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'hard',q:'What is Dual Channel RAM configuration?',opts:['Using two sticks of different speeds','Two RAM sticks working in parallel to double bandwidth','Splitting one stick into two channels','Using DDR2 and DDR4 together'],ans:1,exp:'Dual Channel uses two RAM sticks together to effectively double memory bandwidth.',flash:{term:'Dual Channel RAM',def:'Two matching RAM sticks working in parallel — doubles memory bandwidth to the CPU.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'Which interface does a standard SSD use?',opts:['PCIe','NVMe','SATA','M.2 only'],ans:2,exp:'Standard SSDs use the SATA interface. M.2 NVMe uses PCIe for much higher speeds.',flash:{term:'SSD Interface',def:'Standard SSDs use SATA. M.2 NVMe SSDs use PCIe — significantly faster.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'easy',q:'What does ESD stand for in PC building?',opts:['Electrical System Design','ElectroStatic Discharge','Extended Storage Device','External Signal Driver'],ans:1,exp:'ESD = ElectroStatic Discharge. Static electricity that can destroy PC components.',flash:{term:'ESD',def:'ElectroStatic Discharge — static electricity that can permanently damage sensitive PC components.'}},
+{ch:'H1',cl:'Assemblage',type:'mcq',diff:'medium',q:'What is the form factor that determines motherboard and case compatibility?',opts:['Socket type','Chipset version','ATX / mATX / ITX','BIOS version'],ans:2,exp:'Form factors (ATX, mATX, Mini-ITX) define the physical size of motherboards and cases.',flash:{term:'Form Factor',def:'Physical size standard of motherboards and cases: ATX (full), mATX (mid), Mini-ITX (small).'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'easy',q:'ESD can permanently damage computer components.',ans:true,exp:'Correct. Always use an anti-static mat or wrist strap when handling components.',flash:{term:'ESD Risk',def:'ElectroStatic Discharge can permanently destroy sensitive chips — always use anti-static protection.'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'easy',q:'An SSD requires defragmentation just like an HDD.',ans:false,exp:'Fout. SSDs use TRIM. Defragmenting an SSD can actually wear it out faster.',flash:{term:'SSD vs HDD Maintenance',def:'HDDs need defragmentation. SSDs use TRIM instead — defrag can damage an SSD.'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'medium',q:'DDR4 and DDR5 RAM are physically interchangeable.',ans:false,exp:'Fout. DDR generations have different physical slots, voltages and are NOT compatible.',flash:{term:'DDR Compatibility',def:'DDR generations (DDR4, DDR5) are NOT interchangeable — different physical slots and voltages.'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'medium',q:'Dual-channel RAM doubles memory bandwidth vs single-channel.',ans:true,exp:'Correct. Two sticks in dual channel effectively double the data bus width.',flash:{term:'Dual Channel Benefit',def:'Dual channel configuration doubles the memory bandwidth compared to single channel.'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'easy',q:'The PSU converts mains AC power to DC power for the PC.',ans:true,exp:'Correct. The PSU (Power Supply Unit) converts 230V AC to various DC voltages (12V, 5V, 3.3V).',flash:{term:'PSU Function',def:'PSU converts AC mains power (230V) to DC power (12V, 5V, 3.3V) for PC components.'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'hard',q:'A 6-core CPU is called a hexa-core processor.',ans:true,exp:'Correct. 6 cores = hexa-core. 2=dual, 4=quad, 8=octa, 10=deca-core.',flash:{term:'CPU Core Names',def:'2=dual, 4=quad, 6=hexa, 8=octa, 10=deca-core.'}},
+{ch:'H1',cl:'Assemblage',type:'tf',diff:'medium',q:'The chipset on a motherboard determines which CPU sockets are supported.',ans:true,exp:'Correct. The chipset defines which CPU socket, PCIe lanes, USB ports and RAM types are supported.',flash:{term:'Chipset Role',def:'Controls communication between CPU, RAM, storage and peripherals. Determines supported features.'}},
+{ch:'H1',cl:'Assemblage',type:'fill',diff:'medium',q:'The protocol used by M.2 SSD drives for maximum speed is called ___.',ans:'nvme',hint:'Non-Volatile Memory Express',exp:'NVMe = Non-Volatile Memory Express. Protocol for M.2 PCIe drives.',flash:{term:'NVMe',def:'Non-Volatile Memory Express — protocol for M.2 PCIe SSDs. Much faster than AHCI/SATA.'}},
+{ch:'H1',cl:'Assemblage',type:'fill',diff:'easy',q:'The component that converts AC power to DC power for all PC parts is the ___.',ans:'psu',hint:'3 letters',exp:'PSU = Power Supply Unit.',flash:{term:'PSU Abbreviation',def:'PSU = Power Supply Unit.'}},
+{ch:'H1',cl:'Assemblage',type:'fill',diff:'hard',q:'The feature that lets an SSD efficiently manage unused blocks is called ___.',ans:'trim',hint:'4 letters',exp:'TRIM tells the SSD which data blocks are no longer needed so it can erase them.',flash:{term:'TRIM',def:'Command sent to SSDs to mark unused data blocks for erasure — maintains write performance.'}},
+{ch:'H1',cl:'Assemblage',type:'fill',diff:'medium',q:'L1, L2 and L3 are levels of ___ memory built into the CPU.',ans:'cache',hint:'5 letters',exp:'Cache memory is ultrafast memory inside the CPU that reduces RAM access time.',flash:{term:'Cache Memory',def:'Ultrafast memory (L1/L2/L3) inside the CPU that reduces access time to frequently used data.'}},
+{ch:'H1',cl:'Assemblage',type:'fill',diff:'hard',q:'The AMD CPU socket type where pins are on the CPU (not motherboard) is called ___.',ans:'pga',hint:'3 letters',exp:'PGA = Pin Grid Array. AMD used this (up to AM4). AM5 switched to LGA.',flash:{term:'PGA Socket',def:'Pin Grid Array — AMD socket where pins are on the CPU. AM5 switched to LGA like Intel.'}},
+
+// ── CH2 BIOS/UEFI ──
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'easy',q:'What does BIOS stand for?',opts:['Basic Input Output System','Binary Integrated OS System','Boot Initialisation Output Service','Base Input Output Sequence'],ans:0,exp:'BIOS = Basic Input Output System. Firmware embedded on the motherboard.',flash:{term:'BIOS',def:'Basic Input Output System — firmware on the motherboard chip that initialises hardware at startup.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'easy',q:'What is POST?',opts:['Power Output Self-Test','Pre-OS Startup Tool','Power-On Self-Test','Program Order Sequence Test'],ans:2,exp:'POST = Power-On Self-Test. Hardware diagnostic check run at every startup.',flash:{term:'POST',def:'Power-On Self-Test — diagnostic check the BIOS runs at startup to verify all hardware works.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'easy',q:'Which partition table supports drives larger than 2 TB?',opts:['MBR','FAT32','GPT','NTFS'],ans:2,exp:'GPT (GUID Partition Table) supports drives up to zettabytes and 128 partitions.',flash:{term:'GPT',def:'GUID Partition Table — modern partition table supporting zettabyte drives and up to 128 partitions.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'What is the max drive size MBR supports?',opts:['1 TB','2 TB','4 TB','8 TB'],ans:1,exp:'MBR supports drives up to approximately 2 TB.',flash:{term:'MBR Limit',def:'Master Boot Record supports drives up to ~2 TB and only 4 primary partitions.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'What does Secure Boot do?',opts:['Encrypts the hard drive','Verifies only trusted software loads at startup','Speeds up boot','Auto-sets boot order'],ans:1,exp:'Secure Boot checks digital signatures to block untrusted/unsigned software at boot.',flash:{term:'Secure Boot',def:'UEFI feature that verifies digital signatures — only trusted signed software can start.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'What does the CMOS chip store?',opts:['The operating system','User documents','BIOS settings (date, time, boot order)','GPU driver data'],ans:2,exp:'CMOS stores BIOS/UEFI settings powered by the CR2032 battery.',flash:{term:'CMOS',def:'Chip storing BIOS settings (date, time, boot order). Powered by the CR2032 battery.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'hard',q:'TPM is primarily used for:',opts:['Overclocking','BitLocker encryption key storage','Boosting RAM','Network firewall'],ans:1,exp:'TPM stores cryptographic keys and is required for BitLocker and Windows 11.',flash:{term:'TPM',def:'Trusted Platform Module — hardware chip for cryptographic keys. Required for BitLocker and Windows 11.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'hard',q:'XMP and EXPO profiles in BIOS are used to:',opts:['Enable Secure Boot','Overclock RAM to its rated speed','Flash the firmware','Reset CMOS'],ans:1,exp:'XMP (Intel) and EXPO (AMD) profiles run RAM at its advertised rated speed.',flash:{term:'XMP/EXPO',def:'BIOS profiles to run RAM at its rated (overclock) speed. XMP=Intel, EXPO=AMD.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'Jumpers on a motherboard are used to:',opts:['Connect panel buttons','Reset BIOS password','Attach CPU cooler','Configure PCIe lanes'],ans:1,exp:'Jumpers are hardware-level configuration pins, used to reset the BIOS password.',flash:{term:'Jumpers',def:'Hardware pins on motherboard for configuration — commonly used to reset the BIOS password.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'What does UEFI stand for?',opts:['Universal Extended Firmware Interface','Unified Extensible Firmware Interface','Updated Extended Firmware Integration','Unified External File Interface'],ans:1,exp:'UEFI = Unified Extensible Firmware Interface. Modern replacement for Legacy BIOS.',flash:{term:'UEFI',def:'Unified Extensible Firmware Interface — modern firmware replacing Legacy BIOS. Supports GPT, GUI, Secure Boot.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'What battery type powers the CMOS chip?',opts:['AA battery','AAA battery','CR2032','9V battery'],ans:2,exp:'A CR2032 coin cell battery keeps CMOS settings alive when the PC is powered off.',flash:{term:'CMOS Battery',def:'CR2032 coin cell battery — powers the CMOS chip to retain settings when PC is off.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'hard',q:'What is BIOS flashing?',opts:['Resetting BIOS to defaults','Updating BIOS firmware to a new version','Enabling fast boot','Clearing the CMOS'],ans:1,exp:'Flashing updates the BIOS/UEFI firmware chip. Never power off during this process.',flash:{term:'BIOS Flashing',def:'Updating BIOS/UEFI firmware to a new version via USB. Never power off during flashing!'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'medium',q:'Which key(s) typically enter BIOS/UEFI at startup?',opts:['Ctrl+Alt+Del','F8 or F12','Del, F2 or F10','Alt+Tab'],ans:2,exp:'Del, F2 or F10 are the most common keys to enter BIOS. Varies by manufacturer.',flash:{term:'BIOS Entry Key',def:'Del, F2 or F10 at startup to enter BIOS/UEFI. Boot menu: F8, F11 or F12.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'mcq',diff:'hard',q:'How many partitions does GPT support by default?',opts:['4','16','64','128'],ans:3,exp:'GPT supports up to 128 partitions by default. MBR only supports 4 primary partitions.',flash:{term:'GPT Partition Limit',def:'GPT supports up to 128 partitions. MBR is limited to 4 primary partitions.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'tf',diff:'easy',q:'UEFI is the modern replacement for Legacy BIOS.',ans:true,exp:'Correct. UEFI replaced Legacy BIOS on modern systems with better features.',flash:{term:'UEFI vs BIOS',def:'UEFI replaced Legacy BIOS. Adds: GPT, Fast Boot, GUI, Secure Boot, TPM support.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'tf',diff:'medium',q:'Removing the CMOS battery clears the BIOS password.',ans:false,exp:'Fout. Battery removal resets settings (date/time) but NOT passwords. Use jumpers.',flash:{term:'CMOS Battery Reset',def:'Removing CMOS battery resets date/time settings but NOT passwords. Use jumpers to clear passwords.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'tf',diff:'medium',q:'UEFI supports a graphical interface controllable with a mouse.',ans:true,exp:'Correct. UEFI can have a full GUI with mouse support, unlike text-only BIOS.',flash:{term:'UEFI GUI',def:'UEFI can display a full graphical interface controllable with keyboard and mouse.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'tf',diff:'hard',q:'GPT supports a maximum of 64 partitions.',ans:false,exp:'Fout. GPT supports up to 128 partitions by default.',flash:{term:'GPT vs MBR Partitions',def:'GPT: up to 128 partitions. MBR: only 4 primary partitions.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'tf',diff:'medium',q:'Fast Boot is a UEFI feature that speeds up startup.',ans:true,exp:'Correct. Fast Boot skips some POST checks and initialises hardware in parallel.',flash:{term:'Fast Boot',def:'UEFI feature that skips some startup checks and initialises hardware in parallel — faster boot times.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'tf',diff:'hard',q:'MBR and GPT can both be used with UEFI firmware.',ans:false,exp:'Partially false — UEFI uses GPT. Legacy BIOS uses MBR. While UEFI can boot MBR in CSM mode, GPT is required for full UEFI features.',flash:{term:'UEFI + GPT',def:'UEFI works natively with GPT. MBR is for Legacy BIOS. CSM mode allows UEFI to boot MBR.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'fill',diff:'easy',q:'The UEFI security feature that verifies trusted software at startup is called ___ Boot.',ans:'secure',hint:'One word',exp:'Secure Boot verifies digital signatures to block untrusted code from loading.',flash:{term:'Secure Boot',def:'UEFI security feature — verifies software signatures at startup to block malware.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'fill',diff:'medium',q:'The hardware security chip required for Windows 11 and BitLocker is called ___.',ans:'tpm',hint:'3 letters',exp:'TPM = Trusted Platform Module.',flash:{term:'TPM Abbreviation',def:'TPM = Trusted Platform Module. Required for Windows 11 and BitLocker disk encryption.'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'fill',diff:'hard',q:'Updating BIOS firmware to a new version is called ___ the BIOS.',ans:'flashing',hint:'One word',exp:'Flashing = writing new firmware to the BIOS chip. Never power off during this.',flash:{term:'BIOS Flash',def:'Writing new firmware to the BIOS chip. Never interrupt this process!'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'fill',diff:'medium',q:'The partition table used by UEFI (supporting drives >2TB) is called ___.',ans:'gpt',hint:'3 letters',exp:'GPT = GUID Partition Table. Used by UEFI, supports drives up to zettabytes.',flash:{term:'GPT',def:'GUID Partition Table — UEFI partition scheme supporting drives of any size (up to zettabytes).'}},
+{ch:'H2',cl:'BIOS/UEFI',type:'fill',diff:'easy',q:'The older partition table used by Legacy BIOS is called ___.',ans:'mbr',hint:'3 letters',exp:'MBR = Master Boot Record. Limited to 2TB drives and 4 primary partitions.',flash:{term:'MBR',def:'Master Boot Record — Legacy BIOS partition table limited to 2TB drives and 4 partitions.'}},
+
+// ── CH3 BOOTABLE MEDIA ──
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'easy',q:'What is an ISO file?',opts:['A ZIP archive','An exact image copy of a CD/DVD','A Windows system file','A partition table'],ans:1,exp:'An ISO file is an exact disk image copy stored as a single .iso file.',flash:{term:'ISO File',def:'Exact image copy of a CD/DVD stored as a single .iso file. Used for OS installations.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'medium',q:'What is the advantage of Ventoy over Rufus?',opts:['Ventoy installs faster','Ventoy supports multiple ISO files on one USB','Ventoy works on Mac only','Ventoy makes smaller files'],ans:1,exp:'Ventoy supports multiple ISOs on one USB (multiboot). Rufus handles one ISO at a time.',flash:{term:'Ventoy',def:'Multiboot USB tool — copy multiple ISO files to one USB stick. No re-flashing needed.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'medium',q:'Which Diskpart command wipes all data from a selected disk?',opts:['format','erase','clean','delete disk'],ans:2,exp:'"clean" removes all partitions and data from the selected Diskpart disk.',flash:{term:'Diskpart clean',def:'Diskpart command that wipes all partitions and data from the selected disk.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'easy',q:'What is the minimum RAM for Windows 11?',opts:['1 GB','2 GB','4 GB','8 GB'],ans:2,exp:'Windows 11 requires a minimum of 4 GB RAM.',flash:{term:'Windows 11 RAM requirement',def:'Minimum 4 GB RAM required to install Windows 11.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'medium',q:'What is the minimum storage for Windows 11?',opts:['16 GB','32 GB','64 GB','128 GB'],ans:2,exp:'Windows 11 requires at least 64 GB of storage (SSD or NVMe recommended).',flash:{term:'Windows 11 Storage requirement',def:'Minimum 64 GB storage required. SSD or NVMe recommended for best performance.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'hard',q:'A 32-bit processor can address a maximum of how much RAM?',opts:['2 GB','4 GB','8 GB','16 GB'],ans:1,exp:'2^32 = 4,294,967,296 bytes = 4 GB. A 32-bit processor cannot use more.',flash:{term:'32-bit RAM limit',def:'32-bit processors: max 4 GB RAM (2^32 bytes). 64-bit: max 16 EB (2^64 bytes).'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'medium',q:'Which Windows 11 edition is for schools and universities?',opts:['Home','Pro','Enterprise','Education'],ans:3,exp:'Windows 11 Education is designed for educational institutions.',flash:{term:'Windows 11 Education',def:'Windows 11 edition designed for schools and universities.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'medium',q:'What is the Media Creation Tool?',opts:['A tool to edit media files','A Microsoft tool to download Windows ISOs or create bootable USBs','A partition manager','A virus scanner'],ans:1,exp:'Microsoft\'s Media Creation Tool downloads Windows ISOs or creates bootable USBs.',flash:{term:'Media Creation Tool',def:'Official Microsoft tool to download Windows ISO files or create bootable USB drives.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'hard',q:'What does "mounting" an ISO file do?',opts:['Extracts all files to a folder','Installs the OS immediately','Makes it appear as a virtual DVD drive','Compresses it further'],ans:2,exp:'Mounting an ISO makes it appear as a virtual DVD drive in File Explorer.',flash:{term:'Mounting ISO',def:'Attaching an ISO file in Windows so it appears as a virtual DVD drive in File Explorer.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'medium',q:'Windows 11 requires which minimum CPU generation from Intel?',opts:['4th gen (Haswell)','6th gen (Skylake)','8th gen (Coffee Lake)','10th gen (Ice Lake)'],ans:2,exp:'Windows 11 requires Intel 8th gen or newer (or AMD Ryzen 2000+).',flash:{term:'Windows 11 CPU requirement',def:'Intel 8th gen+ or AMD Ryzen 2000+ required. 64-bit, 1GHz+, 2 cores minimum.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'mcq',diff:'easy',q:'What does the "H2" in "Windows 11 24H2" stand for?',opts:['Hardware version 2','Second half of 2024','High performance tier 2','Hyper-V version 2'],ans:1,exp:'24H2 = year 2024, second half (H2). Windows uses year+half naming for versions.',flash:{term:'Windows Version Naming',def:'Windows builds use YYHX format: 24H2 = second half of 2024.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'tf',diff:'easy',q:'Ventoy requires re-flashing the USB every time you add a new ISO.',ans:false,exp:'Fout. With Ventoy you simply copy ISO files — no re-flashing needed.',flash:{term:'Ventoy ISO Management',def:'With Ventoy you just copy ISO files to the USB — no re-flashing needed.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'tf',diff:'medium',q:'Rufus can bypass Windows 11 TPM and Secure Boot requirements.',ans:true,exp:'Correct. Rufus offers options to skip TPM, Secure Boot and RAM checks.',flash:{term:'Rufus TPM Bypass',def:'Rufus can create a Windows 11 USB that bypasses TPM, Secure Boot and RAM checks.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'tf',diff:'hard',q:'A 64-bit application can run on a 32-bit OS.',ans:false,exp:'Fout. 64-bit apps require 64-bit OS and CPU. 32-bit can run on 64-bit, not vice versa.',flash:{term:'32-bit vs 64-bit Compatibility',def:'64-bit software needs a 64-bit OS. 32-bit software CAN run on 64-bit OS via WOW64.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'tf',diff:'easy',q:'An ISO file has the extension .img',ans:false,exp:'Fout. ISO files have the .iso extension, following the ISO-9660 standard.',flash:{term:'ISO File Extension',def:'ISO files use the .iso extension (e.g. Windows11.iso). Standard: ISO-9660.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'fill',diff:'easy',q:'The file extension of an ISO image file is ___.',ans:'.iso',hint:'Include the dot',exp:'ISO files have the .iso extension.',flash:{term:'ISO Extension',def:'.iso — the file extension for disk image files.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'fill',diff:'medium',q:'The Windows CLI tool used to wipe a USB drive is called ___.',ans:'diskpart',hint:'One word',exp:'Diskpart manages disks via CLI. Commands: list disk, select disk, clean.',flash:{term:'Diskpart',def:'Windows CLI tool for disk management. Key commands: list disk, select disk, clean.'}},
+{ch:'H3',cl:'Opstartbare Media',type:'fill',diff:'hard',q:'The standard that ISO files follow is called ISO-___.',ans:'9660',hint:'4 digits',exp:'ISO-9660 is the file system standard for optical disc image files.',flash:{term:'ISO-9660',def:'The file system standard that ISO image files follow.'}},
+
+// ── CH4 INSTALLATION ──
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'easy',q:'What is the difference between Upgrade and Clean Install?',opts:['Upgrade is slower','Upgrade keeps programs/data; Clean Install wipes everything','Clean Install is faster','They are the same'],ans:1,exp:'Upgrade preserves programs and data. Clean Install wipes everything fresh.',flash:{term:'Clean Install vs Upgrade',def:'Upgrade: keeps apps and data. Clean Install: wipes everything, fresh OS start.'}},
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'medium',q:'Why disconnect the network during Windows install?',opts:['Prevents malware download','Skips Microsoft account requirement and speeds install','No network drivers available','Prevents Windows Update'],ans:1,exp:'Without network you can create a local account instead of a required Microsoft account.',flash:{term:'Network During Installatie',def:'Disconnect network to skip Microsoft account requirement and install a local account instead.'}},
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'medium',q:'Where do you change the hostname in Windows 11?',opts:['Control Panel → Advanced','Settings → System → About → Rename this PC','Device Manager','Task Manager'],ans:1,exp:'Settings → System → About → Rename this PC is the modern way in Windows 11.',flash:{term:'Changing Hostname',def:'Windows 11: Settings → System → About → Rename this PC.'}},
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'hard',q:'To bypass TPM/Secure Boot during install, you edit the registry at:',opts:['HKEY_CURRENT_USER\\Software','HKEY_LOCAL_MACHINE\\SYSTEM\\Setup\\LABIC','HKEY_LOCAL_MACHINE\\HARDWARE\\TPM','HKEY_LOCAL_MACHINE\\SYSTEM\\BIOS'],ans:1,exp:'Create LABIC key under HKEY_LOCAL_MACHINE\\SYSTEM\\Setup. Add BypassTPMCheck=1 and BypassSecureBootCheck=1.',flash:{term:'TPM Bypass Registry',def:'HKEY_LOCAL_MACHINE\\SYSTEM\\Setup\\LABIC → add BypassTPMCheck=1 and BypassSecureBootCheck=1.'}},
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'medium',q:'Where are optional driver updates in Windows 11?',opts:['Device Manager','Windows Update → Advanced Options → Optional Updates','Microsoft Store','Control Panel → Hardware'],ans:1,exp:'Windows Update → Advanced Options → Optional Updates contains manufacturer driver updates.',flash:{term:'Optional Driver Updates',def:'Windows Update → Advanced Options → Optional Updates for manufacturer drivers.'}},
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'hard',q:'The DWORD value BypassTPMCheck set to 1 bypasses which requirement?',opts:['CPU speed check','RAM size check','TPM 2.0 check','Secure Boot check'],ans:2,exp:'BypassTPMCheck=1 skips the TPM 2.0 hardware requirement check during Windows 11 install.',flash:{term:'BypassTPMCheck',def:'Registry DWORD set to 1 to skip TPM 2.0 check during Windows 11 installation.'}},
+{ch:'H4',cl:'Installatie',type:'mcq',diff:'medium',q:'What does a yellow exclamation mark mean in Device Manager?',opts:['Device is working perfectly','Driver is missing or broken','Device is disabled','Device is updating'],ans:1,exp:'Yellow ⚠️ in Device Manager = missing or broken driver. Install via Windows Update.',flash:{term:'Device Manager Warning',def:'Yellow exclamation mark (⚠️) in Device Manager = missing or broken driver.'}},
+{ch:'H4',cl:'Installatie',type:'tf',diff:'easy',q:'You need a product key to install Windows 11 Education in the lab.',ans:false,exp:'Fout. Click "I don\'t have a product key" during install and select the edition manually.',flash:{term:'Product Key During Install',def:'You can skip the product key during installation — click "I don\'t have a product key".'}},
+{ch:'H4',cl:'Installatie',type:'tf',diff:'medium',q:'A yellow exclamation mark in Device Manager means a driver is missing.',ans:true,exp:'Correct. ⚠️ in Device Manager = driver issue. Install via Windows Update optional updates.',flash:{term:'Device Manager Yellow Mark',def:'Yellow ⚠️ = driver missing or broken. Fix via Windows Update → Optional Updates.'}},
+{ch:'H4',cl:'Installatie',type:'tf',diff:'hard',q:'Fast Boot in Windows can sometimes prevent entering UEFI at startup.',ans:true,exp:'Correct. Fast Boot skips some startup checks. If you can\'t enter UEFI, do a full shutdown first.',flash:{term:'Fast Boot and UEFI Access',def:'Fast Boot can prevent UEFI access. Do a full shutdown (not restart) first to disable it temporarily.'}},
+{ch:'H4',cl:'Installatie',type:'fill',diff:'medium',q:'The unique network name assigned to a computer is called its ___.',ans:'hostname',hint:'One word',exp:'The hostname (computer name) identifies the machine on the network.',flash:{term:'Hostname',def:'The unique name identifying a computer on a network. Also called computer name.'}},
+{ch:'H4',cl:'Installatie',type:'fill',diff:'hard',q:'The registry DWORD set to 1 to skip TPM is called Bypass___Check.',ans:'tpm',hint:'3 letters',exp:'BypassTPMCheck=1 skips the TPM 2.0 requirement during Windows 11 installation.',flash:{term:'BypassTPMCheck',def:'Registry DWORD (value=1) that skips the TPM 2.0 hardware requirement during Windows 11 install.'}},
+
+// ── CH5 WINDOWS TOOLS ──
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'easy',q:'Which command opens Local User Manager?',opts:['usermgr.msc','localusers.msc','lusrmgr.msc','users.cpl'],ans:2,exp:'lusrmgr.msc opens Local Users and Groups Manager.',flash:{term:'lusrmgr.msc',def:'Windows run command to open Local Users and Groups Manager for managing local accounts.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'easy',q:'Which command opens Task Manager?',opts:['taskman','taskmgr','taskmanager','procmgr'],ans:1,exp:'taskmgr opens Windows Task Manager.',flash:{term:'taskmgr',def:'Run command to open Task Manager for monitoring processes, services and performance.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'easy',q:'Where are 32-bit apps installed on a 64-bit Windows system?',opts:['C:\\Program Files','C:\\Applications (x86)','C:\\Program Files (x86)','C:\\Windows\\System32'],ans:2,exp:'C:\\Program Files (x86) stores 32-bit applications on 64-bit Windows.',flash:{term:'Program Files (x86)',def:'Folder for 32-bit applications on 64-bit Windows systems.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'medium',q:'Which command opens Network Adapter settings?',opts:['netadapt.cpl','ncpa.cpl','network.msc','net.cpl'],ans:1,exp:'ncpa.cpl opens Network Connections (adapter settings) directly.',flash:{term:'ncpa.cpl',def:'Run command to open Network Connections (network adapter settings) directly.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'medium',q:'What does MMC stand for?',opts:['Master Management Console','Microsoft Management Console','Module Management Center','Modular Microsoft Configuration'],ans:1,exp:'MMC = Microsoft Management Console — centralises multiple admin snap-ins.',flash:{term:'MMC',def:'Microsoft Management Console — centralises multiple administrative tools (snap-ins) in one window.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'hard',q:'Which folder stores per-user app settings in subfolders Roaming, Local, LocalLow?',opts:['C:\\ProgramData','C:\\Users\\Public','C:\\Users\\[name]\\AppData','C:\\Windows\\System32\\config'],ans:2,exp:'AppData in each user\'s profile stores per-user application settings.',flash:{term:'AppData Folder',def:'C:\\Users\\[name]\\AppData stores per-user app settings in Roaming, Local and LocalLow subfolders.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'medium',q:'Which folder contains core Windows system files and DLLs?',opts:['C:\\Windows\\SysFiles','C:\\Windows\\System32','C:\\Program Files\\Windows','C:\\System\\Core'],ans:1,exp:'C:\\Windows\\System32 contains essential Windows system files and DLLs.',flash:{term:'System32 Folder',def:'C:\\Windows\\System32 — contains core Windows DLLs, executables and system files.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'easy',q:'What does devmgmt.msc open?',opts:['Disk Management','Device Manager','Driver Manager','Development Tools'],ans:1,exp:'devmgmt.msc opens Device Manager for managing hardware and drivers.',flash:{term:'devmgmt.msc',def:'Run command to open Device Manager for managing hardware devices and drivers.'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'medium',q:'What is the ProgramData folder used for?',opts:['32-bit applications','Per-user application data','Shared application data for all users','Windows system files'],ans:2,exp:'C:\\ProgramData stores application data shared across all users on the system.',flash:{term:'ProgramData',def:'C:\\ProgramData — stores application data accessible to all users (not user-specific).'}},
+{ch:'H5',cl:'Windows Tools',type:'mcq',diff:'hard',q:'What is the purpose of the C:\\Users\\Public folder?',opts:['Stores Windows updates','A shared folder accessible by all users and over the network','Stores public DNS records','Contains public system drivers'],ans:1,exp:'C:\\Users\\Public is accessible by all local users and can be accessed over the network.',flash:{term:'Users\\Public',def:'C:\\Users\\Public — accessible by all local users and over the network (shared folder).'}},
+{ch:'H5',cl:'Windows Tools',type:'tf',diff:'easy',q:'Microsoft Store apps are safer than random .exe files from the internet.',ans:true,exp:'Correct. Microsoft Store apps are vetted by Microsoft, reducing security risks.',flash:{term:'Microsoft Store Safety',def:'Apps from Microsoft Store are vetted and reviewed — safer than random .exe files.'}},
+{ch:'H5',cl:'Windows Tools',type:'tf',diff:'medium',q:'C:\\ProgramData is visible by default in File Explorer.',ans:false,exp:'Fout. ProgramData is hidden. Enable "Show hidden items" in File Explorer to see it.',flash:{term:'ProgramData Visibility',def:'C:\\ProgramData is hidden by default. Enable "Show hidden items" in File Explorer options.'}},
+{ch:'H5',cl:'Windows Tools',type:'tf',diff:'medium',q:'The MMC allows you to add multiple management tools as snap-ins.',ans:true,exp:'Correct. MMC snap-ins include Device Manager, Local Users, Services, Disk Management etc.',flash:{term:'MMC Snap-ins',def:'MMC lets you add management tools as snap-ins: Device Manager, Local Users, Services, etc.'}},
+{ch:'H5',cl:'Windows Tools',type:'fill',diff:'easy',q:'The Windows tool to manage local users and groups is opened with command ___.',ans:'lusrmgr.msc',hint:'Format: xxxxx.msc',exp:'lusrmgr.msc opens Local Users and Groups Manager.',flash:{term:'Local User Manager Command',def:'lusrmgr.msc opens Local Users and Groups Manager.'}},
+{ch:'H5',cl:'Windows Tools',type:'fill',diff:'medium',q:'The run command to directly open network adapter settings is ___.',ans:'ncpa.cpl',hint:'Format: xxxx.cpl',exp:'ncpa.cpl opens Network Connections (adapter settings).',flash:{term:'ncpa.cpl',def:'Run command opening Network Connections (adapter settings) directly.'}},
+{ch:'H5',cl:'Windows Tools',type:'fill',diff:'medium',q:'The run command to open Device Manager is ___.',ans:'devmgmt.msc',hint:'Format: xxxxxxxx.msc',exp:'devmgmt.msc opens Device Manager for managing hardware and drivers.',flash:{term:'Device Manager Command',def:'devmgmt.msc opens Device Manager.'}},
+
+// ── CH6 TERMINAL ──
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'easy',q:'Which CMD command lists files and folders in current directory?',opts:['ls','list','dir','show'],ans:2,exp:'"dir" is the CMD command to list directory contents. In Linux it\'s "ls".',flash:{term:'dir command',def:'"dir" lists files and folders in CMD. Equivalent to "ls" in Linux.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'easy',q:'How do you go up one level in CMD?',opts:['cd /up','cd..','cd\\','cd~'],ans:1,exp:'"cd.." moves up one directory level to the parent folder.',flash:{term:'cd.. command',def:'"cd.." goes up one level to the parent directory in CMD.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'easy',q:'Which command clears the CMD screen?',opts:['clear','cls','clr','clean'],ans:1,exp:'"cls" (clear screen) clears the Command Prompt window.',flash:{term:'cls command',def:'"cls" clears the Command Prompt screen. In Linux: "clear".'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'Which command copies a folder with all contents in CMD?',opts:['copy','cp','xcopy','robocopy only'],ans:2,exp:'"xcopy" copies entire folders with contents. "copy" only copies individual files.',flash:{term:'xcopy command',def:'"xcopy [source] [dest]" copies folders with all contents. Destination created automatically.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'What does the wildcard "*" do in "dir c*"?',opts:['Lists all files on C:','Lists only .c files','Lists all items starting with c','Deletes files starting with c'],ans:2,exp:'The wildcard * matches any characters. "dir c*" shows everything starting with "c".',flash:{term:'Wildcard *',def:'"*" in CMD matches any characters. "dir c*" shows all items starting with "c".'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'Which CMD command deletes a folder AND all its contents?',opts:['del /S','rmdir','rmdir /S','erase /F'],ans:2,exp:'"rmdir /S" removes a directory and all its subdirectories and files recursively.',flash:{term:'rmdir /S',def:'"rmdir /S [folder]" deletes a folder and ALL its contents recursively.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'hard',q:'Which command adds a non-executed comment in a batch file?',opts:['// comment','# comment','REM comment',':: only'],ans:2,exp:'REM (Remark) adds non-executed comments to batch files. "::" also works.',flash:{term:'REM command',def:'"REM" adds comments to batch files that are not executed. "::" also works.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'Which command kills a process by name in CMD?',opts:['kill notepad.exe','taskkill /IM notepad.exe','endtask notepad.exe','stop /IM notepad.exe'],ans:1,exp:'"taskkill /IM processname.exe" terminates a process by its image name.',flash:{term:'taskkill command',def:'"taskkill /IM processname.exe" terminates a running process by name.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'What does the "tree" command do?',opts:['Shows processes as a tree','Displays folder structure visually','Shows network topology','Lists installed software'],ans:1,exp:'"tree" displays the folder structure as a visual tree. "tree /F" also shows files.',flash:{term:'tree command',def:'"tree" displays folder structure as a tree. "tree /F" includes files in the display.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'What does "move" do differently from "copy"?',opts:['Move is faster','Move transfers and removes from source; Copy leaves original','Move works only on folders','Copy is only for files'],ans:1,exp:'"move" transfers the file/folder and removes it from the source. "copy" leaves the original.',flash:{term:'move vs copy',def:'"move" = transfer (removes from source). "copy" = duplicate (keeps original).'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'hard',q:'What does PAUSE do in a batch file?',opts:['Stops the script permanently','Waits for user keypress before continuing','Pauses Windows','Delays by 5 seconds automatically'],ans:1,exp:'PAUSE halts the batch script and displays "Press any key to continue..."',flash:{term:'PAUSE command',def:'Batch command that halts execution and waits for any keypress before continuing.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'mcq',diff:'medium',q:'What does "start notepad" do in CMD?',opts:['Opens Notepad and waits for it to close','Opens Notepad in background and returns to prompt','Installs Notepad','Restarts Notepad'],ans:1,exp:'"start [app]" launches an application in the background, returning the prompt immediately.',flash:{term:'start command',def:'"start [app]" launches an application and returns to the CMD prompt immediately.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'tf',diff:'easy',q:'CMD (Command Prompt) is case-sensitive.',ans:false,exp:'Fout. CMD is NOT case-sensitive — "DIR", "dir" and "Dir" all work the same.',flash:{term:'CMD Case Sensitivity',def:'CMD is NOT case-sensitive. "DIR" = "dir" = "Dir". Linux terminal IS case-sensitive.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'tf',diff:'medium',q:'A batch file can call another batch file using the CALL command.',ans:true,exp:'Correct. CALL [script.bat] nests batch files — one script runs another.',flash:{term:'CALL command',def:'"CALL script.bat" runs another batch file from within the current script (nesting).'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'tf',diff:'medium',q:'"xcopy" automatically creates the destination folder if it doesn\'t exist.',ans:true,exp:'Correct. xcopy creates the destination directory automatically.',flash:{term:'xcopy Destination',def:'xcopy automatically creates the destination folder if it does not already exist.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'tf',diff:'easy',q:'The command "cd\\" takes you to the root directory (C:\\) in CMD.',ans:true,exp:'Correct. "cd\\" goes to the root of the current drive (e.g. C:\\).',flash:{term:'cd\\ command',def:'"cd\\" goes directly to the root directory of the current drive (e.g. C:\\).'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'fill',diff:'easy',q:'The CMD command to create a new folder is ___.',ans:'mkdir',hint:'5 letters',exp:'"mkdir" (make directory) creates a new folder. Also accepts "md".',flash:{term:'mkdir',def:'"mkdir [name]" creates a new directory/folder. Also: "md".'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'fill',diff:'medium',q:'To see help for any CMD command you add ___ after it.',ans:'/?',hint:'2 characters',exp:'"command /?" shows all options and syntax for that command.',flash:{term:'/? Help Flag',def:'Add "/?" after any CMD command to see its help and syntax options.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'fill',diff:'hard',q:'The file extension for a CMD script file is ___.',ans:'.bat',hint:'Include the dot',exp:'Batch files have the .bat extension and run CMD commands sequentially.',flash:{term:'.bat Extension',def:'Batch script files have .bat extension. They run CMD commands automatically.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'fill',diff:'medium',q:'The CMD command to delete a file is ___.',ans:'del',hint:'3 letters',exp:'"del [filename]" deletes a file in CMD.',flash:{term:'del command',def:'"del [filename]" deletes a file in CMD. Equivalent to "rm" in Linux.'}},
+{ch:'H6',cl:'Terminal (CMD)',type:'fill',diff:'medium',q:'The CMD command to rename a file or folder is ___.',ans:'rename',hint:'6 letters',exp:'"rename [old] [new]" renames a file or folder in CMD.',flash:{term:'rename command',def:'"rename [old] [new]" renames a file or folder in CMD.'}},
+
+// ── CH7 VIRTUALISATION ──
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'easy',q:'What is the main purpose of virtualisation?',opts:['Make computers faster','Split one physical system into multiple VMs','Automatically back up data','Connect faster to internet'],ans:1,exp:'Virtualisatie splits one physical machine into multiple isolated VMs each running their own OS.',flash:{term:'Virtualisatie',def:'Technology that splits one physical machine into multiple isolated VMs, each with its own OS.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'easy',q:'What is a Type 1 hypervisor also geweten as?',opts:['Hosted hypervisor','Virtual Machine Tool','Bare Metal hypervisor','Guest OS manager'],ans:2,exp:'Type 1 = Bare Metal — runs directly on hardware with no host OS required.',flash:{term:'Type 1 Hypervisor',def:'Bare Metal — runs directly on hardware with no host OS. Examples: Hyper-V, VMware ESXi, Proxmox.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'Which is an example of a Type 2 (Hosted) hypervisor?',opts:['VMware ESXi','Microsoft Hyper-V','VirtualBox','Proxmox'],ans:2,exp:'VirtualBox is Type 2 — it runs as an application on top of a host OS.',flash:{term:'Type 2 Hypervisor',def:'Hosted — runs as application on host OS. Examples: VirtualBox, VMware Workstation.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'What is a VHDX file?',opts:['Virtual network card','VM config file','Virtual hard disk file','Checkpoint backup'],ans:2,exp:'VHDX is Hyper-V\'s virtual hard disk format. Stored as a file on the host.',flash:{term:'VHDX',def:'Virtual hard disk file format used by Hyper-V. Stored in C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'Which virtual switch gives VMs internet access via the host NIC?',opts:['Private Switch','Default Switch','Internal Switch','External Switch'],ans:3,exp:'External Switch bridges the host\'s NIC, giving VMs LAN and internet access.',flash:{term:'External Virtual Switch',def:'Bridges host NIC — VMs get full LAN and internet access through the host network card.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'hard',q:'Which virtual switch lets VMs communicate ONLY with each other?',opts:['Default Switch','Internal Switch','Private Switch','External Switch'],ans:2,exp:'Private Switch completely isolates VMs — only same-switch VM communication.',flash:{term:'Private Virtual Switch',def:'Completely isolated — VMs can only communicate with other VMs on the same Private Switch.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'Why choose Generation 2 for a Windows 11 Hyper-V VM?',opts:['Uses less RAM','Uses UEFI, required by Windows 11','Supports more CPUs','Better for gaming'],ans:1,exp:'Gen 2 VMs use UEFI (GPT) which is a system requirement for Windows 11.',flash:{term:'Hyper-V Generation 2',def:'Uses UEFI (GPT) — required for Windows 11. Generation 1 uses Legacy BIOS (MBR).'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'hard',q:'What happens to host TCP/IPv4 when creating an External Virtual Switch?',opts:['Host gets second IP','TCP/IPv4 moves from physical NIC to the switch','It is deleted','Nothing changes'],ans:1,exp:'External Switch bridges the NIC — TCP/IPv4 moves to the switch. Never manually re-enable on physical NIC.',flash:{term:'External Switch NIC Bridging',def:'External Switch bridges host NIC — TCP/IPv4 moves from physical NIC to virtual switch.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'What is a Hyper-V checkpoint?',opts:['A performance benchmark','A VM snapshot you can restore to','A network checkpoint','A backup to external drive'],ans:1,exp:'A checkpoint is a snapshot of a VM\'s state. You can restore to it at any time.',flash:{term:'Hyper-V Checkpoint',def:'Snapshot of a VM\'s state at a point in time. Allows restoring the VM to that state.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'What is Dynamic Memory in Hyper-V?',opts:['Automatically expanding VHDX','VM gets more or less RAM automatically based on need','Memory shared between host and VM','RAM that resets every hour'],ans:1,exp:'Dynamic Memory automatically allocates more or less RAM to a VM based on current demand.',flash:{term:'Dynamic Memory',def:'Hyper-V feature that automatically adjusts RAM allocated to a VM based on current demand.'}},
+{ch:'H7',cl:'Virtualisatie',type:'mcq',diff:'medium',q:'Which virtual switch allows VM to communicate with host but NOT the internet?',opts:['Private Switch','External Switch','Internal Switch','Default Switch'],ans:2,exp:'Internal Switch: VM ↔ VM and VM ↔ Host, but no internet access.',flash:{term:'Internal Virtual Switch',def:'VM ↔ VM and VM ↔ Host communication only. No internet access.'}},
+{ch:'H7',cl:'Virtualisatie',type:'tf',diff:'easy',q:'A Type 1 hypervisor requires a host operating system.',ans:false,exp:'Fout. Type 1 (Bare Metal) runs directly on hardware — no host OS needed.',flash:{term:'Type 1 vs Type 2',def:'Type 1 (Bare Metal): no host OS needed. Type 2 (Hosted): runs on top of host OS.'}},
+{ch:'H7',cl:'Virtualisatie',type:'tf',diff:'medium',q:'Virtualisatie must be enabled in BIOS/UEFI for Hyper-V to work.',ans:true,exp:'Correct. CPU virtualisation (Intel VT-x or AMD-V) must be enabled in BIOS/UEFI.',flash:{term:'BIOS Virtualisatie',def:'Enable Intel VT-x or AMD-V in BIOS/UEFI before using Hyper-V or any Type 1 hypervisor.'}},
+{ch:'H7',cl:'Virtualisatie',type:'tf',diff:'medium',q:'A Hyper-V checkpoint allows VM restoration to a previous state.',ans:true,exp:'Correct. Checkpoints are snapshots that can be restored at any time.',flash:{term:'Checkpoint Restore',def:'Hyper-V checkpoints can be restored at any time to roll back a VM to a previous state.'}},
+{ch:'H7',cl:'Virtualisatie',type:'tf',diff:'hard',q:'The Internal Virtual Switch gives VMs internet access.',ans:false,exp:'Fout. Internal Switch = VM↔VM + VM↔Host only. No internet. Use External Switch for internet.',flash:{term:'Internal Switch Internet',def:'Internal Switch does NOT provide internet access. Only External Switch connects VMs to internet.'}},
+{ch:'H7',cl:'Virtualisatie',type:'fill',diff:'easy',q:'The software managing and distributing hardware resources to VMs is called a ___.',ans:'hypervisor',hint:'One word',exp:'A hypervisor (VMM) allocates CPU, RAM, storage and network to VMs.',flash:{term:'Hypervisor',def:'Software that manages VMs and distributes physical hardware resources (CPU, RAM, storage, NIC).'}},
+{ch:'H7',cl:'Virtualisatie',type:'fill',diff:'medium',q:'The virtual hard disk file format used by Hyper-V is called ___.',ans:'vhdx',hint:'4 letters',exp:'VHDX is the Hyper-V virtual hard disk format.',flash:{term:'VHDX Format',def:'Virtual hard disk format used by Hyper-V. Stored as a file on the host system.'}},
+{ch:'H7',cl:'Virtualisatie',type:'fill',diff:'hard',q:'Hyper-V Generation ___ uses UEFI and is required for Windows 11.',ans:'2',hint:'Single digit',exp:'Generation 2 uses UEFI (GPT). Generation 1 uses Legacy BIOS (MBR).',flash:{term:'Hyper-V Gen 2',def:'Generation 2 uses UEFI/GPT — required for Windows 11. Gen 1 uses Legacy BIOS/MBR.'}},
+
+// ── CH8 WSL ──
+{ch:'H8',cl:'WSL',type:'mcq',diff:'easy',q:'What does WSL stand for?',opts:['Windows Shell Layer','Windows Subsystem for Linux','Windows System Loader','Wide System Linux'],ans:1,exp:'WSL = Windows Subsystem for Linux — runs Linux tools inside Windows.',flash:{term:'WSL',def:'Windows Subsystem for Linux — run Linux distributions and tools natively inside Windows.'}},
+{ch:'H8',cl:'WSL',type:'mcq',diff:'medium',q:'Which command installs WSL with default Ubuntu?',opts:['wsl --setup','install-wsl','wsl --install','wsl -setup ubuntu'],ans:2,exp:'"wsl --install" installs WSL 2 with Ubuntu as default distro.',flash:{term:'wsl --install',def:'Installs WSL 2 with Ubuntu as the default Linux distribution.'}},
+{ch:'H8',cl:'WSL',type:'mcq',diff:'medium',q:'Which command lists all installed WSL distributions?',opts:['wsl --list','wsl --show','wsl --distros','wsl -l'],ans:0,exp:'"wsl --list" (or "wsl -l") shows all installed WSL distros.',flash:{term:'wsl --list',def:'Lists all installed WSL Linux distributions. Short form: wsl -l'}},
+{ch:'H8',cl:'WSL',type:'mcq',diff:'hard',q:'Which command shows ALL available distributions to install?',opts:['wsl --list','wsl --list --all','wsl --list --online','wsl --available'],ans:2,exp:'"wsl --list --online" shows all distributions available from Microsoft.',flash:{term:'wsl --list --online',def:'Shows all Linux distributions available to install via WSL from Microsoft.'}},
+{ch:'H8',cl:'WSL',type:'mcq',diff:'medium',q:'Which command installs Debian specifically in WSL?',opts:['wsl --install Debian','wsl --install -d Debian','wsl -d Debian','wsl add Debian'],ans:1,exp:'"wsl --install -d Debian" installs Debian. The -d flag specifies the distribution.',flash:{term:'wsl --install -d',def:'"wsl --install -d [DistroName]" installs a specific Linux distribution in WSL.'}},
+{ch:'H8',cl:'WSL',type:'mcq',diff:'hard',q:'Which command checks WSL version and default distribution?',opts:['wsl --info','wsl --check','wsl --status','wsl --version'],ans:2,exp:'"wsl --status" shows WSL version, default distro and kernel version.',flash:{term:'wsl --status',def:'Shows WSL version, default distribution and kernel version.'}},
+{ch:'H8',cl:'WSL',type:'tf',diff:'easy',q:'WSL 2 requires a completely separate virtual machine to run Linux.',ans:false,exp:'Fout. WSL runs Linux directly inside Windows without a separate visible VM.',flash:{term:'WSL vs Full VM',def:'WSL runs Linux inside Windows without a visible separate VM — unlike Hyper-V or VirtualBox.'}},
+{ch:'H8',cl:'WSL',type:'tf',diff:'medium',q:'You can install Debian with "wsl --install -d Debian".',ans:true,exp:'Correct. The -d flag specifies the distribution to install.',flash:{term:'WSL Distro Install',def:'"wsl --install -d [DistroName]" installs a specific distro. e.g. Debian, Kali, Ubuntu.'}},
+{ch:'H8',cl:'WSL',type:'tf',diff:'medium',q:'WSL 2 uses the Virtual Machine Platform Windows feature.',ans:true,exp:'Correct. WSL 2 is powered by the Virtual Machine Platform feature in Windows.',flash:{term:'WSL 2 Architecture',def:'WSL 2 uses the Virtual Machine Platform Windows feature for better Linux compatibility.'}},
+{ch:'H8',cl:'WSL',type:'fill',diff:'medium',q:'To check WSL version and default distro, use: wsl ___.',ans:'--status',hint:'Starts with --',exp:'"wsl --status" shows WSL version and default distribution.',flash:{term:'wsl --status',def:'"wsl --status" — check current WSL version and default Linux distribution.'}},
+{ch:'H8',cl:'WSL',type:'fill',diff:'hard',q:'To shut down all running WSL instances, use: wsl ___.',ans:'--shutdown',hint:'Starts with --',exp:'"wsl --shutdown" terminates all running WSL instances.',flash:{term:'wsl --shutdown',def:'"wsl --shutdown" stops all running WSL Linux distribution instances.'}},
+
+// ── CH9 LINUX ──
+{ch:'H9',cl:'Linux',type:'mcq',diff:'easy',q:'Which package manager does Ubuntu use?',opts:['rpm','yum','apt','pacman'],ans:2,exp:'apt (Advanced Package Tool) is the package manager for Debian-based distros like Ubuntu.',flash:{term:'apt',def:'Advanced Package Tool — package manager for Debian/Ubuntu. Commands: update, upgrade, install, remove, purge.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'easy',q:'Which command lists directory contents in Linux?',opts:['dir','list','ls','show'],ans:2,exp:'"ls" lists directory contents in Linux. "dir" is the Windows equivalent.',flash:{term:'ls command',def:'"ls" lists directory contents. "ls -a" shows hidden files. "ls -l" shows details.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'easy',q:'What does LTS stand for in Ubuntu 24.04 LTS?',opts:['Latest Technology Support','Long Term Support','Linux Terminal System','Large Thread Stability'],ans:1,exp:'LTS = Long Term Support. 5 years of guaranteed security and maintenance updates.',flash:{term:'LTS',def:'Long Term Support — Ubuntu LTS releases receive 5 years of security and maintenance updates.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'Which command refreshes the package list (without installing)?',opts:['sudo apt upgrade','sudo apt update','sudo apt refresh','sudo apt sync'],ans:1,exp:'"sudo apt update" refreshes the local package list. Does NOT install updates.',flash:{term:'apt update',def:'"sudo apt update" refreshes the list of available packages. Does NOT install anything.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'Which directory contains system configuration files?',opts:['/var','/bin','/etc','/home'],ans:2,exp:'/etc contains system configuration files like /etc/passwd and /etc/ssh/sshd_config.',flash:{term:'/etc Directory',def:'/etc — Linux directory for system-wide configuration files (e.g. /etc/ssh/sshd_config, /etc/passwd).'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'What is the default SSH port?',opts:['80','443','22','21'],ans:2,exp:'SSH listens on port 22 by default. Can be changed in /etc/ssh/sshd_config.',flash:{term:'SSH Default Port',def:'SSH listens on port 22 by default. Change it in /etc/ssh/sshd_config for security.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'Which command removes a package AND its config files?',opts:['apt remove','apt delete','apt purge','apt uninstall'],ans:2,exp:'"apt purge" removes the package and all its configuration files.',flash:{term:'apt purge',def:'"sudo apt purge [pkg]" removes package and its configuration files. "remove" keeps config.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'hard',q:'What does the # prompt symbol indicate in Linux?',opts:['A comment','Logged in as root','System is busy','A script is running'],ans:1,exp:'# prompt = root user. $ prompt = regular user.',flash:{term:'Linux Prompt Symbols',def:'$ = regular user. # = root user. Key security indicator in the terminal.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'hard',q:'Which Linux family does Ubuntu belong to?',opts:['RHEL family','Arch family','Debian family','Slackware family'],ans:2,exp:'Ubuntu is Debian-family, using .deb packages and apt package manager.',flash:{term:'Linux Families',def:'RHEL family (Fedora, CentOS) uses RPM. Debian family (Ubuntu, Mint) uses DEB packages.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'Which command installs a local .deb file?',opts:['apt install file.deb','dpkg -i file.deb','rpm -i file.deb','install file.deb'],ans:1,exp:'"dpkg -i file.deb" installs a local Debian package not in the repository.',flash:{term:'dpkg -i',def:'"sudo dpkg -i file.deb" installs a local .deb package file.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'hard',q:'Where are Linux log files stored?',opts:['/etc/logs','/var/log','/home/logs','/sys/log'],ans:1,exp:'/var/log is the standard location for system and application log files.',flash:{term:'/var/log',def:'/var/log — standard directory for Linux system and application log files.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'What is GRUB in Linux?',opts:['A package manager','A text editor','The bootloader','A firewall tool'],ans:2,exp:'GRUB (Grand Unified Bootloader) presents the OS selection menu at startup.',flash:{term:'GRUB',def:'Grand Unified Bootloader — presents the boot menu at startup, lets you choose which OS to load.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'hard',q:'After changing SSH config, what commands must you run?',opts:['Reboot only','apt update && apt upgrade','systemctl daemon-reload && systemctl restart ssh','service ssh start only'],ans:2,exp:'daemon-reload reloads systemd config, then restart ssh applies the changes.',flash:{term:'Applying SSH Config Changes',def:'"sudo systemctl daemon-reload" then "sudo systemctl restart ssh" to apply config changes.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'What does "sudo" stand for?',opts:['Super User Download','SuperUser Do','System Update Deploy','Secure Unix Do'],ans:1,exp:'sudo = SuperUser Do. Executes one command with root privileges.',flash:{term:'sudo',def:'SuperUser Do — execute one command with root (administrator) privileges.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'Which command downloads a file keeping the original filename?',opts:['wget file.deb','curl file.deb','curl -O URL','fetch -O URL'],ans:2,exp:'"curl -O [URL]" downloads a file keeping the original filename from the URL.',flash:{term:'curl -O',def:'"curl -O [URL]" downloads a file from a URL, preserving the original filename.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'hard',q:'What does /etc/ssh/sshd_config control?',opts:['SSH client settings','SSH server configuration','Network adapter settings','User password policies'],ans:1,exp:'/etc/ssh/sshd_config configures the SSH server daemon (sshd) — port, auth methods, etc.',flash:{term:'sshd_config',def:'/etc/ssh/sshd_config configures the SSH server: port number, authentication, logging, etc.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'medium',q:'What does "apt upgrade" do?',opts:['Adds new packages','Upgrades all installed packages to latest versions','Removes old packages','Updates the package list only'],ans:1,exp:'"apt upgrade" upgrades all installed packages to their latest available versions.',flash:{term:'apt upgrade',def:'"sudo apt upgrade" upgrades all installed packages to their latest versions.'}},
+{ch:'H9',cl:'Linux',type:'mcq',diff:'easy',q:'How do you open a terminal in Ubuntu desktop?',opts:['Right-click desktop','Ctrl+Alt+T','Start menu → Terminal','F1 key'],ans:1,exp:'Ctrl+Alt+T is the standard Ubuntu keyboard shortcut to open a terminal.',flash:{term:'Ubuntu Terminal Shortcut',def:'Ctrl+Alt+T opens the terminal in Ubuntu desktop.'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'easy',q:'Linux terminal commands are case-sensitive.',ans:true,exp:'Correct. Linux IS case-sensitive. "ls" and "LS" are different commands.',flash:{term:'Linux Case Sensitivity',def:'Linux terminal IS case-sensitive. "ls" ≠ "LS". CMD on Windows is NOT case-sensitive.'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'easy',q:'Hidden files in Linux start with a dot (.) character.',ans:true,exp:'Correct. Files/folders starting with . are hidden. Use "ls -a" to see them.',flash:{term:'Linux Hidden Files',def:'Files/folders starting with . are hidden. Show with "ls -a".'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'medium',q:'"apt update" installs the latest software updates.',ans:false,exp:'Fout. "apt update" only refreshes the package list. Use "apt upgrade" to install updates.',flash:{term:'apt update vs upgrade',def:'"apt update" = refresh list only. "apt upgrade" = install updates. Both are different!'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'medium',q:'"sudo" lets you run one command with root privileges.',ans:true,exp:'Correct. sudo executes a single command as root and asks for your user password.',flash:{term:'sudo privilege',def:'"sudo" runs one command as root. Ubuntu remembers the password for 5-15 minutes.'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'hard',q:'RPM packages can be installed on Ubuntu using apt.',ans:false,exp:'Fout. Ubuntu uses .deb packages. RPM is for RHEL-based distros (Fedora, CentOS).',flash:{term:'RPM vs DEB',def:'RPM (.rpm) = RHEL family (Fedora, CentOS). DEB (.deb) = Debian family (Ubuntu, Mint).'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'hard',q:'/root and / (root directory) are the same.',ans:false,exp:'Fout. "/" is the filesystem root. "/root" is the home folder of the root user.',flash:{term:'/ vs /root',def:'"/" = root of entire filesystem. "/root" = home directory of the root superuser. Different!'}},
+{ch:'H9',cl:'Linux',type:'tf',diff:'medium',q:'The SSH server configuration file is at /etc/ssh/sshd_config.',ans:true,exp:'Correct. sshd_config configures the SSH server daemon.',flash:{term:'SSH Config Location',def:'SSH server config: /etc/ssh/sshd_config. Client config: /etc/ssh/ssh_config.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'easy',q:'The Linux command to list directory contents is ___.',ans:'ls',hint:'2 letters',exp:'"ls" lists directory contents. "ls -a" shows hidden files.',flash:{term:'ls',def:'"ls" lists directory contents. Options: -a (hidden), -l (details), -la (both).'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'medium',q:'To install a package in Ubuntu: sudo apt ___.',ans:'install',hint:'One word',exp:'"sudo apt install [packagename]" downloads and installs from the repository.',flash:{term:'apt install',def:'"sudo apt install [pkg]" downloads and installs a package from the repository.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'easy',q:'Keyboard shortcut to open Ubuntu terminal: Ctrl + Alt + ___.',ans:'t',hint:'1 letter',exp:'Ctrl+Alt+T is the standard Ubuntu shortcut to open a terminal window.',flash:{term:'Terminal Shortcut',def:'Ctrl+Alt+T opens a terminal in Ubuntu desktop.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'medium',q:'Nano shortcut to save a file: Ctrl + ___.',ans:'o',hint:'1 letter',exp:'Ctrl+O (Write Out) saves the file. Ctrl+X exits Nano.',flash:{term:'Nano Save',def:'Ctrl+O = save file in Nano. Then Enter to confirm. Ctrl+X = exit.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'hard',q:'Download a file keeping original filename: curl ___ [URL].',ans:'-o',hint:'Dash + letter',exp:'"curl -O URL" downloads the file preserving the server\'s filename.',flash:{term:'curl -O flag',def:'"curl -O [URL]" downloads file keeping its original filename from the server.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'medium',q:'Connect via SSH on custom port: ssh ___ 22000 user@host.',ans:'-p',hint:'Dash + letter',exp:'"ssh -p 22000 user@host" connects to SSH on port 22000 instead of default 22.',flash:{term:'ssh -p flag',def:'"ssh -p [port] user@host" connects to SSH on a custom port number.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'hard',q:'The Linux command to create a new user is ___.',ans:'adduser',hint:'7 letters',exp:'"adduser [username]" creates a new user interactively.',flash:{term:'adduser',def:'"adduser [username]" creates a new Linux user with home directory and prompts for password.'}},
+{ch:'H9',cl:'Linux',type:'fill',diff:'medium',q:'The Nano shortcut to exit is Ctrl + ___.',ans:'x',hint:'1 letter',exp:'Ctrl+X exits Nano. It will prompt to save unsaved changes.',flash:{term:'Nano Exit',def:'Ctrl+X exits Nano editor. Prompts to save if changes were made.'}},
+];
+
+// ════════════════════════════════════════════════════════
+//  CHAPTER METADATA
+// ════════════════════════════════════════════════════════
+const CHS=[
+  {id:'H1',label:'Assemblage',       color:'#4f8ef7',bg:'rgba(79,142,247,.12)'},
+  {id:'H2',label:'BIOS/UEFI',      color:'#6ee7b7',bg:'rgba(110,231,183,.12)'},
+  {id:'H3',label:'Opstartbare Media', color:'#f472b6',bg:'rgba(244,114,182,.12)'},
+  {id:'H4',label:'Installatie',   color:'#fbbf24',bg:'rgba(251,191,36,.12)'},
+  {id:'H5',label:'Windows Tools',  color:'#a78bfa',bg:'rgba(167,139,250,.12)'},
+  {id:'H6',label:'Terminal (CMD)', color:'#f87171',bg:'rgba(248,113,113,.12)'},
+  {id:'H7',label:'Virtualisatie', color:'#34d399',bg:'rgba(52,211,153,.12)'},
+  {id:'H8',label:'WSL',            color:'#38bdf8',bg:'rgba(56,189,248,.12)'},
+  {id:'H9',label:'Linux',          color:'#fb923c',bg:'rgba(251,146,60,.12)'},
+];
+function chMeta(ch){return CHS.find(c=>c.id===ch)||{color:'#888',bg:'rgba(128,128,128,.1)',label:ch};}
+
+// ════════════════════════════════════════════════════════
+//  STORAGE
+// ════════════════════════════════════════════════════════
+const SK='ic_study_nl';;
+function loadStore(){try{return JSON.parse(localStorage.getItem(SK))||defaultStore();}catch{return defaultStore();}}
+function defaultStore(){
+  return {
+    sessions:0, totalQ:0, totalCorrect:0,
+    chStats:{}, // {H1:{correct:0,total:0}, ...}
+    srData:{},  // {qKey:{interval:1,due:0,correct:0,total:0}}
+    flashGemist:[], // array of vraag keys gemist in flashcards
+    examBest:null,
+    heatmap:[], // array of daily session counts
+    streak:0, lastStudyDate:'',
+  };
+}
+function saveStore(s){localStorage.setItem(SK,JSON.stringify(s));}
+let store=loadStore();
+
+function recordAnswer(ch,correct){
+  store.totalQ++;
+  if(correct) store.totalCorrect++;
+  if(!store.chStats[ch]) store.chStats[ch]={correct:0,total:0};
+  store.chStats[ch].total++;
+  if(correct) store.chStats[ch].correct++;
+  updateStreak();
+  saveStore(store);
+}
+function updateStreak(){
+  const today=new Date().toDateString();
+  if(store.lastStudyDate!==today){
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    store.streak=store.lastStudyDate===yesterday?store.streak+1:1;
+    store.lastStudyDate=today;
+    store.heatmap.push({date:today,count:1});
+    if(store.heatmap.length>49) store.heatmap.shift();
+  }
+  saveStore(store);
+}
+function qKey(q){return q.ch+'|'+q.q.substring(0,20);}
+
+// ════════════════════════════════════════════════════════
+//  NAV
+// ════════════════════════════════════════════════════════
+function showTab(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelector(`[data-tab="${id}"]`).classList.add('active');
+  if(id==='dashboard') refreshDashboard();
+  if(id==='weak') refreshWeak();
+  if(id==='spaced') refreshSpacedHome();
+  if(id==='flashcards') buildChapterGrid('flash');
+  if(id==='practice') buildChapterGrid('practice');
+  document.getElementById('streakBadge').textContent=`🔥 ${store.streak} dagen op rij`;
+}
+
+// ════════════════════════════════════════════════════════
+//  CHAPTER GRIDS
+// ════════════════════════════════════════════════════════
+const selHoofdstukken={practice:new Set(CHS.map(c=>c.id)), flash:new Set(CHS.map(c=>c.id))};
+
+function buildChapterGrid(mode){
+  const gridId=mode==='practice'?'practiceChapterGrid':'flashChapterGrid';
+  const grid=document.getElementById(gridId);
+  if(grid.children.length) return;
+  const counts={};
+  BANK.forEach(q=>{counts[q.ch]=(counts[q.ch]||0)+1;});
+  CHS.forEach(ch=>{
+    const c=document.createElement('div');
+    c.className='ch-card selected';c.dataset.ch=ch.id;
+    const acc=store.chStats[ch.id];
+    const pctStr=acc&&acc.total>0?` · ${Math.round(acc.correct/acc.total*100)}%`:'';
+    c.innerHTML=`<div class="ch-num">${ch.id}</div><div class="ch-name">${ch.label}</div><div class="ch-cnt">${counts[ch.id]||0} q${pctStr}</div>`;
+    c.onclick=()=>{
+      if(selHoofdstukken[mode].has(ch.id)){selHoofdstukken[mode].delete(ch.id);c.classList.remove('selected');}
+      else{selHoofdstukken[mode].add(ch.id);c.classList.add('selected');}
+    };
+    grid.appendChild(c);
+  });
+}
+function chAll(mode){document.querySelectorAll(`#${mode==='practice'?'practice':'flash'}ChapterGrid .ch-card`).forEach(c=>{selHoofdstukken[mode].add(c.dataset.ch);c.classList.add('selected');});}
+function chNone(mode){document.querySelectorAll(`#${mode==='practice'?'practice':'flash'}ChapterGrid .ch-card`).forEach(c=>{selHoofdstukken[mode].delete(c.dataset.ch);c.classList.remove('selected');});}
+
+const activePills=new Set(['mcq','tf','fill']);
+function toggleType(el){
+  const t=el.dataset.type;
+  if(activePills.has(t)){if(activePills.size===1)return;activePills.delete(t);el.classList.remove('on');}
+  else{activePills.add(t);el.classList.add('on');}
+}
+
+// ════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════
+function refreshDashboard(){
+  document.getElementById('ds-total').textContent=store.totalQ;
+  document.getElementById('ds-sessions').textContent=store.sessions;
+  const acc=store.totalQ>0?Math.round(store.totalCorrect/store.totalQ*100)+'%':'—';
+  document.getElementById('ds-acc').textContent=acc;
+  // mastered = vraags answered correctly 3+ times in SR
+  const mastered=Object.values(store.srData).filter(d=>d.correct>=3).length;
+  document.getElementById('ds-mastered').textContent=mastered;
+  document.getElementById('streakBadge').textContent=`🔥 ${store.streak} dagen op rij`;
+  // chapter perf
+  const perf=document.getElementById('dashChPerf');
+  if(Object.keys(store.chStats).length===0){
+    perf.innerHTML='<div class="empty-state" style="padding:20px 0;"><div style="font-size:12px;color:var(--muted)">Voltooi een sessie om prestaties te zien.</div></div>';
+    return;
+  }
+  perf.innerHTML=CHS.map(ch=>{
+    const s=store.chStats[ch.id]||{correct:0,total:0};
+    const p=s.total>0?Math.round(s.correct/s.total*100):null;
+    const col=p===null?'var(--bg4)':p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    return `<div class="ch-perf-row">
+      <div class="ch-perf-dot" style="background:${ch.color}"></div>
+      <div class="ch-perf-name">${ch.label}</div>
+      <div class="ch-perf-bar-wrap"><div class="ch-perf-bar" style="width:${p||0}%;background:${col}"></div></div>
+      <div class="ch-perf-pct">${p!==null?p+'%':'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+//  GENERIC QUESTION RENDERER
+// ════════════════════════════════════════════════════════
+function renderQ(q,bodyId,textId,chTagId,typeTagId,diffTagId,qNumId,submitBtnId,fbId,timerEl,prgLbl,prgFill,idx,total,noFb){
+  const cm=chMeta(q.ch);
+  const tag=document.getElementById(chTagId);
+  if(tag){tag.textContent=q.cl;tag.style.background=cm.bg;tag.style.color=cm.color;}
+  const ttag=document.getElementById(typeTagId);
+  if(ttag) ttag.textContent={mcq:'Meerkeuze',tf:'Juist / Fout',fill:'Invullen'}[q.type]||'';
+  const dtag=document.getElementById(diffTagId);
+  if(dtag){dtag.textContent=q.diff;dtag.className='q-diff diff-'+q.diff;}
+  const qnum=document.getElementById(qNumId);
+  if(qnum) qnum.textContent=`${idx+1} / ${total}`;
+  if(prgLbl) document.getElementById(prgLbl).textContent=`Question ${idx+1} of ${total}`;
+  if(prgFill) document.getElementById(prgFill).style.width=(idx/total*100)+'%';
+  document.getElementById(textId).innerHTML=q.q.replace(/`([^`]+)`/g,'<code>$1</code>');
+  const body=document.getElementById(bodyId);body.innerHTML='';
+  if(q.type==='mcq'){
+    body.innerHTML=`<div class="options">`+q.opts.map((o,i)=>`<div class="opt" data-i="${i}" onclick="selectOpt(this,${i},'${bodyId}','${submitBtnId}')"><span class="opt-letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')+`</div>`;
+  } else if(q.type==='tf'){
+    body.innerHTML=`<div class="tf-row"><button class="tf-btn" onclick="selectTF(this,true,'${bodyId}','${submitBtnId}')">✓ Juist</button><button class="tf-btn" onclick="selectTF(this,false,'${bodyId}','${submitBtnId}')">✗ Fout</button></div>`;
+  } else if(q.type==='fill'){
+    body.innerHTML=`<div class="fill-wrap"><input class="fill-input" id="${bodyId}-fill" type="text" placeholder="Typ je antwoord…" onkeydown="if(event.key==='Enter') document.getElementById('${submitBtnId}').click()"><div class="fill-hint">Hint: ${q.hint||'—'}</div></div>`;
+    setTimeout(()=>document.getElementById(bodyId+'-fill')?.focus(),80);
+  }
+  if(fbId){const fb=document.getElementById(fbId);fb.className='feedback';fb.innerHTML='';}
+  const sb=document.getElementById(submitBtnId);
+  if(sb){sb.disabled=(q.type==='fill')?false:true;sb.classList.remove('hidden');}
+}
+
+let _selOpt=null,_selTF=null;
+function selectOpt(el,i,bodyId,sbId){
+  if(el.classList.contains('disabled'))return;
+  document.querySelectorAll(`#${bodyId} .opt`).forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');_selOpt=i;
+  const sb=document.getElementById(sbId);if(sb)sb.disabled=false;
+}
+function selectTF(el,val,bodyId,sbId){
+  if(el.classList.contains('disabled'))return;
+  document.querySelectorAll(`#${bodyId} .tf-btn`).forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');_selTF=val;
+  const sb=document.getElementById(sbId);if(sb)sb.disabled=false;
+}
+
+function checkAnswer(q,bodyId,fbId,showFeedback){
+  let correct=false,userAns='';
+  if(q.type==='mcq'){
+    if(_selOpt===null)return null;
+    correct=_selOpt===q.ans;userAns=q.opts[_selOpt];
+    document.querySelectorAll(`#${bodyId} .opt`).forEach((el,i)=>{
+      el.classList.add('disabled');
+      if(i===q.ans)el.classList.add('correct');
+      else if(i===_selOpt&&!correct)el.classList.add('wrong');
+    });_selOpt=null;
+  } else if(q.type==='tf'){
+    if(_selTF===null)return null;
+    correct=_selTF===q.ans;userAns=_selTF?'Juist':'Fout';
+    document.querySelectorAll(`#${bodyId} .tf-btn`).forEach(el=>{
+      el.classList.add('disabled');
+      const v=el.textContent.includes('Juist');
+      if(v===q.ans)el.classList.add('correct');
+      else if(v===_selTF&&!correct)el.classList.add('wrong');
+    });_selTF=null;
+  } else if(q.type==='fill'){
+    const inp=document.getElementById(bodyId+'-fill');
+    if(!inp)return null;
+    const u=inp.value.trim().toLowerCase(),c=q.ans.toLowerCase();
+    correct=u===c||u===c.replace(/^\./,'')||('.'+u===c);
+    userAns=inp.value.trim();inp.disabled=true;
+    inp.classList.add(correct?'correct':'wrong');
+  }
+  if(showFeedback&&fbId){
+    const fb=document.getElementById(fbId);
+    fb.className='feedback show '+(correct?'ok':'bad');
+    fb.innerHTML=`<strong>${correct?'✓ Correct!':'✗ Onjuist'}</strong>${q.exp}`+
+      (!correct&&q.type!=='tf'?`<br><span style="color:var(--green);margin-top:3px;display:block">Correct: <strong>${q.type==='mcq'?q.opts[q.ans]:q.ans}</strong></span>`:'');
+  }
+  return {correct,userAns};
+}
+
+function showResultsRing(pct,ringId){
+  const c=2*Math.PI*65,off=c*(1-pct/100);
+  setTimeout(()=>{
+    const el=document.getElementById(ringId);
+    el.style.strokeDashoffset=off;
+    el.style.stroke=pct>=70?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+  },100);
+}
+
+function gradeMsg(pct){
+  if(pct>=90)return{grade:'🏆 Uitstekend!',msg:'Uitstekend werk — je beheerst de stof echt!'};
+  if(pct>=80)return{grade:'🌟 Zeer goed!',msg:'Zeer sterke prestatie. Zo te houden!'};
+  if(pct>=70)return{grade:'✅ Geslaagd!',msg:'Je bent geslaagd met een degelijk resultaat.'};
+  if(pct>=55)return{grade:'⚠️ Bijna geslaagd',msg:'Dichtbij — bekijk de foutieve antwoorden hieronder.'};
+  return{grade:'📚 Blijven studeren',msg:'Herhaal de hoofdstukken en probeer opnieuw.'};
+}
+
+function buildReviewList(answers,listId,arrowId){
+  const gemist=answers.filter(a=>!a.correct);
+  const list=document.getElementById(listId);
+  if(!gemist.length){list.innerHTML='<div style="font-size:12px;color:var(--green);padding:8px">🎉 No gemist vraags — perfect!</div>';return;}
+  list.innerHTML=gemist.map(a=>{
+    const c=a.q.type==='mcq'?a.q.opts[a.q.ans]:a.q.type==='tf'?(a.q.ans?'Juist':'Fout'):a.q.ans;
+    return `<div class="review-item"><div class="review-q">${a.q.q.replace(/`([^`]+)`/g,'<code>$1</code>')}</div><div class="review-your">Jouw antwoord: ${a.userAns||'(none)'}</div><div class="review-correct">Correct: ${c}</div><div class="review-ch">${a.q.ch} · ${a.q.cl}</div></div>`;
+  }).join('');
+}
+
+function toggleReview(listId,arrowId){
+  const l=document.getElementById(listId),a=document.getElementById(arrowId);
+  const h=l.style.display==='none';l.style.display=h?'flex':'none';a.textContent=h?'▲':'▼';
+}
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+// ════════════════════════════════════════════════════════
+//  PRACTICE
+// ════════════════════════════════════════════════════════
+let pState={qs:[],idx:0,correct:0,answers:[],start:0,timer:null,timerPerQ:0};
+
+function startPractice(){
+  const n=parseInt(document.getElementById('p-qcount').value);
+  pState.timerPerQ=parseInt(document.getElementById('p-timer').value);
+  const diff=document.getElementById('p-diff').value;
+  let pool=BANK.filter(q=>selHoofdstukken.practice.has(q.ch)&&activePills.has(q.type));
+  if(diff!=='all') pool=pool.filter(q=>q.diff===diff);
+  if(!pool.length){alert('Geen vragen gevonden. Probeer andere instellingen.');return;}
+  pState.qs=shuffle([...pool]).slice(0,Math.min(n,pool.length));
+  pState.idx=0;pState.correct=0;pState.answers=[];pState.start=Date.now();
+  document.getElementById('practice-config-view').classList.add('hidden');
+  document.getElementById('practice-results-view').classList.add('hidden');
+  document.getElementById('practice-quiz-view').classList.remove('hidden');
+  document.getElementById('practice-quiz-view').style.display='flex';
+  renderPracticeQ();
+}
+function renderPracticeQ(){
+  const q=pState.qs[pState.idx];
+  renderQ(q,'p-q-body','p-q-text','p-ch-tag','p-type-tag','p-diff-tag','p-q-num','p-submit-btn','p-feedback',null,'p-prog-lbl','p-prog-fill',pState.idx,pState.qs.length);
+  document.getElementById('p-live-score').textContent=pState.correct;
+  document.getElementById('p-submit-btn').classList.remove('hidden');
+  document.getElementById('p-next-btn').classList.add('hidden');
+  if(pState.timerPerQ>0){document.getElementById('p-timer-el').classList.remove('hidden');startPTimer(pState.timerPerQ);}
+  else document.getElementById('p-timer-el').classList.add('hidden');
+}
+function startPTimer(s){
+  let left=s;updatePTimer(left);
+  pState.timer=setInterval(()=>{left--;updatePTimer(left);if(left<=0){clearInterval(pState.timer);autoFailPractice();}},1000);
+}
+function updatePTimer(s){
+  const el=document.getElementById('p-timer-el');
+  el.textContent=`0:${s.toString().padStart(2,'0')}`;
+  el.className='q-timer'+(s<=5?' danger':s<=10?' warn':'');
+}
+function autoFailPractice(){
+  const q=pState.qs[pState.idx];
+  const c=q.type==='mcq'?q.opts[q.ans]:q.type==='tf'?(q.ans?'Juist':'Fout'):q.ans;
+  const fb=document.getElementById('p-feedback');
+  fb.className='feedback show bad';
+  fb.innerHTML=`<strong>⏱ Time\'s up!</strong>${q.exp}<br><span style="color:var(--green);display:block;margin-top:3px">Correct: <strong>${c}</strong></span>`;
+  document.querySelectorAll('#p-q-body .opt,.opt-tf').forEach(el=>el.classList.add('disabled'));
+  const fi=document.getElementById('p-q-body-fill');if(fi)fi.disabled=true;
+  pState.answers.push({q,correct:false,userAns:'(tijd voorbij)'});
+  recordAnswer(q.ch,false);updateSR(q,false);
+  document.getElementById('p-submit-btn').classList.add('hidden');
+  document.getElementById('p-next-btn').classList.remove('hidden');
+}
+function submitPractice(){
+  clearInterval(pState.timer);
+  const q=pState.qs[pState.idx];
+  const r=checkAnswer(q,'p-q-body','p-feedback',true);
+  if(r===null)return;
+  pState.answers.push({...r,q});
+  if(r.correct)pState.correct++;
+  recordAnswer(q.ch,r.correct);updateSR(q,r.correct);
+  document.getElementById('p-live-score').textContent=pState.correct;
+  document.getElementById('p-submit-btn').classList.add('hidden');
+  document.getElementById('p-next-btn').classList.remove('hidden');
+}
+function nextPractice(){
+  pState.idx++;
+  if(pState.idx>=pState.qs.length)showPracticeResults();
+  else renderPracticeQ();
+}
+function showPracticeResults(){
+  store.sessions++;saveStore(store);
+  document.getElementById('practice-quiz-view').classList.add('hidden');
+  document.getElementById('practice-quiz-view').style.display='none';
+  document.getElementById('practice-results-view').classList.remove('hidden');
+  document.getElementById('practice-results-view').style.display='flex';
+  const total=pState.qs.length,pct=Math.round(pState.correct/total*100);
+  const elapsed=Math.round((Date.now()-pState.start)/1000);
+  showResultsRing(pct,'p-ring-fg');
+  document.getElementById('p-ring-pct').textContent=pct+'%';
+  const{grade,msg}=gradeMsg(pct);
+  document.getElementById('p-grade').textContent=grade;
+  document.getElementById('p-msg').textContent=msg;
+  document.getElementById('p-rc').textContent=pState.correct;
+  document.getElementById('p-rw').textContent=total-pState.correct;
+  document.getElementById('p-rt').textContent=elapsed<60?elapsed+'s':Math.floor(elapsed/60)+'m '+(elapsed%60)+'s';
+  buildReviewList(pState.answers,'p-review-list','p-rev-arrow');
+}
+function retryPractice(){startPractice();}
+function backToPracticeConfig(){
+  document.getElementById('practice-config-view').classList.remove('hidden');
+  document.getElementById('practice-quiz-view').classList.add('hidden');
+  document.getElementById('practice-quiz-view').style.display='none';
+  document.getElementById('practice-results-view').classList.add('hidden');
+  document.getElementById('practice-results-view').style.display='none';
+  clearInterval(pState.timer);
+}
+function endPractice(){if(confirm('Oefening stoppen?')){clearInterval(pState.timer);backToPracticeConfig();}}
+
+// ════════════════════════════════════════════════════════
+//  FLASHCARDS
+// ════════════════════════════════════════════════════════
+let fState={cards:[],idx:0,knew:0,miss:0,flipped:false,gemistKeys:[]};
+
+function startFlash(gemistOnly){
+  let pool=BANK.filter(q=>selHoofdstukken.flash.has(q.ch)&&q.flash);
+  const gemistOnlyVal=gemistOnly||parseInt(document.getElementById('f-gemist-only').value);
+  if(gemistOnlyVal) pool=pool.filter(q=>store.flashGemist.includes(qKey(q)));
+  const limit=parseInt(document.getElementById('f-limit').value)||30;
+  fState.cards=shuffle([...pool]).slice(0,Math.min(limit,pool.length));
+  fState.idx=0;fState.knew=0;fState.miss=0;fState.gemistKeys=[];fState.flipped=false;
+  if(!fState.cards.length){alert('Geen flashkaarten gevonden. Selecteer meer hoofdstukken.');return;}
+  document.getElementById('flash-config-view').classList.add('hidden');
+  document.getElementById('flash-done-view').classList.add('hidden');
+  document.getElementById('flash-play-view').classList.remove('hidden');
+  document.getElementById('flash-play-view').style.display='flex';
+  renderFlash();
+}
+function renderFlash(){
+  fState.flipped=false;
+  const q=fState.cards[fState.idx];const total=fState.cards.length;
+  document.getElementById('f-counter').textContent=`${fState.idx+1} / ${total}`;
+  document.getElementById('f-prog-lbl').textContent=`Card ${fState.idx+1} of ${total}`;
+  document.getElementById('f-prog-fill').style.width=(fState.idx/total*100)+'%';
+  document.getElementById('f-prog-fill2').style.width=((fState.knew+fState.miss)/total*100)+'%';
+  document.getElementById('f-side-label').textContent='TERM';
+  const cm=chMeta(q.ch);
+  const ct=document.getElementById('f-ch-tag');ct.textContent=q.cl;ct.style.background=cm.bg;ct.style.color=cm.color;
+  document.getElementById('f-content').textContent=q.flash.term;
+  document.getElementById('f-content').className='flash-content';
+  document.getElementById('f-hint-el').classList.add('hidden');
+  document.getElementById('f-tap-hint').classList.remove('hidden');
+  document.getElementById('f-rating-btns').classList.add('hidden');
+  document.getElementById('f-knew').textContent=fState.knew;
+  document.getElementById('f-miss').textContent=fState.miss;
+  document.getElementById('f-knew2').textContent=fState.knew;
+  document.getElementById('f-miss2').textContent=fState.miss;
+}
+function flipCard(){
+  if(fState.flipped)return;
+  fState.flipped=true;
+  const q=fState.cards[fState.idx];
+  document.getElementById('f-side-label').textContent='DEFINITIE';
+  document.getElementById('f-content').textContent=q.flash.def;
+  document.getElementById('f-content').className='flash-content answer';
+  document.getElementById('f-tap-hint').classList.add('hidden');
+  document.getElementById('f-rating-btns').classList.remove('hidden');
+}
+function rateCard(knew){
+  const q=fState.cards[fState.idx];
+  const key=qKey(q);
+  if(knew){
+    fState.knew++;
+    store.flashGemist=store.flashGemist.filter(k=>k!==key);
+    updateSR(q,true);
+  } else {
+    fState.miss++;fState.gemistKeys.push(key);
+    if(!store.flashGemist.includes(key)) store.flashGemist.push(key);
+    updateSR(q,false);
+  }
+  recordAnswer(q.ch,knew);saveStore(store);
+  fState.idx++;
+  if(fState.idx>=fState.cards.length) endFlashDeck();
+  else renderFlash();
+}
+function endFlashDeck(){
+  document.getElementById('flash-play-view').classList.add('hidden');
+  document.getElementById('flash-play-view').style.display='none';
+  document.getElementById('flash-done-view').classList.remove('hidden');
+  document.getElementById('flash-done-view').style.display='flex';
+  const total=fState.cards.length,pct=Math.round(fState.knew/total*100);
+  document.getElementById('f-done-knew').textContent=fState.knew;
+  document.getElementById('f-done-miss').textContent=fState.miss;
+  document.getElementById('f-done-pct').textContent=pct+'%';
+  document.getElementById('f-done-title').textContent=pct>=80?'🎉 Great session!':'📚 Keep practicing!';
+  document.getElementById('f-done-msg').textContent=`Je had ${fState.knew} of ${total}. van ${pct}%).`;
+  store.sessions++;saveStore(store);
+}
+function drillGemist(){
+  document.getElementById('flash-done-view').classList.add('hidden');
+  document.getElementById('flash-done-view').style.display='none';
+  document.getElementById('flash-config-view').classList.remove('hidden');
+  startFlash(true);
+}
+function endFlash(){
+  clearInterval(null);
+  document.getElementById('flash-play-view').classList.add('hidden');
+  document.getElementById('flash-play-view').style.display='none';
+  document.getElementById('flash-config-view').classList.remove('hidden');
+}
+
+// ════════════════════════════════════════════════════════
+//  SPACED REPETITION
+// ════════════════════════════════════════════════════════
+function updateSR(q,correct){
+  const key=qKey(q);
+  if(!store.srData[key]) store.srData[key]={interval:1,due:0,correct:0,total:0};
+  const d=store.srData[key];
+  d.total++;
+  if(correct){d.correct++;d.interval=Math.min(d.interval*2,30);d.due=Date.now()+d.interval*86400000;}
+  else{d.interval=1;d.due=Date.now()+86400000;}
+  saveStore(store);
+}
+function getSRQueue(){
+  const now=Date.now();
+  return BANK.filter(q=>{
+    const key=qKey(q);
+    const d=store.srData[key];
+    if(!d) return true; // never seen
+    return d.due<=now;
+  });
+}
+function refreshSpacedHome(){
+  const queue=getSRQueue();
+  const btn=document.getElementById('sr-start-btn');
+  btn.textContent=`Study ${queue.length} due card${queue.length!==1?'s':''} →`;
+  btn.disabled=queue.length===0;
+  const list=document.getElementById('sr-queue-list');
+  if(!queue.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Alles bijgewerkt!</div><div style="font-size:12px;color:var(--muted)">Geen kaarten nu. Kom later terug.</div></div>';return;}
+  list.innerHTML=queue.slice(0,8).map(q=>{
+    const cm=chMeta(q.ch);
+    return `<div class="sr-item"><span class="tag" style="background:${cm.bg};color:${cm.color}">${q.cl}</span><span style="flex:1;color:var(--dim);font-size:12px">${q.q.substring(0,60)}${q.q.length>60?'…':''}</span><span class="sr-due-badge due-now">Vervallen</span></div>`;
+  }).join('')+(queue.length>8?`<div style="font-size:11px;color:var(--muted);margin-top:6px;">…and ${queue.length-8} more</div>`:'');
+}
+
+let srState={qs:[],idx:0,streak:0,answers:[]};
+function startSpaced(){
+  const queue=getSRQueue();
+  if(!queue.length){alert('Geen kaarten nu! Kom morgen terug.');return;}
+  srState.qs=shuffle([...queue]).slice(0,Math.min(40,queue.length));
+  srState.idx=0;srState.streak=0;srState.answers=[];
+  document.getElementById('spaced-home-view').classList.add('hidden');
+  document.getElementById('spaced-quiz-view').classList.remove('hidden');
+  document.getElementById('spaced-quiz-view').style.display='flex';
+  renderSpacedQ();
+}
+function renderSpacedQ(){
+  const q=srState.qs[srState.idx];
+  renderQ(q,'sr-q-body','sr-q-text','sr-ch-tag','sr-type-tag',null,'sr-q-num','sr-submit-btn','sr-feedback',null,'sr-prog-lbl','sr-prog-fill',srState.idx,srState.qs.length);
+  document.getElementById('sr-streak').textContent=srState.streak;
+  document.getElementById('sr-submit-btn').classList.remove('hidden');
+  document.getElementById('sr-next-btn').classList.add('hidden');
+}
+function submitSpaced(){
+  const q=srState.qs[srState.idx];
+  const r=checkAnswer(q,'sr-q-body','sr-feedback',true);
+  if(r===null)return;
+  srState.answers.push({...r,q});
+  if(r.correct)srState.streak++;else srState.streak=0;
+  recordAnswer(q.ch,r.correct);updateSR(q,r.correct);
+  document.getElementById('sr-streak').textContent=srState.streak;
+  document.getElementById('sr-submit-btn').classList.add('hidden');
+  document.getElementById('sr-next-btn').classList.remove('hidden');
+}
+function nextSpaced(){
+  srState.idx++;
+  if(srState.idx>=srState.qs.length){
+    store.sessions++;saveStore(store);
+    alert(`Sessie voltooid! ${srState.answers.filter(a=>a.correct).length}/${srState.qs.length} correct. Reeks: ${srState.streak}`);
+    endSpaced();refreshSpacedHome();
+  } else renderSpacedQ();
+}
+function endSpaced(){
+  document.getElementById('spaced-quiz-view').classList.add('hidden');
+  document.getElementById('spaced-quiz-view').style.display='none';
+  document.getElementById('spaced-home-view').classList.remove('hidden');
+}
+function resetSR(){if(confirm('Alle gespreide herhaling voortgang resetten?')){store.srData={};saveStore(store);refreshSpacedHome();}}
+
+// ════════════════════════════════════════════════════════
+//  EXAM SIMULATION
+// ════════════════════════════════════════════════════════
+let exState={qs:[],idx:0,answers:[],timer:null,start:0};
+const EX_TOTAL=40,EX_MINS=45;
+
+function showExamHome(){
+  document.getElementById('exam-home-view').classList.remove('hidden');
+  document.getElementById('exam-quiz-view').classList.add('hidden');
+  document.getElementById('exam-results-view').classList.add('hidden');
+  const best=store.examBest;
+  document.getElementById('exam-best-score').textContent=best?`Beste score: ${best}%`:'Nog geen pogingen';
+}
+function startExamSim(){
+  // 40% easy, 40% medium, 20% hard
+  const easy=shuffle(BANK.filter(q=>q.diff==='easy')).slice(0,16);
+  const med=shuffle(BANK.filter(q=>q.diff==='medium')).slice(0,16);
+  const hard=shuffle(BANK.filter(q=>q.diff==='hard')).slice(0,8);
+  exState.qs=shuffle([...easy,...med,...hard]).slice(0,EX_TOTAL);
+  exState.idx=0;exState.answers=[];exState.start=Date.now();
+  document.getElementById('exam-home-view').classList.add('hidden');
+  document.getElementById('exam-results-view').classList.add('hidden');
+  document.getElementById('exam-quiz-view').classList.remove('hidden');
+  document.getElementById('exam-quiz-view').style.display='flex';
+  startExTimer();renderExamQ();
+}
+function startExTimer(){
+  let left=EX_MINS*60;updateExTimer(left);
+  exState.timer=setInterval(()=>{left--;updateExTimer(left);if(left<=0){clearInterval(exState.timer);showExamResults();}},1000);
+}
+function updateExTimer(s){
+  const m=Math.floor(s/60),sec=s%60;
+  const el=document.getElementById('ex-timer');
+  el.textContent=`${m}:${sec.toString().padStart(2,'0')}`;
+  el.className='q-timer'+(s<=300?' warn':'')+(s<=60?' danger':'');
+}
+function renderExamQ(){
+  const q=exState.qs[exState.idx];
+  document.getElementById('ex-prog-lbl').textContent=`Question ${exState.idx+1} of ${EX_TOTAL}`;
+  document.getElementById('ex-prog-fill').style.width=(exState.idx/EX_TOTAL*100)+'%';
+  document.getElementById('ex-q-num-live').textContent=exState.idx+1;
+  document.getElementById('ex-q-num').textContent=`${exState.idx+1} / ${EX_TOTAL}`;
+  const cm=chMeta(q.ch);
+  const ct=document.getElementById('ex-ch-tag');ct.textContent=q.cl;ct.style.background=cm.bg;ct.style.color=cm.color;
+  document.getElementById('ex-type-tag').textContent={mcq:'Meerkeuze',tf:'Juist / Fout',fill:'Invullen'}[q.type];
+  document.getElementById('ex-q-text').innerHTML=q.q.replace(/`([^`]+)`/g,'<code>$1</code>');
+  const body=document.getElementById('ex-q-body');body.innerHTML='';
+  _selOpt=null;_selTF=null;
+  const nextBtn=document.getElementById('ex-next-btn');nextBtn.disabled=true;
+  if(q.type==='mcq'){
+    body.innerHTML=`<div class="options">`+q.opts.map((o,i)=>`<div class="opt" data-i="${i}" onclick="exSelectOpt(this,${i})"><span class="opt-letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')+`</div>`;
+  } else if(q.type==='tf'){
+    body.innerHTML=`<div class="tf-row"><button class="tf-btn" onclick="exSelectTF(this,true)">✓ Juist</button><button class="tf-btn" onclick="exSelectTF(this,false)">✗ Fout</button></div>`;
+  } else if(q.type==='fill'){
+    body.innerHTML=`<div class="fill-wrap"><input class="fill-input" id="ex-fill" type="text" placeholder="Typ je antwoord…" oninput="document.getElementById('ex-next-btn').disabled=!this.value.trim()"><div class="fill-hint">Hint: ${q.hint||'—'}</div></div>`;
+    nextBtn.disabled=false;
+    setTimeout(()=>document.getElementById('ex-fill')?.focus(),80);
+  }
+}
+function exSelectOpt(el,i){
+  document.querySelectorAll('#ex-q-body .opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');_selOpt=i;document.getElementById('ex-next-btn').disabled=false;
+}
+function exSelectTF(el,val){
+  document.querySelectorAll('#ex-q-body .tf-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');_selTF=val;document.getElementById('ex-next-btn').disabled=false;
+}
+function nextExam(){
+  const q=exState.qs[exState.idx];
+  let correct=false,userAns='';
+  if(q.type==='mcq'){if(_selOpt===null)return;correct=_selOpt===q.ans;userAns=q.opts[_selOpt];}
+  else if(q.type==='tf'){if(_selTF===null)return;correct=_selTF===q.ans;userAns=_selTF?'Juist':'Fout';}
+  else{const fi=document.getElementById('ex-fill');const u=(fi?.value||'').trim().toLowerCase();const c=q.ans.toLowerCase();correct=u===c||u===c.replace(/^\./,'')||('.'+u===c);userAns=fi?.value.trim()||'';}
+  exState.answers.push({q,correct,userAns});
+  recordAnswer(q.ch,correct);updateSR(q,correct);
+  exState.idx++;
+  if(exState.idx>=EX_TOTAL) showExamResults();
+  else renderExamQ();
+}
+function confirmQuitExam(){if(confirm('Examen stoppen? Je score wordt niet opgeslagen.'))endExam();}
+function endExam(){clearInterval(exState.timer);document.getElementById('exam-quiz-view').classList.add('hidden');showExamHome();}
+function showExamResults(){
+  clearInterval(exState.timer);
+  store.sessions++;
+  const elapsed=Math.round((Date.now()-exState.start)/1000);
+  const correct=exState.answers.filter(a=>a.correct).length;
+  const total=exState.answers.length;
+  const pct=Math.round(correct/total*100);
+  if(!store.examBest||pct>store.examBest) store.examBest=pct;
+  saveStore(store);
+  document.getElementById('exam-quiz-view').classList.add('hidden');
+  document.getElementById('exam-results-view').classList.remove('hidden');
+  document.getElementById('exam-results-view').style.display='flex';
+  showResultsRing(pct,'ex-ring-fg');
+  document.getElementById('ex-ring-pct').textContent=pct+'%';
+  const{grade,msg}=gradeMsg(pct);
+  document.getElementById('ex-grade').textContent=grade;
+  document.getElementById('ex-msg').textContent=msg+(pct>=70?' ✅ GESLAAGD':' ❌ GEZAKT');
+  document.getElementById('ex-rc').textContent=correct;
+  document.getElementById('ex-rw').textContent=total-correct;
+  document.getElementById('ex-rt').textContent=elapsed<60?elapsed+'s':Math.floor(elapsed/60)+'m '+(elapsed%60)+'s';
+  buildReviewList(exState.answers,'ex-review-list','ex-rev-arrow');
+}
+
+// ════════════════════════════════════════════════════════
+//  WEAK SPOTS
+// ════════════════════════════════════════════════════════
+function refreshWeak(){
+  const hasData=Object.keys(store.chStats).some(k=>store.chStats[k].total>0);
+  document.getElementById('weak-empty').classList.toggle('hidden',hasData);
+  document.getElementById('weak-content').classList.toggle('hidden',!hasData);
+  if(!hasData)return;
+  const cards=document.getElementById('weak-cards');
+  cards.innerHTML=CHS.map(ch=>{
+    const s=store.chStats[ch.id]||{correct:0,total:0};
+    const p=s.total>0?Math.round(s.correct/s.total*100):null;
+    const col=p===null?'var(--muted)':p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    const bar=p||0;
+    // find weakest vraag types for this chapter
+    const qBank=BANK.filter(q=>q.ch===ch.id);
+    const total=qBank.length;
+    return `<div class="weak-card">
+      <div class="weak-header">
+        <div class="weak-dot" style="background:${ch.color}"></div>
+        <div class="weak-title">${ch.label}</div>
+        <div class="weak-score" style="color:${col}">${p!==null?p+'%':'—'}</div>
+      </div>
+      <div class="weak-bar-wrap"><div class="weak-bar" style="width:${bar}%;background:${col}" data-w="${bar}"></div></div>
+      <div class="weak-meta">${s.correct}/${s.total} correct · ${total} vraags available</div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>document.querySelectorAll('.weak-bar').forEach(el=>{el.style.width=el.dataset.w+'%';}),100);
+  // heatmap
+  const hm=document.getElementById('heatmap');
+  hm.innerHTML='';
+  for(let i=0;i<49;i++){
+    const cell=document.createElement('div');
+    cell.className='heat-cell';
+    const entry=store.heatmap[store.heatmap.length-49+i];
+    if(entry){
+      const cnt=entry.count||0;
+      const alpha=Math.min(cnt*0.2+0.1,1);
+      cell.style.background=`rgba(91,142,248,${alpha})`;
+      cell.dataset.score=`${entry.date}: ${cnt} session${cnt!==1?'s':''}`;
+    }
+    hm.appendChild(cell);
+  }
+}
+function drillWeakChapter(){
+  // find chapter with lowest accuracy
+  let worst=null,worstPct=101;
+  CHS.forEach(ch=>{
+    const s=store.chStats[ch.id];
+    if(s&&s.total>=3){const p=s.correct/s.total*100;if(p<worstPct){worstPct=p;worst=ch.id;}}
+  });
+  if(!worst){showTab('practice');return;}
+  CHS.forEach(ch=>{selHoofdstukken.practice.delete(ch.id);});
+  selHoofdstukken.practice.add(worst);
+  showTab('practice');
+  // rebuild grid with that chapter selected
+  document.getElementById('practiceChapterGrid').innerHTML='';
+  buildChapterGrid('practice');
+}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+const h=new Date().getHours();
+const greet=h<12?'Goedemorgen! ☀️':h<18?'Goedemiddag! 👋':'Goedenavond! 🌙';
+document.getElementById('dashGreeting').textContent=greet+' Klaar om te studeren?';
+buildChapterGrid('practice');
+buildChapterGrid('flash');
+showExamHome();
+refreshDashboard();
+document.getElementById('streakBadge').textContent=`🔥 ${store.streak} dagen op rij`;
+</script>
+</body>
+</html>

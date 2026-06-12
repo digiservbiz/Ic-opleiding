@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IC Commands &amp; Shortcuts Reference</title>
+<style>
+  :root {
+    --bg:      #0f1117;
+    --bg2:     #171b26;
+    --bg3:     #1e2333;
+    --border:  rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.14);
+    --text:    #e8eaf0;
+    --muted:   #8890a8;
+    --accent:  #4f8ef7;
+    --green:   #34d399;
+    --pink:    #f472b6;
+    --amber:   #fbbf24;
+    --purple:  #a78bfa;
+    --red:     #f87171;
+    --sky:     #38bdf8;
+    --orange:  #fb923c;
+    --teal:    #6ee7b7;
+    --radius:  10px;
+    --radius-sm: 6px;
+    --mono: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+    --sans: 'Inter',system-ui,-apple-system,sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px; min-width: 230px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-head {
+    padding: 22px 18px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-head .eyebrow {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .sidebar-head .title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .sidebar-head .sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  nav { padding: 10px 8px; flex: 1; }
+  .nav-section-label {
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); padding: 6px 10px 4px;
+  }
+  .nav-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 12.5px; color: var(--muted);
+    background: none; border: none; width: 100%; text-align: left;
+    transition: all .15s;
+  }
+  .nav-btn:hover { background: var(--bg3); color: var(--text); }
+  .nav-btn.active { background: rgba(79,142,247,.12); color: var(--accent); font-weight: 500; }
+  .nav-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .nav-count {
+    margin-left: auto; font-size: 10px;
+    background: var(--bg3); padding: 1px 5px;
+    border-radius: 20px; color: var(--muted);
+  }
+  .nav-btn.active .nav-count { background: rgba(79,142,247,.2); color: var(--accent); }
+
+  .sidebar-foot {
+    padding: 12px 18px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); line-height: 1.6;
+  }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 12px 26px; display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .search-wrap { flex: 1; max-width: 500px; position: relative; }
+  .search-icon {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 15px; pointer-events: none;
+  }
+  .search-input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 8px 12px 8px 34px;
+    font-size: 13.5px; color: var(--text); font-family: var(--sans);
+    outline: none; transition: border-color .15s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent); }
+
+  .clear-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--muted); padding: 8px 13px; border-radius: var(--radius-sm);
+    font-size: 12.5px; cursor: pointer; font-family: var(--sans);
+    transition: all .15s;
+  }
+  .clear-btn:hover { color: var(--text); }
+
+  .stats {
+    margin-left: auto; font-size: 12px; color: var(--muted);
+    white-space: nowrap; display: flex; align-items: center; gap: 5px;
+  }
+  .stats strong { color: var(--text); }
+
+  .content { padding: 26px; flex: 1; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 38px; }
+  .section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .section-title { font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+  .section-count { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* ── CMD TABLE ── */
+  .cmd-table { width: 100%; border-collapse: collapse; }
+  .cmd-table thead tr {
+    background: var(--bg3);
+  }
+  .cmd-table th {
+    text-align: left; font-size: 11px; font-weight: 500;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cmd-table td {
+    padding: 9px 14px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top; line-height: 1.5;
+  }
+  .cmd-table tr:last-child td { border-bottom: none; }
+  .cmd-table tr:hover td { background: var(--bg3); }
+  .cmd-table tbody tr { background: var(--bg2); }
+
+  .cmd {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    background: rgba(79,142,247,.08);
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .cmd.green   { color: var(--green);  background: rgba(52,211,153,.08); }
+  .cmd.pink    { color: var(--pink);   background: rgba(244,114,182,.08); }
+  .cmd.amber   { color: var(--amber);  background: rgba(251,191,36,.08); }
+  .cmd.purple  { color: var(--purple); background: rgba(167,139,250,.08); }
+  .cmd.red     { color: var(--red);    background: rgba(248,113,113,.08); }
+  .cmd.sky     { color: var(--sky);    background: rgba(56,189,248,.08); }
+  .cmd.orange  { color: var(--orange); background: rgba(251,146,60,.08); }
+  .cmd.teal    { color: var(--teal);   background: rgba(110,231,183,.08); }
+
+  .tag {
+    display: inline-block; font-size: 10px;
+    padding: 2px 7px; border-radius: 20px;
+    font-weight: 500; white-space: nowrap;
+  }
+  .tag-win   { background: rgba(79,142,247,.15);  color: #7ab2ff; }
+  .tag-linux { background: rgba(251,146,60,.15);  color: #fdba74; }
+  .tag-key   { background: rgba(167,139,250,.15); color: #c4b5fd; }
+  .tag-disk  { background: rgba(244,114,182,.15); color: #f9a8d4; }
+  .tag-wsl   { background: rgba(56,189,248,.15);  color: #7dd3fc; }
+
+  .desc-muted { color: var(--muted); }
+
+  .no-results { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .no-results-icon { font-size: 36px; margin-bottom: 10px; }
+  .no-results-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+
+  .menu-toggle {
+    display: none; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); padding: 7px 11px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 17px; line-height: 1;
+  }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; position: fixed; z-index: 100; height: 100vh; top: 0; left: 0; }
+    .sidebar.open { display: flex; }
+    .menu-toggle { display: block; }
+    .content { padding: 14px; }
+    .stats { display: none; }
+    .cmd-table th:nth-child(3),
+    .cmd-table td:nth-child(3) { display: none; }
+  }
+
+  kbd {
+    font-family: var(--mono); font-size: 10px; padding: 2px 5px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 3px; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="eyebrow">IC Study Guide</div>
+    <div class="title">Commands &amp; Shortcuts</div>
+    <div class="sub">Complete reference — all chapters</div>
+  </div>
+
+  <nav id="nav">
+    <div class="nav-section-label">Filter by category</div>
+    <button class="nav-btn active" onclick="setGroup('all',this)">
+      <span class="nav-dot" style="background:#8890a8"></span>
+      All commands
+      <span class="nav-count" id="cnt-all"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('cmd',this)">
+      <span class="nav-dot" style="background:#4f8ef7"></span>
+      CMD (Windows)
+      <span class="nav-count" id="cnt-cmd"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('diskpart',this)">
+      <span class="nav-dot" style="background:#f472b6"></span>
+      Diskpart
+      <span class="nav-count" id="cnt-diskpart"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('winrun',this)">
+      <span class="nav-dot" style="background:#a78bfa"></span>
+      Windows Run / Tools
+      <span class="nav-count" id="cnt-winrun"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('linux',this)">
+      <span class="nav-dot" style="background:#fb923c"></span>
+      Linux Terminal
+      <span class="nav-count" id="cnt-linux"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('apt',this)">
+      <span class="nav-dot" style="background:#34d399"></span>
+      apt / dpkg
+      <span class="nav-count" id="cnt-apt"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('ssh',this)">
+      <span class="nav-dot" style="background:#38bdf8"></span>
+      SSH &amp; systemctl
+      <span class="nav-count" id="cnt-ssh"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('wsl',this)">
+      <span class="nav-dot" style="background:#6ee7b7"></span>
+      WSL
+      <span class="nav-count" id="cnt-wsl"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('shortcuts',this)">
+      <span class="nav-dot" style="background:#fbbf24"></span>
+      Keyboard Shortcuts
+      <span class="nav-count" id="cnt-shortcuts"></span>
+    </button>
+    <button class="nav-btn" onclick="setGroup('nano',this)">
+      <span class="nav-dot" style="background:#f87171"></span>
+      Nano Editor
+      <span class="nav-count" id="cnt-nano"></span>
+    </button>
+  </nav>
+
+  <div class="sidebar-foot">
+    Click a row to copy the command.<br>
+    Press <kbd>/</kbd> to search.
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text"
+             placeholder="Search commands, syntax, descriptions…"
+             oninput="render()" autocomplete="off">
+    </div>
+    <button class="clear-btn" onclick="document.getElementById('searchInput').value='';render()">Clear</button>
+    <div class="stats"><strong id="statsCount"></strong> commands</div>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<div id="toast" style="
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1e2333;border:1px solid rgba(255,255,255,.15);color:#e8eaf0;
+  padding:8px 18px;border-radius:8px;font-size:13px;font-family:var(--sans);
+  opacity:0;transition:all .25s;pointer-events:none;z-index:999;">
+  Copied!
+</div>
+
+<script>
+const GROUPS = {
+  cmd:       { label:'CMD – Windows Command Prompt',   color:'#4f8ef7' },
+  diskpart:  { label:'Diskpart',                        color:'#f472b6' },
+  winrun:    { label:'Windows Run Commands & Tools',    color:'#a78bfa' },
+  linux:     { label:'Linux Terminal',                  color:'#fb923c' },
+  apt:       { label:'apt & dpkg – Package Management', color:'#34d399' },
+  ssh:       { label:'SSH & systemctl',                 color:'#38bdf8' },
+  wsl:       { label:'WSL – Windows Subsystem for Linux', color:'#6ee7b7' },
+  shortcuts: { label:'Keyboard Shortcuts',              color:'#fbbf24' },
+  nano:      { label:'Nano Text Editor',                color:'#f87171' },
+};
+
+// Fields: group, cmd, syntax (optional extra detail), desc, tag (optional badge label)
+const DATA = [
+
+  // ── CMD ──
+  {g:'cmd', cmd:'help',             syntax:'help',                    desc:'List all available CMD commands.'},
+  {g:'cmd', cmd:'[command] /?',     syntax:'dir /?',                  desc:'Show help and options for a specific command.'},
+  {g:'cmd', cmd:'dir',              syntax:'dir [path]',              desc:'List files and folders in the current or specified directory.'},
+  {g:'cmd', cmd:'dir c*',           syntax:'dir c*',                  desc:'List only files/folders starting with the letter "c" (wildcard).'},
+  {g:'cmd', cmd:'cd',               syntax:'cd [folder]',             desc:'Change to a different working directory.'},
+  {g:'cmd', cmd:'cd..',             syntax:'cd..',                    desc:'Go up one level to the parent directory.'},
+  {g:'cmd', cmd:'cd\\',            syntax:'cd\\',                   desc:'Go directly to the root directory (C:\\).'},
+  {g:'cmd', cmd:'cd\\Windows',     syntax:'cd\\Windows',            desc:'Go directly to a specific folder from the root.'},
+  {g:'cmd', cmd:'X:',               syntax:'D:  or  E:',              desc:'Switch to a different drive letter (e.g. USB drive).'},
+  {g:'cmd', cmd:'mkdir',            syntax:'mkdir [foldername]',      desc:'Create a new folder.'},
+  {g:'cmd', cmd:'rmdir',            syntax:'rmdir [foldername]',      desc:'Delete an empty folder.'},
+  {g:'cmd', cmd:'rmdir /S',         syntax:'rmdir /S [foldername]',   desc:'Delete a folder and all its contents recursively.'},
+  {g:'cmd', cmd:'copy',             syntax:'copy [source] [dest]',    desc:'Copy a file to a destination.'},
+  {g:'cmd', cmd:'xcopy',            syntax:'xcopy [source] [dest]',   desc:'Copy a folder and its contents. Destination is created if it doesn\'t exist.'},
+  {g:'cmd', cmd:'move',             syntax:'move [source] [dest]',    desc:'Move a file or folder to a new location.'},
+  {g:'cmd', cmd:'rename',           syntax:'rename [old] [new]',      desc:'Rename a file or folder.'},
+  {g:'cmd', cmd:'del',              syntax:'del [filename]',          desc:'Delete a file.'},
+  {g:'cmd', cmd:'tree',             syntax:'tree',                    desc:'Display the folder structure as a tree.'},
+  {g:'cmd', cmd:'tree /F',          syntax:'tree /F',                 desc:'Display folder tree including all files.'},
+  {g:'cmd', cmd:'cls',              syntax:'cls',                     desc:'Clear the Command Prompt screen.'},
+  {g:'cmd', cmd:'exit',             syntax:'exit',                    desc:'Close the Command Prompt window.'},
+  {g:'cmd', cmd:'start',            syntax:'start notepad',           desc:'Start an application or process (e.g. Notepad).'},
+  {g:'cmd', cmd:'tasklist',         syntax:'tasklist',                desc:'List all running processes and services.'},
+  {g:'cmd', cmd:'taskkill /IM',     syntax:'taskkill /IM notepad.exe',desc:'Terminate a running process by its name.'},
+  {g:'cmd', cmd:'echo',             syntax:'echo Hello World',        desc:'Print text to the screen. Used in batch files.'},
+  {g:'cmd', cmd:'echo off',         syntax:'@echo off',               desc:'Hide the command prompt and working directory output in a script.'},
+  {g:'cmd', cmd:'echo on',          syntax:'echo on',                 desc:'Show the command prompt and commands in a script.'},
+  {g:'cmd', cmd:'REM',              syntax:'REM This is a comment',   desc:'Add a comment/remark in a batch file. Not executed.'},
+  {g:'cmd', cmd:'PAUSE',            syntax:'PAUSE',                   desc:'Pause a batch script and wait for the user to press a key.'},
+  {g:'cmd', cmd:'CALL',             syntax:'CALL script2.bat',        desc:'Call (nest) another batch file from within the current script.'},
+  {g:'cmd', cmd:'regedit',          syntax:'regedit',                 desc:'Open the Windows Registry Editor. Used to bypass TPM/Secure Boot checks.'},
+
+  // ── DISKPART ──
+  {g:'diskpart', cmd:'diskpart',    syntax:'diskpart',                desc:'Open the Diskpart CLI tool (run as Administrator).'},
+  {g:'diskpart', cmd:'list disk',   syntax:'list disk',               desc:'Show all disks connected to the system (HDD, SSD, USB…).'},
+  {g:'diskpart', cmd:'select disk', syntax:'select disk 2',           desc:'Select a specific disk by its number for further operations.'},
+  {g:'diskpart', cmd:'clean',       syntax:'clean',                   desc:'Wipe all data and partitions from the selected disk.'},
+  {g:'diskpart', cmd:'list partition',syntax:'list partition',        desc:'List all partitions on the selected disk.'},
+  {g:'diskpart', cmd:'exit',        syntax:'exit',                    desc:'Exit the Diskpart tool.'},
+
+  // ── WINDOWS RUN / TOOLS ──
+  {g:'winrun', cmd:'lusrmgr.msc',   syntax:'Win+R → lusrmgr.msc',    desc:'Open Local User Manager to manage local users and groups.'},
+  {g:'winrun', cmd:'taskmgr',       syntax:'Win+R → taskmgr',         desc:'Open Task Manager (processes, services, performance).'},
+  {g:'winrun', cmd:'devmgmt.msc',   syntax:'Win+R → devmgmt.msc',    desc:'Open Device Manager to view and manage drivers and hardware.'},
+  {g:'winrun', cmd:'ncpa.cpl',      syntax:'Win+R → ncpa.cpl',        desc:'Open Network Connections / adapter settings.'},
+  {g:'winrun', cmd:'mmc',           syntax:'Win+R → mmc',             desc:'Open Microsoft Management Console to centralise admin tools.'},
+  {g:'winrun', cmd:'diskmgmt.msc',  syntax:'Win+R → diskmgmt.msc',   desc:'Open Disk Management to manage partitions and drives.'},
+  {g:'winrun', cmd:'msinfo32',      syntax:'Win+R → msinfo32',        desc:'Open System Information (hardware overview).'},
+  {g:'winrun', cmd:'ipconfig',      syntax:'ipconfig',                desc:'Display the current IP configuration of all network adapters.'},
+  {g:'winrun', cmd:'ipconfig /all', syntax:'ipconfig /all',           desc:'Show detailed IP configuration including MAC address and DNS.'},
+  {g:'winrun', cmd:'ping',          syntax:'ping 8.8.8.8',            desc:'Test network connectivity to a host or IP address.'},
+  {g:'winrun', cmd:'wsl --install', syntax:'wsl --install',           desc:'Install WSL 2 with the default Ubuntu distribution (run in PowerShell as Admin).'},
+
+  // ── LINUX TERMINAL ──
+  {g:'linux', cmd:'cd',             syntax:'cd /home/user',           desc:'Change to a different directory.'},
+  {g:'linux', cmd:'cd /',           syntax:'cd /',                    desc:'Go to the root directory.'},
+  {g:'linux', cmd:'cd ~',           syntax:'cd ~',                    desc:'Go to the current user\'s home directory.'},
+  {g:'linux', cmd:'ls',             syntax:'ls',                      desc:'List the contents of the current directory.'},
+  {g:'linux', cmd:'ls -a',          syntax:'ls -a',                   desc:'List all contents including hidden files (starting with a dot).'},
+  {g:'linux', cmd:'ls -l',          syntax:'ls -l',                   desc:'List contents in long format with permissions, size and date.'},
+  {g:'linux', cmd:'mkdir',          syntax:'mkdir [foldername]',      desc:'Create a new directory.'},
+  {g:'linux', cmd:'rmdir',          syntax:'rmdir [foldername]',      desc:'Remove an empty directory.'},
+  {g:'linux', cmd:'rm -r',          syntax:'rm -r [foldername]',      desc:'Remove a directory and all its contents recursively.'},
+  {g:'linux', cmd:'rm',             syntax:'rm [filename]',           desc:'Delete a file.'},
+  {g:'linux', cmd:'cp',             syntax:'cp [source] [dest]',      desc:'Copy a file to a destination.'},
+  {g:'linux', cmd:'cp -r',          syntax:'cp -r [folder] [dest]',   desc:'Copy a directory and all its contents.'},
+  {g:'linux', cmd:'mv',             syntax:'mv [source] [dest]',      desc:'Move or rename a file or directory.'},
+  {g:'linux', cmd:'touch',          syntax:'touch [filename]',        desc:'Create an empty file.'},
+  {g:'linux', cmd:'cat',            syntax:'cat > [filename]',        desc:'Create a file and type content into it. Press Ctrl+D to save and exit.'},
+  {g:'linux', cmd:'find',           syntax:'find / -name "file.txt"', desc:'Search for a file or directory by name.'},
+  {g:'linux', cmd:'tar -czf',       syntax:'tar -czf archive.tar.gz folder/', desc:'Create a compressed .tar.gz archive from a folder.'},
+  {g:'linux', cmd:'tar -xzf',       syntax:'tar -xzf archive.tar.gz',desc:'Extract a compressed .tar.gz archive.'},
+  {g:'linux', cmd:'man',            syntax:'man [command]',           desc:'Show the full manual page for a command.'},
+  {g:'linux', cmd:'[command] --help',syntax:'mkdir --help',           desc:'Show a quick help summary for a command.'},
+  {g:'linux', cmd:'sudo',           syntax:'sudo [command]',          desc:'Execute a single command with root (admin) privileges.'},
+  {g:'linux', cmd:'su -',           syntax:'su -',                    desc:'Switch to the root user account including its home directory.'},
+  {g:'linux', cmd:'sudo passwd root',syntax:'sudo passwd root',       desc:'Activate the root account by setting a root password.'},
+  {g:'linux', cmd:'sudo passwd -dl root',syntax:'sudo passwd -dl root',desc:'Deactivate (lock) the root account.'},
+  {g:'linux', cmd:'adduser',        syntax:'adduser [username]',      desc:'Create a new user account interactively.'},
+  {g:'linux', cmd:'exit',           syntax:'exit',                    desc:'Close the terminal session or disconnect from SSH.'},
+  {g:'linux', cmd:'curl -O',        syntax:'curl -O [URL]',           desc:'Download a file from a URL, keeping the original filename.'},
+
+  // ── APT / DPKG ──
+  {g:'apt', cmd:'apt update',       syntax:'sudo apt update',         desc:'Refresh the local list of available packages from the repository.'},
+  {g:'apt', cmd:'apt upgrade',      syntax:'sudo apt upgrade',        desc:'Upgrade all installed packages to their latest versions.'},
+  {g:'apt', cmd:'apt update && apt upgrade', syntax:'sudo apt update && sudo apt upgrade', desc:'Update the package list and upgrade all packages in one step.'},
+  {g:'apt', cmd:'apt install',      syntax:'sudo apt install [pkg]',  desc:'Install a package from the repository.'},
+  {g:'apt', cmd:'apt remove',       syntax:'sudo apt remove [pkg]',   desc:'Uninstall a package (keeps configuration files).'},
+  {g:'apt', cmd:'apt purge',        syntax:'sudo apt purge [pkg]',    desc:'Uninstall a package and remove its configuration files.'},
+  {g:'apt', cmd:'apt purge -y',     syntax:'sudo apt purge -y [pkg]', desc:'Uninstall without asking for confirmation (-y = yes to all).'},
+  {g:'apt', cmd:'apt search',       syntax:'apt search [keyword]',    desc:'Search the repository for a package by name or keyword.'},
+  {g:'apt', cmd:'apt show',         syntax:'apt show [pkg]',          desc:'Show detailed information about a package.'},
+  {g:'apt', cmd:'dpkg -i',          syntax:'sudo dpkg -i file.deb',   desc:'Install a local .deb package file.'},
+  {g:'apt', cmd:'dpkg -s',          syntax:'dpkg -s [pkg]',           desc:'Show information about an installed package.'},
+
+  // ── SSH & SYSTEMCTL ──
+  {g:'ssh', cmd:'ssh user@ip',      syntax:'ssh username@192.168.1.10',        desc:'Connect to a remote computer via SSH on default port 22.'},
+  {g:'ssh', cmd:'ssh -p',           syntax:'ssh -p 22000 username@192.168.1.10', desc:'Connect to a remote computer via SSH on a custom port.'},
+  {g:'ssh', cmd:'exit',             syntax:'exit',                             desc:'Disconnect from an SSH session.'},
+  {g:'ssh', cmd:'nano [file]',      syntax:'sudo nano /etc/ssh/sshd_config',   desc:'Open a file in the Nano text editor.'},
+  {g:'ssh', cmd:'systemctl status', syntax:'systemctl status ssh',             desc:'Check the current status of a service (running / stopped).'},
+  {g:'ssh', cmd:'systemctl start',  syntax:'sudo systemctl start ssh',         desc:'Start a service.'},
+  {g:'ssh', cmd:'systemctl stop',   syntax:'sudo systemctl stop ssh',          desc:'Stop a running service.'},
+  {g:'ssh', cmd:'systemctl restart',syntax:'sudo systemctl restart ssh',       desc:'Restart a service (applies config changes).'},
+  {g:'ssh', cmd:'systemctl enable', syntax:'sudo systemctl enable ssh',        desc:'Enable a service to start automatically at boot.'},
+  {g:'ssh', cmd:'systemctl daemon-reload',syntax:'sudo systemctl daemon-reload',desc:'Reload systemd after changing a service configuration file.'},
+
+  // ── WSL ──
+  {g:'wsl', cmd:'wsl --install',         syntax:'wsl --install',               desc:'Install WSL 2 with the default Ubuntu distribution.'},
+  {g:'wsl', cmd:'wsl --install -d',      syntax:'wsl --install -d Debian',     desc:'Install WSL with a specific Linux distribution.'},
+  {g:'wsl', cmd:'wsl --status',          syntax:'wsl --status',                desc:'Show the current status of WSL (version, default distro).'},
+  {g:'wsl', cmd:'wsl --list',            syntax:'wsl --list',                  desc:'List all installed WSL distributions.'},
+  {g:'wsl', cmd:'wsl --list --online',   syntax:'wsl --list --online',         desc:'Show all available distributions that can be installed.'},
+  {g:'wsl', cmd:'wsl --list --verbose',  syntax:'wsl --list --verbose',        desc:'List installed distributions with version and running state.'},
+  {g:'wsl', cmd:'wsl --shutdown',        syntax:'wsl --shutdown',              desc:'Shut down all running WSL instances.'},
+
+  // ── KEYBOARD SHORTCUTS ──
+  {g:'shortcuts', cmd:'Ctrl + Alt + T',   syntax:'Ctrl + Alt + T',  desc:'Open the Terminal in Ubuntu / Linux desktop.'},
+  {g:'shortcuts', cmd:'Ctrl + D',         syntax:'Ctrl + D',        desc:'Save and exit when typing in the cat command (EOF). Also exits a terminal session.'},
+  {g:'shortcuts', cmd:'Shift + F10',      syntax:'Shift + F10',     desc:'Open Command Prompt during Windows installation (to run regedit for TPM bypass).'},
+  {g:'shortcuts', cmd:'Fn + Shift + F10', syntax:'Fn + Shift + F10',desc:'Alternative shortcut to open Command Prompt during Windows installation (on some laptops).'},
+  {g:'shortcuts', cmd:'Win + R',          syntax:'Win + R',         desc:'Open the Windows Run dialog to launch programs by command name.'},
+  {g:'shortcuts', cmd:'Ctrl + C (copy)',  syntax:'Ctrl + C',        desc:'Copy selected text or files.'},
+  {g:'shortcuts', cmd:'Ctrl + V (paste)', syntax:'Ctrl + V',        desc:'Paste copied content.'},
+  {g:'shortcuts', cmd:'TAB (autocomplete)',syntax:'TAB',             desc:'In CMD and Linux: auto-complete file and folder names.'},
+  {g:'shortcuts', cmd:'↑ Arrow key',      syntax:'↑',               desc:'In CMD and Linux: scroll through previously used commands.'},
+  {g:'shortcuts', cmd:'Del / F2 / F10',   syntax:'Del  or  F2  or  F10', desc:'Common keys to enter BIOS/UEFI during startup (varies by manufacturer).'},
+  {g:'shortcuts', cmd:'F8 / F11 / F12',   syntax:'F8  or  F11  or  F12', desc:'Common keys to open the Boot Menu (boot options) during startup.'},
+
+  // ── NANO ──
+  {g:'nano', cmd:'Ctrl + O',   syntax:'Ctrl + O  then  Enter', desc:'Save (write out) the current file in Nano.'},
+  {g:'nano', cmd:'Ctrl + X',   syntax:'Ctrl + X',              desc:'Exit Nano (prompts to save if there are unsaved changes).'},
+  {g:'nano', cmd:'Ctrl + W',   syntax:'Ctrl + W',              desc:'Search for text within the file (Where Is).'},
+  {g:'nano', cmd:'Ctrl + K',   syntax:'Ctrl + K',              desc:'Cut the current line.'},
+  {g:'nano', cmd:'Ctrl + U',   syntax:'Ctrl + U',              desc:'Paste (uncut) the previously cut line.'},
+  {g:'nano', cmd:'Ctrl + G',   syntax:'Ctrl + G',              desc:'Show the Nano help screen with all available shortcuts.'},
+  {g:'nano', cmd:'Ctrl + C',   syntax:'Ctrl + C',              desc:'Show the current cursor position (line and column number).'},
+  {g:'nano', cmd:'Ctrl + A',   syntax:'Ctrl + A',              desc:'Move cursor to the beginning of the current line.'},
+  {g:'nano', cmd:'Ctrl + E',   syntax:'Ctrl + E',              desc:'Move cursor to the end of the current line.'},
+  {g:'nano', cmd:'#  (comment)',syntax:'# Port 22',             desc:'A line starting with # is commented out and ignored by the application.'},
+];
+
+// Color per group
+const GCOL = {
+  cmd:'#4f8ef7', diskpart:'#f472b6', winrun:'#a78bfa',
+  linux:'#fb923c', apt:'#34d399', ssh:'#38bdf8',
+  wsl:'#6ee7b7', shortcuts:'#fbbf24', nano:'#f87171'
+};
+
+// CMD class per group
+const GCLS = {
+  cmd:'', diskpart:'pink', winrun:'purple',
+  linux:'orange', apt:'green', ssh:'sky',
+  wsl:'teal', shortcuts:'amber', nano:'red'
+};
+
+let activeGroup = 'all';
+
+function setGroup(g, el) {
+  activeGroup = g;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('searchInput').value = '';
+  render();
+  if (window.innerWidth <= 720) document.getElementById('sidebar').classList.remove('open');
+}
+
+function hl(text, q) {
+  if (!q) return text;
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return text.replace(re,'<mark style="background:rgba(79,142,247,.25);color:inherit;border-radius:2px;padding:0 1px;">$1</mark>');
+}
+
+function copyToast(text) {
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const t = document.getElementById('toast');
+  t.textContent = 'Copied: ' + text;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 1800);
+}
+
+function tableHTML(rows, q) {
+  if (!rows.length) return '';
+  return `<table class="cmd-table">
+    <thead><tr>
+      <th style="width:180px">Command</th>
+      <th>Syntax / Example</th>
+      <th>Description</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r => `
+        <tr onclick="copyToast('${r.syntax.replace(/'/g,"\\'")}')" title="Click to copy syntax" style="cursor:pointer">
+          <td><span class="cmd ${GCLS[r.g]}">${hl(r.cmd, q)}</span></td>
+          <td><code style="font-family:var(--mono);font-size:12px;color:var(--muted)">${hl(r.syntax, q)}</code></td>
+          <td class="desc-muted">${hl(r.desc, q)}</td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function render() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const content = document.getElementById('content');
+
+  const filtered = DATA.filter(r => {
+    const matchG = activeGroup === 'all' || r.g === activeGroup;
+    const matchQ = !q || r.cmd.toLowerCase().includes(q)
+                      || r.syntax.toLowerCase().includes(q)
+                      || r.desc.toLowerCase().includes(q);
+    return matchG && matchQ;
+  });
+
+  document.getElementById('statsCount').textContent = filtered.length;
+
+  if (!filtered.length) {
+    content.innerHTML = `<div class="no-results">
+      <div class="no-results-icon">🔍</div>
+      <div class="no-results-title">No commands found</div>
+      <div style="font-size:13px;color:var(--muted)">Try a different search term or select another category.</div>
+    </div>`;
+    return;
+  }
+
+  if (activeGroup !== 'all' || q) {
+    const color = activeGroup !== 'all' ? GCOL[activeGroup] : '#8890a8';
+    const label = activeGroup !== 'all' ? GROUPS[activeGroup].label : 'Search results';
+    content.innerHTML = `
+      <div class="section">
+        <div class="section-head">
+          <span class="section-dot" style="background:${color}"></span>
+          <span class="section-title">${label}</span>
+          <span class="section-count">${filtered.length} command${filtered.length!==1?'s':''}</span>
+        </div>
+        ${tableHTML(filtered, q)}
+      </div>`;
+  } else {
+    content.innerHTML = Object.keys(GROUPS).map(g => {
+      const rows = filtered.filter(r => r.g === g);
+      if (!rows.length) return '';
+      return `<div class="section">
+        <div class="section-head">
+          <span class="section-dot" style="background:${GCOL[g]}"></span>
+          <span class="section-title">${GROUPS[g].label}</span>
+          <span class="section-count">${rows.length} commands</span>
+        </div>
+        ${tableHTML(rows, q)}
+      </div>`;
+    }).join('');
+  }
+
+  updateCounts();
+}
+
+function updateCounts() {
+  document.getElementById('cnt-all').textContent = DATA.length;
+  Object.keys(GROUPS).forEach(g => {
+    const el = document.getElementById('cnt-' + g);
+    if (el) el.textContent = DATA.filter(r => r.g === g).length;
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== document.getElementById('searchInput')) {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('searchInput').blur();
+    document.getElementById('sidebar').classList.remove('open');
+  }
+});
+
+render();
+</script>
+</body>
+</html>
